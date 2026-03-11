@@ -1,0 +1,32 @@
+---
+import { keywordRoutes } from '../data/routes';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { buildCanonicalUrl } from '../lib/seo';
+
+const previewRoutes = keywordRoutes.slice(0, 24);
+---
+
+<BaseLayout
+  title="PicResizer Matrix - Browser-Based Image Compression Tools"
+  description="Static SEO landing pages for exact-size image compression by format and file size."
+  canonical={buildCanonicalUrl('')}
+>
+  <main>
+    <section class="hero">
+      <span class="eyebrow">Astro pSEO MVP</span>
+      <h1>PicResizer Matrix</h1>
+      <p class="lede">
+        Exact-size image compression pages generated from a keyword matrix. This build currently ships {keywordRoutes.length} static routes.
+      </p>
+    </section>
+
+    <section class="card">
+      <h2>Preview routes</h2>
+      <ul>
+        {previewRoutes.map((route) => (
+          <li><a href={`/${route.slug}`}>{route.slug}</a></li>
+        ))}
+      </ul>
+    </section>
+  </main>
+</BaseLayout>

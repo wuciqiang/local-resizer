@@ -1,0 +1,77 @@
+---
+import CompressionDemo from '../components/CompressionDemo.astro';
+import { getRouteBySlug, keywordRoutes } from '../data/routes';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { buildPageCopy } from '../lib/content';
+import { buildCanonicalUrl, buildFaqSchema, buildHowToSchema } from '../lib/seo';
+
+export const getStaticPaths = () =>
+  keywordRoutes.map((route) => ({
+    params: { slug: route.slug },
+    props: { route }
+  }));
+
+const { route } = Astro.props;
+const page = route ?? getRouteBySlug(Astro.params.slug ?? '');
+
+if (!page) {
+  throw new Error(`Unknown slug: ${Astro.params.slug}`);
+}
+
+const copy = buildPageCopy(page);
+const canonical = buildCanonicalUrl(page.slug);
+const structuredData = [buildHowToSchema(page, copy), buildFaqSchema(page, copy)];
+---
+
+<BaseLayout
+  title={page.title}
+  description={page.description}
+  canonical={canonical}
+  structuredData={structuredData}
+>
+  <main>
+    <section class="hero">
+      <span class="eyebrow">Private, browser-based compression</span>
+      <h1>{page.h1}</h1>
+      <p class="lede">{copy.subtitle}</p>
+    </section>
+
+    <CompressionDemo targetKB={page.targetKB} />
+
+    <section class="content-grid">
+      <article>
+        <section class="card">
+          <h2>{copy.whyTitle}</h2>
+          {copy.whyBullets.map((item) => (
+            <section>
+              <h3>{item.title}</h3>
+              <p>{item.body}</p>
+            </section>
+          ))}
+        </section>
+
+        <section class="card">
+          <h2>{copy.howToTitle}</h2>
+          <ol>
+            {copy.howToSteps.map((step) => <li>{step}</li>)}
+          </ol>
+        </section>
+
+        <section class="card">
+          <h2>{copy.ctaTitle}</h2>
+          <p>{copy.ctaBody}</p>
+        </section>
+      </article>
+
+      <aside class="card">
+        <h2>FAQ</h2>
+        {copy.faq.map((item) => (
+          <section>
+            <h3>{item.question}</h3>
+            <p>{item.answer}</p>
+          </section>
+        ))}
+      </aside>
+    </section>
+  </main>
+</BaseLayout>
