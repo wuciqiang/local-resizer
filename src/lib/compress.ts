@@ -1,9 +1,13 @@
+export type PngStrategy = 'auto' | 'webp' | 'png-scale';
+
 export interface CompressOptions {
   file: File;
   targetSizeBytes: number;
   format?: string;
   maxIterations?: number;
   tolerance?: number;
+  pngStrategy?: PngStrategy;
+  onProgress?: (percent: number) => void;
 }
 
 export interface CompressResult {
@@ -17,6 +21,7 @@ export interface CompressResult {
   originalWidth: number;
   originalHeight: number;
   note?: string;
+  outputFormat?: string;
 }
 
 interface CompressionCandidate {
@@ -67,6 +72,8 @@ export async function compressImage(options: CompressOptions): Promise<CompressR
     targetSizeBytes,
     maxIterations = 20,
     tolerance = 0.05,
+    pngStrategy = 'auto',
+    onProgress,
   } = options;
   const format = options.format || file.type || 'image/jpeg';
   const image = await loadImage(file);
@@ -76,6 +83,7 @@ export async function compressImage(options: CompressOptions): Promise<CompressR
     const originalHeight = image.naturalHeight;
 
     if (file.size <= targetSizeBytes) {
+      onProgress?.(100);
       return {
         blob: file,
         quality: 1,
@@ -100,31 +108,91 @@ export async function compressImage(options: CompressOptions): Promise<CompressR
     }
 
     context.drawImage(image, 0, 0, originalWidth, originalHeight);
+    onProgress?.(10);
 
     if (format.includes('png')) {
-      return compressPngByScaling({
-        canvas,
-        image,
-        file,
-        format,
-        maxIterations,
-        originalWidth,
-        originalHeight,
-        targetSizeBytes,
-        tolerance,
+      if (pngStrategy === 'auto' || pngStrategy === 'png-scale') {
+        const pngRedrawn = await canvasToBlob(canvas, 'image/png', 1);
+        onProgress?.(20);
+        if (pngRedrawn.size <= targetSizeBytes + targetSizeBytes * tolerance) {
+          onProgress?.(100);
+          return {
+            blob: pngRedrawn,
+            quality: 1,
+            originalSize: file.size,
+            compressedSize: pngRedrawn.size,
+            iterations: 1,
+            width: originalWidth,
+            height: originalHeight,
+            originalWidth,
+            originalHeight,
+          };
+        }
+      }
+
+      if (pngStrategy === 'webp') {
+        onProgress?.(30);
+        const webpResult = await compressByQuality({
+          canvas, file, format: 'image/webp', maxIterations,
+          originalWidth, originalHeight, targetSizeBytes, tolerance,
+        });
+        onProgress?.(100);
+        return { ...webpResult, outputFormat: 'image/webp' };
+      }
+
+      if (pngStrategy === 'png-scale') {
+        onProgress?.(30);
+        const scalingResult = await compressPngByScaling({
+          canvas, image, file, format, maxIterations,
+          originalWidth, originalHeight, targetSizeBytes, tolerance,
+        });
+        onProgress?.(100);
+        return {
+          ...scalingResult,
+          note: scalingResult.note ??
+            (scalingResult.width !== originalWidth
+              ? `PNG compression required dimension scaling (${originalWidth}x${originalHeight} → ${scalingResult.width}x${scalingResult.height}).`
+              : undefined),
+        };
+      }
+
+      // auto: try webp first, then scaling
+      onProgress?.(30);
+      const webpResult = await compressByQuality({
+        canvas, file, format: 'image/webp', maxIterations,
+        originalWidth, originalHeight, targetSizeBytes, tolerance,
       });
+      if (webpResult.compressedSize <= targetSizeBytes + targetSizeBytes * tolerance) {
+        onProgress?.(100);
+        return { ...webpResult, outputFormat: 'image/webp' };
+      }
+
+      onProgress?.(60);
+      const scalingResult = await compressPngByScaling({
+        canvas, image, file, format, maxIterations,
+        originalWidth, originalHeight, targetSizeBytes, tolerance,
+      });
+
+      if (webpResult.compressedSize <= scalingResult.compressedSize &&
+          webpResult.width === originalWidth && webpResult.height === originalHeight) {
+        onProgress?.(100);
+        return { ...webpResult, outputFormat: 'image/webp' };
+      }
+
+      onProgress?.(100);
+      return {
+        ...scalingResult,
+        note: scalingResult.note ??
+          `PNG format required dimension scaling (${originalWidth}x${originalHeight} → ${scalingResult.width}x${scalingResult.height}) to reach the target size. Consider using WebP format to keep original dimensions.`,
+      };
     }
 
-    return compressByQuality({
-      canvas,
-      file,
-      format,
-      maxIterations,
-      originalWidth,
-      originalHeight,
-      targetSizeBytes,
-      tolerance,
+    const result = await compressByQuality({
+      canvas, file, format, maxIterations,
+      originalWidth, originalHeight, targetSizeBytes, tolerance,
     });
+    onProgress?.(100);
+    return result;
   } finally {
     URL.revokeObjectURL(image.src);
   }

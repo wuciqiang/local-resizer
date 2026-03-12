@@ -432,7 +432,7 @@ function generateActiveRoutes(): RouteConfig[] {
         relatedLinks: [],
         acceptFormats: STATIC_IMAGE_ACCEPT_FORMATS,
         maxFileSize: asset.maxFileSize ?? 50 * 1024 * 1024,
-        resizeMode: 'contain',
+        resizeMode: 'cover',
         forceCanvasSize: true,
       });
     }

@@ -23,6 +23,7 @@ interface ProcessedFile {
   originalWidth: number;
   originalHeight: number;
   note?: string;
+  outputFormat?: string;
 }
 
 interface QuickSizePreset {
@@ -38,6 +39,7 @@ interface QuickDimensionPreset {
 }
 
 type Status = 'idle' | 'processing' | 'done' | 'error';
+type PngChoice = 'pending' | 'webp' | 'png-scale' | 'none';
 
 const MIME_LABELS: Record<string, string> = {
   'image/jpeg': 'JPEG',
@@ -74,6 +76,7 @@ export default function ImageProcessor({
   const [error, setError] = useState('');
   const [dragOver, setDragOver] = useState(false);
   const [toolAction, setToolAction] = useState<'compress' | 'resize'>(action);
+  const [pngChoice, setPngChoice] = useState<PngChoice>('none');
   const [sizeValue, setSizeValue] = useState(() => getInitialSizeValue(targetSizeBytes));
   const [sizeUnit, setSizeUnit] = useState<'kb' | 'mb'>(() => getInitialSizeUnit(targetSizeBytes));
   const [widthValue, setWidthValue] = useState(() => dimensions?.width?.toString() ?? '1280');
@@ -168,6 +171,8 @@ export default function ImageProcessor({
     setResults([]);
     setStatus('idle');
     setError('');
+    const hasPng = valid.some((f) => f.type === 'image/png');
+    setPngChoice(hasPng ? 'pending' : 'none');
   }, [acceptFormats, maxFileSize, results]);
 
   const processFiles = useCallback(async () => {
@@ -180,7 +185,12 @@ export default function ImageProcessor({
       return;
     }
 
-    if (effectiveAction === 'resize' && !effectiveDimensions) {
+    if (pngChoice === 'pending' && effectiveTargetSizeBytes) {
+      setError('Please choose a PNG compression strategy below before processing.');
+      return;
+    }
+
+    if (effectiveAction === 'resize' && !effectiveDimensions && !effectiveTargetSizeBytes) {
       setError('Enter valid width and height values before processing.');
       return;
     }
@@ -199,14 +209,16 @@ export default function ImageProcessor({
         let originalWidth = 0;
         let originalHeight = 0;
         let note: string | undefined;
+        let outputFormat: string | undefined;
 
         if (effectiveAction === 'resize' && effectiveDimensions) {
           const { resizeImage } = await import('../lib/resize');
+          const useForceCanvas = isConfigurable ? true : forceCanvasSize;
           const result = await resizeImage({
             file,
             targetDimensions: effectiveDimensions,
-            resizeMode,
-            forceCanvasSize,
+            resizeMode: isConfigurable ? 'cover' : resizeMode,
+            forceCanvasSize: useForceCanvas,
           });
           blob = result.blob;
           width = result.width;
@@ -215,32 +227,27 @@ export default function ImageProcessor({
           originalHeight = result.originalHeight;
           note = result.note;
         } else if (effectiveTargetSizeBytes) {
-          if (effectiveAction === 'compress') {
-            const { compressImage } = await import('../lib/compress');
-            const result = await compressImage({
-              file,
-              targetSizeBytes: effectiveTargetSizeBytes,
-              format: format ? `image/${format}` : undefined,
-            });
-            blob = result.blob;
-            width = result.width;
-            height = result.height;
-            originalWidth = result.originalWidth;
-            originalHeight = result.originalHeight;
-            note = result.note;
-          } else {
-            const { resizeImage } = await import('../lib/resize');
-            const result = await resizeImage({
-              file,
-              targetSizeBytes: effectiveTargetSizeBytes,
-            });
-            blob = result.blob;
-            width = result.width;
-            height = result.height;
-            originalWidth = result.originalWidth;
-            originalHeight = result.originalHeight;
-            note = result.note;
-          }
+          const { compressImage } = await import('../lib/compress');
+          const isPng = file.type === 'image/png';
+          const strategy = isPng && pngChoice !== 'none' ? pngChoice as 'webp' | 'png-scale' : 'auto';
+          const result = await compressImage({
+            file,
+            targetSizeBytes: effectiveTargetSizeBytes,
+            format: format ? `image/${format}` : undefined,
+            pngStrategy: strategy,
+            onProgress: (p) => {
+              const fileBase = Math.round((index / files.length) * 100);
+              const fileShare = Math.round((1 / files.length) * 100);
+              setProgress(Math.min(100, fileBase + Math.round((p / 100) * fileShare)));
+            },
+          });
+          blob = result.blob;
+          width = result.width;
+          height = result.height;
+          originalWidth = result.originalWidth;
+          originalHeight = result.originalHeight;
+          note = result.note;
+          outputFormat = result.outputFormat;
         } else {
           blob = file;
           const fallbackDimensions = await readImageDimensions(file);
@@ -263,6 +270,7 @@ export default function ImageProcessor({
           originalWidth,
           originalHeight,
           note,
+          outputFormat,
         });
         setProgress(Math.round(((index + 1) / files.length) * 100));
       }
@@ -281,13 +289,18 @@ export default function ImageProcessor({
     files,
     forceCanvasSize,
     format,
+    pngChoice,
     resizeMode,
   ]);
 
   const downloadFile = useCallback((result: ProcessedFile) => {
     const anchor = document.createElement('a');
     anchor.href = result.url;
-    anchor.download = result.name;
+    let downloadName = result.name;
+    if (result.outputFormat === 'image/webp' && !downloadName.endsWith('.webp')) {
+      downloadName = downloadName.replace(/\.[^.]+$/, '.webp');
+    }
+    anchor.download = downloadName;
     anchor.click();
   }, []);
 
@@ -298,6 +311,7 @@ export default function ImageProcessor({
     setStatus('idle');
     setProgress(0);
     setError('');
+    setPngChoice('none');
   }, [results]);
 
   return (
@@ -482,6 +496,37 @@ export default function ImageProcessor({
             ))}
           </div>
           <div className="p-3 border-t border-stone-100">
+            {pngChoice === 'pending' && effectiveTargetSizeBytes && (
+              <div className="mb-3 p-3 bg-amber-50 border border-amber-200 rounded-xl">
+                <p className="text-sm font-medium text-amber-800 mb-2">
+                  PNG files detected — choose compression method:
+                </p>
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setPngChoice('webp')}
+                    className="flex-1 py-2 px-3 text-xs font-medium rounded-lg border border-teal-300 bg-teal-50 text-teal-700 hover:bg-teal-100 transition-colors"
+                  >
+                    Convert to WebP (keep dimensions)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setPngChoice('png-scale')}
+                    className="flex-1 py-2 px-3 text-xs font-medium rounded-lg border border-stone-300 bg-stone-50 text-stone-700 hover:bg-stone-100 transition-colors"
+                  >
+                    Keep PNG (may reduce dimensions)
+                  </button>
+                </div>
+              </div>
+            )}
+            {pngChoice !== 'none' && pngChoice !== 'pending' && effectiveTargetSizeBytes && (
+              <div className="mb-3 flex items-center gap-2 px-3 py-2 bg-teal-50 border border-teal-200 rounded-lg">
+                <span className="text-xs text-teal-700">
+                  PNG strategy: <strong>{pngChoice === 'webp' ? 'Convert to WebP' : 'Keep PNG (scale)'}</strong>
+                </span>
+                <button type="button" onClick={() => setPngChoice('pending')} className="text-xs text-teal-500 hover:text-teal-700 underline ml-auto">Change</button>
+              </div>
+            )}
             <button
               onClick={processFiles}
               className="w-full py-3.5 bg-gradient-to-r from-teal-600 to-teal-500 text-white rounded-xl font-[var(--font-heading)] font-semibold text-[15px] shadow-soft hover:shadow-soft-lg hover:from-teal-700 hover:to-teal-600 active:scale-[0.99] transition-all duration-200"
@@ -563,6 +608,12 @@ export default function ImageProcessor({
                       {result.originalWidth} x {result.originalHeight}px
                       <span className="mx-1.5 text-stone-300">-&gt;</span>
                       {result.width} x {result.height}px
+                      {result.outputFormat && (
+                        <span className="ml-2 text-blue-600 font-medium">Converted to WebP</span>
+                      )}
+                      {!result.outputFormat && result.width !== result.originalWidth && result.height !== result.originalHeight && (
+                        <span className="ml-2 text-amber-600 font-medium">Dimensions changed</span>
+                      )}
                     </p>
                     {result.note && (
                       <p className="text-xs text-stone-500 mt-2">{result.note}</p>

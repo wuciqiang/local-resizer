@@ -290,6 +290,26 @@ async function resizeToTargetFileSize(args: {
 
   const allowedDifference = targetSizeBytes * tolerance;
   const upperBound = targetSizeBytes + allowedDifference;
+
+  if (outputType !== 'image/png') {
+    const compressed = await compressImage({
+      file,
+      targetSizeBytes,
+      format: outputType,
+      tolerance,
+    });
+    if (compressed.compressedSize <= upperBound) {
+      return {
+        blob: compressed.blob,
+        width: compressed.width,
+        height: compressed.height,
+        originalWidth,
+        originalHeight,
+        note: compressed.note,
+      };
+    }
+  }
+
   const baseQuality = getDefaultQuality(outputType);
   let low = 0.05;
   let high = 1;
