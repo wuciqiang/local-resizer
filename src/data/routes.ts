@@ -255,8 +255,8 @@ function buildCompressRoute(format: Format, size: string): RouteConfig {
     targetSizeBytes: parseSize(size),
     tier: 4,
     seo: {
-      title: `Compress ${formatName} to ${sizeLabel} Locally | LocalResizer`,
-      description: `Compress a static ${formatName} image toward ${sizeLabel} in your browser. No upload, no account, and no server processing.`,
+      title: `Compress ${formatName} to ${sizeLabel} Online Free - No Upload | LocalResizer`,
+      description: `Free online ${formatName} compressor to ${sizeLabel}. Process images in your browser with zero upload. Fast, private, and secure. Works offline after first load.`,
       h1: `Compress ${formatName} to ${sizeLabel}`,
       subtitle: isPng
         ? `Reduce PNG file size toward ${sizeLabel} locally while keeping PNG output.`
@@ -387,8 +387,8 @@ function generateActiveRoutes(): RouteConfig[] {
         targetSizeBytes: parseSize(size),
         tier: 4,
         seo: {
-          title: `Resize Image to ${sizeLabel} Locally | LocalResizer`,
-          description: `Resize a static image toward ${sizeLabel} in your browser. Works with JPEG, PNG, and WebP images only.`,
+          title: `Resize Image to ${sizeLabel} Online Free - Browser Tool | LocalResizer`,
+          description: `Resize any image to ${sizeLabel} in your browser. Supports JPEG, PNG, WebP. No upload required. Privacy-first tool that works completely offline.`,
           h1: `Resize Image to ${sizeLabel}`,
           subtitle: `Target a ${sizeLabel} file-size budget locally while keeping the image usable.`,
         },
@@ -418,8 +418,8 @@ function generateActiveRoutes(): RouteConfig[] {
         dimensions: { width: asset.width, height: asset.height },
         tier: 4,
         seo: {
-          title: `Resize ${platformName} ${assetName} to ${asset.width} x ${asset.height} | LocalResizer`,
-          description: `Create an exact ${asset.width} x ${asset.height} ${platformName} ${assetName} image locally in your browser. Static images only.`,
+          title: `${platformName} ${assetName} Size: ${asset.width}x${asset.height} Resizer - Free Tool | LocalResizer`,
+          description: `Create perfect ${asset.width}x${asset.height} ${platformName} ${assetName} images in your browser. No upload, no signup. Privacy-first resizer for social media assets.`,
           h1: `Resize ${platformName} ${assetName} to ${asset.width} x ${asset.height}`,
           subtitle: `Export an exact ${asset.width} x ${asset.height} canvas locally with no server upload.`,
         },
