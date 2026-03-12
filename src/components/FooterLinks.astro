@@ -1,11 +1,13 @@
 ---
+import { getRouteBySlug } from '../data/routes';
+
 interface Props {
   links: string[];
 }
 const { links } = Astro.props;
 
-function prettify(slug: string): string {
-  return slug.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+function getLabel(slug: string): string {
+  return getRouteBySlug(slug)?.seo.h1 ?? slug.replace(/-/g, ' ').replace(/\b\w/g, (char) => char.toUpperCase());
 }
 ---
 {links.length > 0 && (
@@ -13,12 +15,12 @@ function prettify(slug: string): string {
     <div class="border-t border-stone-200 pt-10">
       <h2 class="font-[var(--font-heading)] text-lg font-semibold text-stone-700 mb-4">Related Tools</h2>
       <div class="flex flex-wrap gap-2">
-        {links.map(slug => (
+        {links.map((slug) => (
           <a
             href={`/${slug}`}
             class="inline-flex items-center px-3.5 py-2 bg-white border border-stone-200 text-stone-600 text-sm rounded-xl no-underline hover:border-teal-300 hover:text-teal-700 hover:bg-teal-50/50 hover:shadow-soft transition-all duration-200"
           >
-            {prettify(slug)}
+            {getLabel(slug)}
           </a>
         ))}
       </div>

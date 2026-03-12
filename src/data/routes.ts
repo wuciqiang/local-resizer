@@ -1,6 +1,7 @@
 export type Action = 'compress' | 'resize';
-export type Format = 'jpeg' | 'png' | 'webp' | 'gif';
+export type Format = 'jpeg' | 'png' | 'webp';
 export type Tier = 1 | 2 | 3 | 4;
+export type ResizeMode = 'fit' | 'contain' | 'cover' | 'stretch';
 
 export interface Dimensions {
   width: number;
@@ -35,18 +36,21 @@ export interface RouteConfig {
   relatedLinks: string[];
   acceptFormats: string[];
   maxFileSize: number;
+  resizeMode?: ResizeMode;
+  forceCanvasSize?: boolean;
 }
 
-const FORMATS: Format[] = ['jpeg', 'png', 'webp', 'gif'];
+const FORMATS: Format[] = ['jpeg', 'png', 'webp'];
 
-const SIZE_TIERS_KB = [10, 15, 20, 30, 40, 50, 60, 70, 80, 90, 100,
-  120, 150, 200, 250, 300, 350, 400, 450, 500, 600, 700, 800, 900,
-  1000, 1500, 2000];
+const SIZE_TIERS_KB = [
+  10, 15, 20, 30, 40, 50, 60, 70, 80, 90, 100, 120, 150, 200, 250, 300,
+  350, 400, 450, 500, 600, 700, 800, 900, 1000, 1500, 2000,
+];
 const SIZE_TIERS_MB = [1, 2, 3, 4, 5, 8, 10];
 
 const RESIZE_IMAGE_SIZES = [
-  '20kb','30kb','50kb','80kb','100kb','150kb','200kb','250kb','300kb','400kb',
-  '500kb','600kb','800kb','1mb','1.5mb','2mb','3mb','5mb','8mb','10mb',
+  '20kb', '30kb', '50kb', '80kb', '100kb', '150kb', '200kb', '250kb', '300kb', '400kb',
+  '500kb', '600kb', '800kb', '1mb', '1.5mb', '2mb', '3mb', '5mb', '8mb', '10mb',
 ];
 
 interface PlatformAsset {
@@ -65,7 +69,6 @@ const PLATFORM_ASSETS: PlatformAsset[] = [
   { platform: 'instagram', asset: 'story', width: 1080, height: 1920 },
   { platform: 'instagram', asset: 'profile-photo', width: 320, height: 320 },
   { platform: 'discord', asset: 'avatar', width: 128, height: 128 },
-  { platform: 'discord', asset: 'gif', width: 256, height: 256, maxFileSize: 8 * 1024 * 1024 },
   { platform: 'discord', asset: 'emoji', width: 128, height: 128, maxFileSize: 256 * 1024 },
   { platform: 'discord', asset: 'banner', width: 960, height: 540 },
   { platform: 'twitter', asset: 'header', width: 1500, height: 500 },
@@ -85,230 +88,265 @@ const PLATFORM_ASSETS: PlatformAsset[] = [
 ];
 
 const MIME_MAP: Record<Format, string> = {
-  jpeg: 'image/jpeg', png: 'image/png', webp: 'image/webp', gif: 'image/gif',
+  jpeg: 'image/jpeg',
+  png: 'image/png',
+  webp: 'image/webp',
 };
 
-export function parseSize(s: string): number {
-  const lower = s.toLowerCase();
-  const num = parseFloat(lower);
-  if (lower.endsWith('mb')) return Math.round(num * 1024 * 1024);
-  return Math.round(num * 1024);
+export const STATIC_IMAGE_ACCEPT_FORMATS = Object.values(MIME_MAP);
+
+export function parseSize(value: string): number {
+  const lower = value.toLowerCase();
+  const amount = Number.parseFloat(lower);
+  if (Number.isNaN(amount) || amount <= 0) {
+    throw new Error(`Invalid size value: ${value}`);
+  }
+
+  if (lower.endsWith('mb')) {
+    return Math.round(amount * 1024 * 1024);
+  }
+
+  return Math.round(amount * 1024);
 }
 
-export function formatSizeLabel(s: string): string {
-  return s.toUpperCase().replace('KB', 'KB').replace('MB', 'MB');
+export function formatSizeLabel(value: string): string {
+  return value.toUpperCase();
 }
 
-function formatLabel(f: Format): string {
-  return f === 'jpeg' ? 'JPEG' : f.toUpperCase();
+function formatLabel(format: Format): string {
+  return format === 'jpeg' ? 'JPEG' : format.toUpperCase();
 }
 
-function capitalize(s: string): string {
-  return s.charAt(0).toUpperCase() + s.slice(1);
+function capitalize(value: string): string {
+  return value.charAt(0).toUpperCase() + value.slice(1);
 }
 
-function assetLabel(s: string): string {
-  return s.split('-').map(capitalize).join(' ');
+function platformLabel(value: string): string {
+  const labels: Record<string, string> = {
+    youtube: 'YouTube',
+    linkedin: 'LinkedIn',
+    tiktok: 'TikTok',
+    whatsapp: 'WhatsApp',
+  };
+
+  return labels[value] ?? capitalize(value);
 }
 
-function compressFaq(fmt: string, size: string): FaqItem[] {
-  const fl = formatLabel(fmt as Format);
-  const sl = formatSizeLabel(size);
+function assetLabel(value: string): string {
+  return value.split('-').map(capitalize).join(' ');
+}
+
+function compressFaq(format: Format, size: string): FaqItem[] {
+  const formatName = formatLabel(format);
+  const sizeLabel = formatSizeLabel(size);
+
+  if (format === 'png') {
+    return [
+      {
+        question: `Does this page keep my ${formatName} as a PNG file?`,
+        answer: `Yes. The tool keeps the output as PNG and reduces file size locally in your browser. Because PNG does not use the same quality slider as JPEG, the tool may reduce pixel dimensions to move toward ${sizeLabel}.`,
+      },
+      {
+        question: `How close can a PNG get to ${sizeLabel}?`,
+        answer: `The tool targets ${sizeLabel} as closely as practical while keeping PNG output. Results depend on the image content, so some files may land a little above or below the target.`,
+      },
+      {
+        question: `What happens if my PNG is already smaller than ${sizeLabel}?`,
+        answer: `If the image is already within the requested size budget, the original file is kept and no extra reduction is applied.`,
+      },
+      {
+        question: `Why can the dimensions change on PNG pages?`,
+        answer: `PNG size is strongly tied to the number of pixels. When a PNG needs a much smaller file size, reducing the canvas dimensions is often the most reliable way to get there without converting to another format.`,
+      },
+      {
+        question: 'Is the PNG processed privately?',
+        answer: 'Yes. Static image processing happens entirely in your browser. Nothing is uploaded to our servers.',
+      },
+    ];
+  }
+
   return [
-    { question: `Will compressing my ${fl} to ${sl} reduce quality?`, answer: `Our tool uses intelligent quality optimization to reach ${sl} with minimal visible quality loss. The algorithm finds the best balance between file size and visual fidelity.` },
-    { question: `How accurate is the ${sl} target?`, answer: `The compression targets ${sl} within ±5% accuracy. The binary search algorithm iterates until the output is as close to ${sl} as possible.` },
-    { question: `Can I compress multiple ${fl} files to ${sl} at once?`, answer: `Yes, you can upload up to 20 images and compress them all to ${sl} in batch. Each file is processed independently in your browser.` },
-    { question: `Is it safe to compress images on this site?`, answer: `Absolutely. All processing happens 100% in your browser. Your files never leave your device — no server upload, no data collection.` },
-    { question: `What if my ${fl} is already smaller than ${sl}?`, answer: `If your file is already under ${sl}, the tool will notify you. There's no need to compress further.` },
+    {
+      question: `How close can this tool get my ${formatName} to ${sizeLabel}?`,
+      answer: `The tool targets ${sizeLabel} with a binary-search quality pass. Most images land very close to the requested size, and the result is usually within about five percent when the source image allows it.`,
+    },
+    {
+      question: `Will compressing a ${formatName} to ${sizeLabel} lower image quality?`,
+      answer: `Some quality reduction is expected when you ask for a smaller file. The tool searches for the lightest compression that still reaches the target size budget.`,
+    },
+    {
+      question: `What happens if my ${formatName} is already smaller than ${sizeLabel}?`,
+      answer: `The original file is kept. The page does not try to make already-small images smaller unless it needs to.`,
+    },
+    {
+      question: `Can I compress more than one ${formatName} at a time?`,
+      answer: `Yes. The current uploader accepts up to 20 static images in one batch and processes them one by one in your browser.`,
+    },
+    {
+      question: 'Is this page private to use?',
+      answer: 'Yes. All static image processing happens locally in the browser, with no server upload.',
+    },
   ];
 }
 
 function resizeImageFaq(size: string): FaqItem[] {
-  const sl = formatSizeLabel(size);
+  const sizeLabel = formatSizeLabel(size);
   return [
-    { question: `How does resizing an image to ${sl} work?`, answer: `The tool proportionally scales your image dimensions down, then optimizes quality to reach exactly ${sl}. Aspect ratio is preserved by default.` },
-    { question: `Will resizing to ${sl} affect image quality?`, answer: `Some quality reduction is expected when targeting a smaller file size. Our algorithm minimizes quality loss while meeting the ${sl} target.` },
-    { question: `What image formats are supported?`, answer: `You can resize JPEG, PNG, WebP, and GIF images. The output format matches your input by default.` },
-    { question: `Can I resize multiple images to ${sl}?`, answer: `Yes, batch processing supports up to 20 images at once. Each is resized to ${sl} independently.` },
+    {
+      question: `How does this page resize an image toward ${sizeLabel}?`,
+      answer: `The tool scales down the image dimensions and, for JPEG or WebP files, can fine-tune the output quality. That combination helps the result move toward the requested file-size budget.`,
+    },
+    {
+      question: `Will the page stretch my image to reach ${sizeLabel}?`,
+      answer: 'No. The image aspect ratio is preserved on these size-target pages. The tool makes the image smaller without distorting it.',
+    },
+    {
+      question: `What happens if my image is already below ${sizeLabel}?`,
+      answer: `The original file is kept so the page does not enlarge or recompress an image that is already under the target.`,
+    },
+    {
+      question: 'Which files are supported here?',
+      answer: 'These pages currently support static JPEG, PNG, and WebP images only.',
+    },
+    {
+      question: `Can I resize multiple images toward ${sizeLabel} in one go?`,
+      answer: 'Yes. The current uploader processes up to 20 static images in a single batch.',
+    },
   ];
 }
 
-function platformFaq(platform: string, asset: string, w: number, h: number): FaqItem[] {
-  const pl = capitalize(platform);
-  const al = assetLabel(asset);
+function platformFaq(platform: string, asset: string, width: number, height: number): FaqItem[] {
+  const platformName = platformLabel(platform);
+  const assetName = assetLabel(asset);
   return [
-    { question: `What is the recommended ${pl} ${al} size?`, answer: `${pl} recommends ${w}×${h} pixels for ${al.toLowerCase()}. Our tool resizes your image to exactly these dimensions.` },
-    { question: `What file formats does ${pl} accept for ${al.toLowerCase()}?`, answer: `${pl} accepts JPEG, PNG, and WebP for most image uploads. GIF is supported for animated content where applicable.` },
-    { question: `Will my ${al.toLowerCase()} look blurry after resizing?`, answer: `Our tool uses high-quality resampling. For best results, start with an image at least as large as ${w}×${h} pixels.` },
-    { question: `Is this tool free to use?`, answer: `Yes, completely free with no watermarks. All processing happens in your browser — no account or payment required.` },
+    {
+      question: `Does this page output exactly ${width} x ${height} pixels?`,
+      answer: `Yes. The exported image uses an exact ${width} x ${height} canvas so the final file matches the requested platform dimensions.`,
+    },
+    {
+      question: `What happens if my source image ratio does not match the ${platformName} ${assetName} ratio?`,
+      answer: `The tool keeps the whole image visible by fitting it inside the target canvas without distortion. If the ratios differ, padding may be added around the image.`,
+    },
+    {
+      question: `Which files can I use for a ${platformName} ${assetName}?`,
+      answer: 'The page currently supports static JPEG, PNG, and WebP images only.',
+    },
+    {
+      question: `Does the page crop the image automatically?`,
+      answer: 'No automatic cropping is applied on these platform pages. The current behavior keeps the full image visible on the exact output canvas.',
+    },
+    {
+      question: 'Is the resize private?',
+      answer: 'Yes. The image is resized locally in your browser and is never uploaded to our servers.',
+    },
   ];
 }
 
-// PLACEHOLDER_ROUTE_GENERATORS
+function buildCompressRoute(format: Format, size: string): RouteConfig {
+  const formatName = formatLabel(format);
+  const sizeLabel = formatSizeLabel(size);
+  const isPng = format === 'png';
 
-function generateCompressRoutes(): RouteConfig[] {
-  const routes: RouteConfig[] = [];
-  for (const fmt of FORMATS) {
-    const fl = formatLabel(fmt);
-    const allSizes = [
-      ...SIZE_TIERS_KB.map(k => `${k}kb`),
-      ...SIZE_TIERS_MB.map(m => `${m}mb`),
-    ];
-    for (const size of allSizes) {
-      const sl = formatSizeLabel(size);
-      const slug = `compress-${fmt}-to-${size}`;
-      routes.push({
-        slug,
-        action: 'compress',
-        format: fmt,
-        targetSize: size,
-        targetSizeBytes: parseSize(size),
-        tier: 4,
-        seo: {
-          title: `Compress ${fl} to ${sl} — Free Online Tool | LocalResizer`,
-          description: `Free online tool to compress ${fl} to ${sl}. No upload needed — processed 100% in your browser. Fast, secure, and private.`,
-          h1: `Compress ${fl} to ${sl} Instantly`,
-          subtitle: `Free, fast, 100% in-browser. Your files never leave your device.`,
-        },
-        faq: compressFaq(fmt, size),
-        howToSteps: [
-          `Upload your ${fl} image`,
-          `Set target size to ${sl} and click Process`,
-          `Download your optimized file`,
-        ],
-        relatedLinks: [],
-        acceptFormats: [MIME_MAP[fmt]],
-        maxFileSize: 50 * 1024 * 1024,
-      });
-    }
-  }
-  return routes;
+  return {
+    slug: `compress-${format}-to-${size}`,
+    action: 'compress',
+    format,
+    targetSize: size,
+    targetSizeBytes: parseSize(size),
+    tier: 4,
+    seo: {
+      title: `Compress ${formatName} to ${sizeLabel} Locally | LocalResizer`,
+      description: `Compress a static ${formatName} image toward ${sizeLabel} in your browser. No upload, no account, and no server processing.`,
+      h1: `Compress ${formatName} to ${sizeLabel}`,
+      subtitle: isPng
+        ? `Reduce PNG file size toward ${sizeLabel} locally while keeping PNG output.`
+        : `Target a ${sizeLabel} ${formatName} output locally with no server upload.`,
+    },
+    faq: compressFaq(format, size),
+    howToSteps: [
+      `Upload your static ${formatName} image`,
+      `Process the file toward the ${sizeLabel} target`,
+      'Download the optimized result',
+    ],
+    relatedLinks: [],
+    acceptFormats: [MIME_MAP[format]],
+    maxFileSize: 50 * 1024 * 1024,
+  };
 }
 
-function generateResizeImageRoutes(): RouteConfig[] {
-  return RESIZE_IMAGE_SIZES.map(size => {
-    const sl = formatSizeLabel(size);
-    return {
-      slug: `resize-image-to-${size}`,
-      action: 'resize' as Action,
-      targetSize: size,
-      targetSizeBytes: parseSize(size),
-      tier: 4 as Tier,
-      seo: {
-        title: `Resize Image to ${sl} Online Free | LocalResizer`,
-        description: `Free online tool to resize image to ${sl}. No upload needed — processed 100% in your browser. Fast, secure, and private.`,
-        h1: `Resize Image to ${sl}`,
-        subtitle: `Resize any image to ${sl}. 100% free, 100% private.`,
-      },
-      faq: resizeImageFaq(size),
-      howToSteps: [
-        'Upload your image (JPEG, PNG, WebP, or GIF)',
-        `Set target size to ${sl} and click Process`,
-        'Download your resized file',
-      ],
-      relatedLinks: [],
-      acceptFormats: Object.values(MIME_MAP),
-      maxFileSize: 50 * 1024 * 1024,
-    };
-  });
-}
-
-function generatePlatformRoutes(): RouteConfig[] {
-  return PLATFORM_ASSETS.map(p => {
-    const pl = capitalize(p.platform);
-    const al = assetLabel(p.asset);
-    return {
-      slug: `resize-${p.platform}-${p.asset}`,
-      action: 'resize' as Action,
-      platform: p.platform,
-      asset: p.asset,
-      dimensions: { width: p.width, height: p.height },
-      tier: 4 as Tier,
-      seo: {
-        title: `Resize ${pl} ${al} (${p.width}×${p.height}) — Free Tool | LocalResizer`,
-        description: `Free online tool to resize images for ${pl} ${al} to ${p.width}×${p.height}. Processed in your browser. No upload to servers.`,
-        h1: `Resize ${pl} ${al} to ${p.width}×${p.height}`,
-        subtitle: `Perfect ${pl} ${al} size, instantly. 100% free and private.`,
-      },
-      faq: platformFaq(p.platform, p.asset, p.width, p.height),
-      howToSteps: [
-        `Upload your image`,
-        `Auto-resize to ${p.width}×${p.height} for ${pl} ${al}`,
-        `Download your perfectly sized image`,
-      ],
-      relatedLinks: [],
-      acceptFormats: Object.values(MIME_MAP),
-      maxFileSize: p.maxFileSize || 50 * 1024 * 1024,
-    };
-  });
-}
-
-// PLACEHOLDER_EXPORTS
 
 function buildRelatedLinks(routes: RouteConfig[]): void {
   const byFormat = new Map<string, RouteConfig[]>();
   const bySize = new Map<string, RouteConfig[]>();
   const byPlatform = new Map<string, RouteConfig[]>();
 
-  for (const r of routes) {
-    if (r.format) {
-      const arr = byFormat.get(r.format) || [];
-      arr.push(r);
-      byFormat.set(r.format, arr);
+  for (const route of routes) {
+    if (route.format) {
+      const items = byFormat.get(route.format) ?? [];
+      items.push(route);
+      byFormat.set(route.format, items);
     }
-    if (r.targetSize) {
-      const arr = bySize.get(r.targetSize) || [];
-      arr.push(r);
-      bySize.set(r.targetSize, arr);
+
+    if (route.targetSize) {
+      const items = bySize.get(route.targetSize) ?? [];
+      items.push(route);
+      bySize.set(route.targetSize, items);
     }
-    if (r.platform) {
-      const arr = byPlatform.get(r.platform) || [];
-      arr.push(r);
-      byPlatform.set(r.platform, arr);
+
+    if (route.platform) {
+      const items = byPlatform.get(route.platform) ?? [];
+      items.push(route);
+      byPlatform.set(route.platform, items);
     }
   }
 
-  for (const r of routes) {
+  for (const route of routes) {
     const links = new Set<string>();
-    if (r.format && byFormat.has(r.format)) {
-      for (const other of byFormat.get(r.format)!) {
-        if (other.slug !== r.slug) links.add(other.slug);
-        if (links.size >= 4) break;
+
+    if (route.format) {
+      for (const other of byFormat.get(route.format) ?? []) {
+        if (other.slug !== route.slug) {
+          links.add(other.slug);
+        }
+        if (links.size >= 4) {
+          break;
+        }
       }
     }
-    if (r.targetSize && bySize.has(r.targetSize)) {
-      for (const other of bySize.get(r.targetSize)!) {
-        if (other.slug !== r.slug) links.add(other.slug);
-        if (links.size >= 8) break;
+
+    if (route.targetSize) {
+      for (const other of bySize.get(route.targetSize) ?? []) {
+        if (other.slug !== route.slug) {
+          links.add(other.slug);
+        }
+        if (links.size >= 8) {
+          break;
+        }
       }
     }
-    if (r.platform && byPlatform.has(r.platform)) {
-      for (const other of byPlatform.get(r.platform)!) {
-        if (other.slug !== r.slug) links.add(other.slug);
-        if (links.size >= 12) break;
+
+    if (route.platform) {
+      for (const other of byPlatform.get(route.platform) ?? []) {
+        if (other.slug !== route.slug) {
+          links.add(other.slug);
+        }
+        if (links.size >= 12) {
+          break;
+        }
       }
     }
-    r.relatedLinks = Array.from(links).slice(0, 12);
+
+    route.relatedLinks = Array.from(links).slice(0, 12);
   }
 }
 
-const compressRoutes = generateCompressRoutes();
-const resizeImageRoutes = generateResizeImageRoutes();
-const platformRoutes = generatePlatformRoutes();
-
-export const allRoutes: RouteConfig[] = [
-  ...compressRoutes,
-  ...resizeImageRoutes,
-  ...platformRoutes,
-];
-
-buildRelatedLinks(allRoutes);
-
-export function getRouteBySlug(slug: string): RouteConfig | undefined {
-  return allRoutes.find(r => r.slug === slug);
+function pruneRelatedLinks(routes: RouteConfig[], allowedSlugs: string[]): void {
+  const allowed = new Set(allowedSlugs);
+  for (const route of routes) {
+    route.relatedLinks = route.relatedLinks.filter((slug) => allowed.has(slug));
+  }
 }
 
-// Phase 0 P0 slugs
 export const PHASE0_SLUGS = [
   'compress-jpeg-to-50kb',
   'compress-jpeg-to-200kb',
@@ -320,4 +358,96 @@ export const PHASE0_SLUGS = [
   'resize-youtube-thumbnail',
 ];
 
-export const phase0Routes = allRoutes.filter(r => PHASE0_SLUGS.includes(r.slug));
+const ACTIVE_SLUGS = new Set(PHASE0_SLUGS);
+
+function generateActiveRoutes(): RouteConfig[] {
+  const routes: RouteConfig[] = [];
+
+  for (const format of FORMATS) {
+    const allSizes = [
+      ...SIZE_TIERS_KB.map((size) => `${size}kb`),
+      ...SIZE_TIERS_MB.map((size) => `${size}mb`),
+    ];
+    for (const size of allSizes) {
+      const slug = `compress-${format}-to-${size}`;
+      if (ACTIVE_SLUGS.has(slug)) {
+        routes.push(buildCompressRoute(format, size));
+      }
+    }
+  }
+
+  for (const size of RESIZE_IMAGE_SIZES) {
+    const slug = `resize-image-to-${size}`;
+    if (ACTIVE_SLUGS.has(slug)) {
+      const sizeLabel = formatSizeLabel(size);
+      routes.push({
+        slug,
+        action: 'resize',
+        targetSize: size,
+        targetSizeBytes: parseSize(size),
+        tier: 4,
+        seo: {
+          title: `Resize Image to ${sizeLabel} Locally | LocalResizer`,
+          description: `Resize a static image toward ${sizeLabel} in your browser. Works with JPEG, PNG, and WebP images only.`,
+          h1: `Resize Image to ${sizeLabel}`,
+          subtitle: `Target a ${sizeLabel} file-size budget locally while keeping the image usable.`,
+        },
+        faq: resizeImageFaq(size),
+        howToSteps: [
+          'Upload a static JPEG, PNG, or WebP image',
+          `Resize the image toward the ${sizeLabel} target`,
+          'Download the resized result',
+        ],
+        relatedLinks: [],
+        acceptFormats: STATIC_IMAGE_ACCEPT_FORMATS,
+        maxFileSize: 50 * 1024 * 1024,
+      });
+    }
+  }
+
+  for (const asset of PLATFORM_ASSETS) {
+    const slug = `resize-${asset.platform}-${asset.asset}`;
+    if (ACTIVE_SLUGS.has(slug)) {
+      const platformName = platformLabel(asset.platform);
+      const assetName = assetLabel(asset.asset);
+      routes.push({
+        slug,
+        action: 'resize',
+        platform: asset.platform,
+        asset: asset.asset,
+        dimensions: { width: asset.width, height: asset.height },
+        tier: 4,
+        seo: {
+          title: `Resize ${platformName} ${assetName} to ${asset.width} x ${asset.height} | LocalResizer`,
+          description: `Create an exact ${asset.width} x ${asset.height} ${platformName} ${assetName} image locally in your browser. Static images only.`,
+          h1: `Resize ${platformName} ${assetName} to ${asset.width} x ${asset.height}`,
+          subtitle: `Export an exact ${asset.width} x ${asset.height} canvas locally with no server upload.`,
+        },
+        faq: platformFaq(asset.platform, asset.asset, asset.width, asset.height),
+        howToSteps: [
+          'Upload a static image',
+          `Create the exact ${asset.width} x ${asset.height} output canvas`,
+          'Download the final file',
+        ],
+        relatedLinks: [],
+        acceptFormats: STATIC_IMAGE_ACCEPT_FORMATS,
+        maxFileSize: asset.maxFileSize ?? 50 * 1024 * 1024,
+        resizeMode: 'contain',
+        forceCanvasSize: true,
+      });
+    }
+  }
+
+  return routes;
+}
+
+export const allRoutes: RouteConfig[] = generateActiveRoutes();
+
+buildRelatedLinks(allRoutes);
+
+export function getRouteBySlug(slug: string): RouteConfig | undefined {
+  return allRoutes.find((route) => route.slug === slug);
+}
+
+export const phase0Routes = allRoutes;
+pruneRelatedLinks(phase0Routes, PHASE0_SLUGS);

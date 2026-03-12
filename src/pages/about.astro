@@ -1,22 +1,33 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 ---
-<BaseLayout title="About — LocalResizer" description="Learn about LocalResizer, a free browser-based image processing tool that prioritizes your privacy.">
+<BaseLayout title="About - LocalResizer" description="Learn about LocalResizer, a browser-based static image tool focused on privacy and practical image tasks.">
   <article class="max-w-3xl mx-auto px-4 py-16 prose prose-slate">
     <h1>About LocalResizer</h1>
-    <p>LocalResizer is a free online image processing tool that works entirely in your browser. Unlike traditional image tools that upload your files to remote servers, LocalResizer processes everything locally on your device.</p>
+    <p>LocalResizer is a browser-based tool for static image resizing and compression. The current site focuses on practical JPEG, PNG, and WebP tasks that can be completed entirely on your device.</p>
     <h2>How It Works</h2>
-    <p>We use the browser's native Canvas API and modern compression algorithms to resize and compress your images. When you drop a file into our tool, it never leaves your computer — all processing happens right in your browser tab.</p>
-    <h2>Our Mission</h2>
-    <p>We believe image processing should be fast, free, and private. No accounts, no watermarks, no data collection. Just drag, process, and download.</p>
-    <h2>Supported Formats</h2>
+    <p>The site uses browser-native canvas processing so your image stays in the tab where you opened the tool. There is no server upload step for the current image workflow.</p>
+    <h2>What the Site Covers Right Now</h2>
     <ul>
-      <li><strong>JPEG</strong> — Lossy compression with quality control</li>
-      <li><strong>PNG</strong> — Lossless format with transparency support</li>
-      <li><strong>WebP</strong> — Modern format with superior compression</li>
-      <li><strong>GIF</strong> — Animation support (coming soon)</li>
+      <li><strong>General homepage tool</strong> for quick file-size compression or dimension-based resizing</li>
+      <li><strong>Target-size pages</strong> such as 50 KB, 100 KB, 200 KB, and 2 MB workflows</li>
+      <li><strong>Exact canvas pages</strong> for current YouTube banner and thumbnail dimensions</li>
     </ul>
+    <h2>Supported Files</h2>
+    <ul>
+      <li><strong>JPEG</strong> for photos and lighter lossy compression</li>
+      <li><strong>PNG</strong> for graphics and transparent images</li>
+      <li><strong>WebP</strong> for modern static image compression</li>
+    </ul>
+    <h2>What Each Live Page Type Means</h2>
+    <ul>
+      <li><strong>Compress pages</strong> aim for a target file size locally, with JPEG and WebP using quality search and PNG staying in PNG format.</li>
+      <li><strong>Resize-to-size pages</strong> reduce image dimensions toward a target file-size budget while keeping the original aspect ratio.</li>
+      <li><strong>Exact canvas pages</strong> create a fixed output size for current YouTube artwork and keep the whole image visible inside that canvas.</li>
+    </ul>
+    <h2>Current Public Limits</h2>
+    <p>The public scope is limited to static image workflows for JPEG, PNG, and WebP files. Animated formats, video tools, and automatic crop workflows are not part of the current release.</p>
     <h2>Contact</h2>
-    <p>Questions or feedback? Reach us at <a href="/contact">our contact page</a>.</p>
+    <p>Questions or feedback? Reach us at <a href="/contact">the contact page</a>.</p>
   </article>
 </BaseLayout>

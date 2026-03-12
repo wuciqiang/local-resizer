@@ -1,10 +1,8 @@
 @import "tailwindcss";
 
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap');
-
 @theme {
-  --font-heading: 'Outfit', sans-serif;
-  --font-body: 'Plus Jakarta Sans', sans-serif;
+  --font-heading: Inter, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --font-body: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   --color-primary: #0d9488;
   --color-primary-hover: #0f766e;
   --color-primary-light: #ccfbf1;
@@ -40,67 +38,122 @@ h1, h2, h3, h4, h5, h6 {
   letter-spacing: -0.02em;
 }
 
-/* Prose styling for static pages */
 .prose {
   font-family: var(--font-body);
   line-height: 1.75;
 }
-.prose h1 { font-family: var(--font-heading); font-size: 2.25rem; font-weight: 700; letter-spacing: -0.03em; margin-bottom: 1rem; }
-.prose h2 { font-family: var(--font-heading); font-size: 1.5rem; font-weight: 600; letter-spacing: -0.02em; margin-top: 2.5rem; margin-bottom: 0.75rem; }
-.prose p { margin-bottom: 1.25rem; color: #44403c; }
-.prose ul { padding-left: 1.5rem; margin-bottom: 1.25rem; }
-.prose li { margin-bottom: 0.5rem; color: #44403c; }
-.prose a { color: var(--color-primary); text-decoration: underline; text-underline-offset: 2px; }
-.prose a:hover { color: var(--color-primary-hover); }
-.prose strong { color: var(--color-text-primary); font-weight: 600; }
-.prose em { color: var(--color-text-secondary); }
 
-/* Smooth shadow utility */
+.prose h1 {
+  font-family: var(--font-heading);
+  font-size: 2.25rem;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  margin-bottom: 1rem;
+}
+
+.prose h2 {
+  font-family: var(--font-heading);
+  font-size: 1.5rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  margin-top: 2.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.prose p {
+  margin-bottom: 1.25rem;
+  color: #44403c;
+}
+
+.prose ul {
+  padding-left: 1.5rem;
+  margin-bottom: 1.25rem;
+}
+
+.prose li {
+  margin-bottom: 0.5rem;
+  color: #44403c;
+}
+
+.prose a {
+  color: var(--color-primary);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.prose a:hover {
+  color: var(--color-primary-hover);
+}
+
+.prose strong {
+  color: var(--color-text-primary);
+  font-weight: 600;
+}
+
+.prose em {
+  color: var(--color-text-secondary);
+}
+
 .shadow-soft {
   box-shadow:
     0 1px 2px rgba(28, 25, 23, 0.04),
     0 4px 12px rgba(28, 25, 23, 0.06);
 }
+
 .shadow-soft-lg {
   box-shadow:
     0 2px 4px rgba(28, 25, 23, 0.04),
     0 8px 24px rgba(28, 25, 23, 0.08);
 }
 
-/* Animated gradient border for dropzone */
 @keyframes border-flow {
-  0%, 100% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
 }
+
 .dropzone-active-border {
   background: linear-gradient(135deg, #0d9488, #06b6d4, #0d9488, #06b6d4);
   background-size: 300% 300%;
   animation: border-flow 3s ease infinite;
 }
 
-/* Pulse for processing state */
 @keyframes pulse-soft {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.6; }
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.6;
+  }
 }
+
 .animate-pulse-soft {
   animation: pulse-soft 2s ease-in-out infinite;
 }
 
-/* Fade in animation */
 @keyframes fade-up {
-  from { opacity: 0; transform: translateY(12px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
+
 .animate-fade-up {
   animation: fade-up 0.5s ease-out forwards;
 }
 
-/* Stagger children */
 .stagger-children > * {
   opacity: 0;
   animation: fade-up 0.4s ease-out forwards;
 }
+
 .stagger-children > *:nth-child(1) { animation-delay: 0.05s; }
 .stagger-children > *:nth-child(2) { animation-delay: 0.1s; }
 .stagger-children > *:nth-child(3) { animation-delay: 0.15s; }
@@ -110,7 +163,6 @@ h1, h2, h3, h4, h5, h6 {
 .stagger-children > *:nth-child(7) { animation-delay: 0.35s; }
 .stagger-children > *:nth-child(8) { animation-delay: 0.4s; }
 
-/* Selection color */
 ::selection {
   background: var(--color-primary-light);
   color: var(--color-primary-hover);

@@ -1,56 +1,51 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import ImageProcessor from '../components/ImageProcessor.tsx';
-import { phase0Routes } from '../data/routes';
+import { STATIC_IMAGE_ACCEPT_FORMATS, phase0Routes } from '../data/routes';
 
-const title = 'LocalResizer — Free Online Image Resizer & Compressor | 100% Private';
-const description = 'Resize and compress images instantly in your browser. No uploads, no servers — your files never leave your device. Free, fast, and private.';
+const title = 'Free Local Image Resizer and Compressor for Static Images | LocalResizer';
+const description = 'Resize or compress static JPEG, PNG, and WebP images directly in your browser. No uploads, no server processing, and no account required.';
 ---
 <BaseLayout title={title} description={description}>
-  <!-- Hero -->
   <section class="relative overflow-hidden">
-    <!-- Subtle background pattern -->
     <div class="absolute inset-0 bg-[radial-gradient(circle_at_30%_-10%,rgba(13,148,136,0.06),transparent_50%),radial-gradient(circle_at_70%_120%,rgba(245,158,11,0.04),transparent_50%)]" />
 
     <div class="relative max-w-3xl mx-auto px-5 pt-20 pb-10 text-center">
-      <!-- Badge -->
       <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white border border-stone-200 shadow-soft text-sm mb-8 animate-fade-up">
         <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-        <span class="text-stone-500">100% browser-based</span>
+        <span class="text-stone-500">Static images only</span>
         <span class="text-stone-300">&middot;</span>
-        <span class="text-stone-500">No uploads</span>
+        <span class="text-stone-500">Processed locally</span>
       </div>
 
       <h1 class="font-[var(--font-heading)] text-4xl md:text-[3.25rem] font-extrabold leading-[1.1] tracking-tight text-stone-900 mb-5 animate-fade-up" style="animation-delay: 0.1s">
-        Resize & Compress Images,<br />
+        Resize and Compress Static Images,<br />
         <span class="bg-gradient-to-r from-teal-600 to-emerald-500 bg-clip-text text-transparent">Right in Your Browser</span>
       </h1>
 
       <p class="text-lg text-stone-500 max-w-xl mx-auto mb-3 animate-fade-up" style="animation-delay: 0.15s">
-        Your files never leave your device. No servers, no tracking, no nonsense.
+        Use the homepage tool for quick image work, then jump into the focused pages when you need a specific target such as 50 KB, 200 KB, or YouTube artwork sizes.
       </p>
 
       <p class="text-sm text-stone-400 animate-fade-up" style="animation-delay: 0.2s">
-        Free forever &middot; No sign-up required
+        JPEG, PNG, and WebP only - No sign-up required
       </p>
     </div>
   </section>
 
-  <!-- Processor -->
   <div class="animate-fade-up" style="animation-delay: 0.25s">
     <ImageProcessor
       client:visible
       action="compress"
-      acceptFormats={['image/jpeg', 'image/png', 'image/webp', 'image/gif']}
-      maxFileSize={52428800}
+      acceptFormats={STATIC_IMAGE_ACCEPT_FORMATS}
+      maxFileSize={50 * 1024 * 1024}
     />
   </div>
 
-  <!-- Features -->
   <section class="max-w-4xl mx-auto px-5 py-20">
     <div class="text-center mb-12">
       <span class="inline-block px-3 py-1 rounded-full bg-teal-50 text-teal-700 text-xs font-semibold tracking-wide uppercase mb-3">Why LocalResizer</span>
-      <h2 class="font-[var(--font-heading)] text-2xl md:text-3xl font-bold text-stone-900 tracking-tight">Built for privacy-conscious creators</h2>
+      <h2 class="font-[var(--font-heading)] text-2xl md:text-3xl font-bold text-stone-900 tracking-tight">A focused static-image toolset</h2>
     </div>
     <div class="grid grid-cols-1 md:grid-cols-3 gap-5 stagger-children">
       <div class="bg-white rounded-2xl p-7 shadow-soft border border-stone-100 hover:shadow-soft-lg hover:-translate-y-0.5 transition-all duration-300">
@@ -59,8 +54,8 @@ const description = 'Resize and compress images instantly in your browser. No up
             <rect x="3" y="11" width="18" height="11" rx="2" ry="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" />
           </svg>
         </div>
-        <h3 class="font-[var(--font-heading)] font-semibold text-stone-900 mb-2">100% Private</h3>
-        <p class="text-sm text-stone-500 leading-relaxed">Files never leave your device. Zero server uploads, zero data collection. What happens in your browser stays in your browser.</p>
+        <h3 class="font-[var(--font-heading)] font-semibold text-stone-900 mb-2">100% private</h3>
+        <p class="text-sm text-stone-500 leading-relaxed">Your images never leave your browser. No server upload, no tracking, no data breach risk. Everything runs on your device.</p>
       </div>
       <div class="bg-white rounded-2xl p-7 shadow-soft border border-stone-100 hover:shadow-soft-lg hover:-translate-y-0.5 transition-all duration-300">
         <div class="w-11 h-11 rounded-xl bg-amber-50 flex items-center justify-center mb-4">
@@ -68,8 +63,8 @@ const description = 'Resize and compress images instantly in your browser. No up
             <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
           </svg>
         </div>
-        <h3 class="font-[var(--font-heading)] font-semibold text-stone-900 mb-2">Instant Processing</h3>
-        <p class="text-sm text-stone-500 leading-relaxed">Browser-native Canvas API compression. No waiting for uploads or server queues. Results in seconds, not minutes.</p>
+        <h3 class="font-[var(--font-heading)] font-semibold text-stone-900 mb-2">Instant processing</h3>
+        <p class="text-sm text-stone-500 leading-relaxed">No upload wait, no download queue. Drop your image and get the result in seconds, with no sign-up or file-count limits.</p>
       </div>
       <div class="bg-white rounded-2xl p-7 shadow-soft border border-stone-100 hover:shadow-soft-lg hover:-translate-y-0.5 transition-all duration-300">
         <div class="w-11 h-11 rounded-xl bg-sky-50 flex items-center justify-center mb-4">
@@ -77,27 +72,83 @@ const description = 'Resize and compress images instantly in your browser. No up
             <circle cx="12" cy="12" r="10" /><path d="M12 6v6l4 2" />
           </svg>
         </div>
-        <h3 class="font-[var(--font-heading)] font-semibold text-stone-900 mb-2">Precise Targeting</h3>
-        <p class="text-sm text-stone-500 leading-relaxed">Hit exact file sizes with smart binary-search compression. Set your target — 50KB, 200KB, 2MB — and we'll nail it within 5%.</p>
+        <h3 class="font-[var(--font-heading)] font-semibold text-stone-900 mb-2">Purpose-built pages</h3>
+        <p class="text-sm text-stone-500 leading-relaxed">Need exactly 50 KB, 200 KB, or a YouTube banner canvas? Each page is tuned for one specific task so you get the right output without guessing settings.</p>
       </div>
+    </div>
+
+    <div class="mt-10 flex flex-wrap items-center justify-center gap-x-8 gap-y-3 text-sm text-stone-400">
+      <span class="inline-flex items-center gap-1.5">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="text-emerald-500"><rect x="3" y="11" width="18" height="11" rx="2" ry="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" /></svg>
+        No server upload
+      </span>
+      <span class="inline-flex items-center gap-1.5">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="text-emerald-500"><polyline points="20 6 9 17 4 12" /></svg>
+        Free, no sign-up
+      </span>
+      <span class="inline-flex items-center gap-1.5">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="text-emerald-500"><polyline points="20 6 9 17 4 12" /></svg>
+        No file-count limits
+      </span>
+      <span class="inline-flex items-center gap-1.5">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="text-emerald-500"><polyline points="20 6 9 17 4 12" /></svg>
+        No watermarks
+      </span>
     </div>
   </section>
 
-  <!-- Popular Tools -->
+  <section class="max-w-4xl mx-auto px-5 pb-20">
+    <div class="text-center mb-10">
+      <span class="inline-block px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 text-xs font-semibold tracking-wide uppercase mb-3">Live Scope</span>
+      <h2 class="font-[var(--font-heading)] text-2xl md:text-3xl font-bold text-stone-900 tracking-tight">What the current public release actually does</h2>
+    </div>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+      <div class="bg-white rounded-2xl p-7 shadow-soft border border-stone-100">
+        <h3 class="font-[var(--font-heading)] font-semibold text-stone-900 mb-4">Live capabilities</h3>
+        <ul class="space-y-3 text-sm text-stone-500 leading-relaxed list-disc pl-5">
+          <li>Compress JPEG pages target a file-size budget locally and keep the original file if it is already under the limit.</li>
+          <li>PNG compression pages keep PNG output and may reduce pixel dimensions when needed to move toward the target size.</li>
+          <li>Resize-to-size pages work with static JPEG, PNG, and WebP files while preserving the original aspect ratio.</li>
+          <li>YouTube pages export an exact output canvas and keep the whole image visible, with padding added when ratios do not match.</li>
+        </ul>
+      </div>
+      <div class="bg-white rounded-2xl p-7 shadow-soft border border-stone-100">
+        <h3 class="font-[var(--font-heading)] font-semibold text-stone-900 mb-4">Current limits</h3>
+        <ul class="space-y-3 text-sm text-stone-500 leading-relaxed list-disc pl-5">
+          <li>The public release is limited to static JPEG, PNG, and WebP images.</li>
+          <li>Animated GIF, video, and other media workflows are not part of the current live toolset.</li>
+          <li>Target-size pages aim for the requested file size as closely as practical, but the exact result still depends on the source image.</li>
+          <li>The current platform pages do not auto-crop; they fit the full image inside the exact output canvas.</li>
+        </ul>
+      </div>
+    </div>
+    <div class="mt-8 text-center">
+      <a
+        href="/supported-formats"
+        class="inline-flex items-center gap-2 px-4 py-2.5 bg-white border border-stone-200 text-stone-600 text-sm font-medium rounded-xl no-underline hover:border-teal-300 hover:text-teal-700 hover:bg-teal-50 transition-all duration-200"
+      >
+        Review supported formats and current limits
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+          <path d="M3 7h8M8 3l4 4-4 4" />
+        </svg>
+      </a>
+    </div>
+  </section>
+
   <section class="max-w-4xl mx-auto px-5 pb-20">
     <div class="text-center mb-10">
       <span class="inline-block px-3 py-1 rounded-full bg-amber-50 text-amber-700 text-xs font-semibold tracking-wide uppercase mb-3">Tools</span>
-      <h2 class="font-[var(--font-heading)] text-2xl md:text-3xl font-bold text-stone-900 tracking-tight">Popular Tools</h2>
+      <h2 class="font-[var(--font-heading)] text-2xl md:text-3xl font-bold text-stone-900 tracking-tight">Current focused pages</h2>
     </div>
     <div class="grid grid-cols-2 md:grid-cols-4 gap-3 stagger-children">
-      {phase0Routes.map(route => (
+      {phase0Routes.map((route) => (
         <a
           href={`/${route.slug}`}
           class="group bg-white rounded-xl p-4 border border-stone-100 shadow-soft no-underline hover:shadow-soft-lg hover:border-teal-200 hover:-translate-y-0.5 transition-all duration-300"
         >
           <p class="text-sm font-medium text-stone-700 group-hover:text-teal-700 transition-colors leading-snug">{route.seo.h1}</p>
           <div class="mt-2 flex items-center gap-1 text-xs text-stone-400 group-hover:text-teal-500 transition-colors">
-            <span>Try it</span>
+            <span>Open page</span>
             <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" class="translate-x-0 group-hover:translate-x-0.5 transition-transform">
               <path d="M2.5 6h7M7 3l2.5 3-2.5 3" />
             </svg>

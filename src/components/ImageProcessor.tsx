@@ -1,4 +1,5 @@
-import { useState, useCallback, useRef } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import type { ResizeMode } from '../data/routes';
 
 interface Props {
   action: 'compress' | 'resize';
@@ -7,6 +8,8 @@ interface Props {
   dimensions?: { width: number; height: number };
   acceptFormats: string[];
   maxFileSize: number;
+  resizeMode?: ResizeMode;
+  forceCanvasSize?: boolean;
 }
 
 interface ProcessedFile {
@@ -15,115 +18,314 @@ interface ProcessedFile {
   processedSize: number;
   url: string;
   blob: Blob;
+  width: number;
+  height: number;
+  originalWidth: number;
+  originalHeight: number;
+  note?: string;
+}
+
+interface QuickSizePreset {
+  label: string;
+  value: string;
+  unit: 'kb' | 'mb';
+}
+
+interface QuickDimensionPreset {
+  label: string;
+  width: number;
+  height: number;
 }
 
 type Status = 'idle' | 'processing' | 'done' | 'error';
 
-export default function ImageProcessor({ action, format, targetSizeBytes, dimensions, acceptFormats, maxFileSize }: Props) {
+const MIME_LABELS: Record<string, string> = {
+  'image/jpeg': 'JPEG',
+  'image/png': 'PNG',
+  'image/webp': 'WebP',
+};
+
+const SIZE_PRESETS: QuickSizePreset[] = [
+  { label: '50 KB', value: '50', unit: 'kb' },
+  { label: '200 KB', value: '200', unit: 'kb' },
+  { label: '2 MB', value: '2', unit: 'mb' },
+];
+
+const DIMENSION_PRESETS: QuickDimensionPreset[] = [
+  { label: '1280 x 720', width: 1280, height: 720 },
+  { label: '1920 x 1080', width: 1920, height: 1080 },
+  { label: '1080 x 1080', width: 1080, height: 1080 },
+];
+
+export default function ImageProcessor({
+  action,
+  format,
+  targetSizeBytes,
+  dimensions,
+  acceptFormats,
+  maxFileSize,
+  resizeMode = 'fit',
+  forceCanvasSize = false,
+}: Props) {
   const [files, setFiles] = useState<File[]>([]);
   const [results, setResults] = useState<ProcessedFile[]>([]);
   const [status, setStatus] = useState<Status>('idle');
   const [progress, setProgress] = useState(0);
   const [error, setError] = useState('');
   const [dragOver, setDragOver] = useState(false);
+  const [toolAction, setToolAction] = useState<'compress' | 'resize'>(action);
+  const [sizeValue, setSizeValue] = useState(() => getInitialSizeValue(targetSizeBytes));
+  const [sizeUnit, setSizeUnit] = useState<'kb' | 'mb'>(() => getInitialSizeUnit(targetSizeBytes));
+  const [widthValue, setWidthValue] = useState(() => dimensions?.width?.toString() ?? '1280');
+  const [heightValue, setHeightValue] = useState(() => dimensions?.height?.toString() ?? '720');
   const inputRef = useRef<HTMLInputElement>(null);
+  const isConfigurable = !targetSizeBytes && !dimensions;
+
+  useEffect(() => {
+    setToolAction(action);
+  }, [action]);
+
+  useEffect(() => {
+    return () => {
+      revokeUrls(results);
+    };
+  }, [results]);
 
   const accept = acceptFormats.join(',');
+  const acceptLabels = useMemo(() => {
+    return Array.from(new Set(acceptFormats.map((type) => MIME_LABELS[type] ?? type)));
+  }, [acceptFormats]);
+
+  const effectiveAction = isConfigurable ? toolAction : action;
+  const effectiveTargetSizeBytes = useMemo(() => {
+    if (!isConfigurable) {
+      return targetSizeBytes;
+    }
+
+    if (toolAction !== 'compress') {
+      return undefined;
+    }
+
+    return parseTargetSize(sizeValue, sizeUnit);
+  }, [isConfigurable, sizeUnit, sizeValue, targetSizeBytes, toolAction]);
+
+  const effectiveDimensions = useMemo(() => {
+    if (!isConfigurable) {
+      return dimensions;
+    }
+
+    if (toolAction !== 'resize') {
+      return undefined;
+    }
+
+    return parseDimensions(widthValue, heightValue);
+  }, [dimensions, heightValue, isConfigurable, toolAction, widthValue]);
+
+  const processorHint = useMemo(() => {
+    if (effectiveTargetSizeBytes) {
+      return `Target file size: ${fmtBytes(effectiveTargetSizeBytes)}.`;
+    }
+
+    if (effectiveAction === 'resize' && effectiveDimensions) {
+      const base = `Output size: ${effectiveDimensions.width} x ${effectiveDimensions.height}px.`;
+      if (forceCanvasSize) {
+        return `${base} The output canvas is exact and keeps the whole image visible.`;
+      }
+      return `${base} The image keeps its original aspect ratio.`;
+    }
+
+    return 'Choose a file-size target or dimensions before processing.';
+  }, [effectiveAction, effectiveDimensions, effectiveTargetSizeBytes, forceCanvasSize]);
 
   const handleFiles = useCallback((incoming: FileList | File[]) => {
-    const valid: File[] = [];
-    for (const f of Array.from(incoming)) {
-      if (f.size > maxFileSize) {
-        setError(`${f.name} exceeds ${fmtBytes(maxFileSize)} limit`);
-        return;
-      }
-      valid.push(f);
-    }
-    if (valid.length > 20) {
-      setError('Maximum 20 files at once');
+    const incomingFiles = Array.from(incoming);
+    if (incomingFiles.length === 0) {
       return;
     }
+
+    if (incomingFiles.length > 20) {
+      setError('You can process up to 20 static images at a time.');
+      return;
+    }
+
+    const valid: File[] = [];
+    for (const file of incomingFiles) {
+      if (!acceptFormats.includes(file.type)) {
+        setError(`Unsupported file type for this page: ${file.name}.`);
+        return;
+      }
+
+      if (file.size > maxFileSize) {
+        setError(`${file.name} exceeds the ${fmtBytes(maxFileSize)} limit.`);
+        return;
+      }
+
+      valid.push(file);
+    }
+
+    revokeUrls(results);
     setFiles(valid);
     setResults([]);
     setStatus('idle');
     setError('');
-  }, [maxFileSize]);
+  }, [acceptFormats, maxFileSize, results]);
 
   const processFiles = useCallback(async () => {
-    if (files.length === 0) return;
+    if (files.length === 0) {
+      return;
+    }
+
+    if (effectiveAction === 'compress' && !effectiveTargetSizeBytes) {
+      setError('Enter a valid file-size target before processing.');
+      return;
+    }
+
+    if (effectiveAction === 'resize' && !effectiveDimensions) {
+      setError('Enter valid width and height values before processing.');
+      return;
+    }
+
     setStatus('processing');
     setProgress(0);
     setError('');
     const processed: ProcessedFile[] = [];
 
     try {
-      for (let i = 0; i < files.length; i++) {
-        const file = files[i];
+      for (let index = 0; index < files.length; index += 1) {
+        const file = files[index];
         let blob: Blob;
+        let width = 0;
+        let height = 0;
+        let originalWidth = 0;
+        let originalHeight = 0;
+        let note: string | undefined;
 
-        if (action === 'resize' && dimensions) {
+        if (effectiveAction === 'resize' && effectiveDimensions) {
           const { resizeImage } = await import('../lib/resize');
-          const result = await resizeImage({ file, targetDimensions: dimensions });
+          const result = await resizeImage({
+            file,
+            targetDimensions: effectiveDimensions,
+            resizeMode,
+            forceCanvasSize,
+          });
           blob = result.blob;
-        } else if (targetSizeBytes) {
-          if (action === 'compress') {
+          width = result.width;
+          height = result.height;
+          originalWidth = result.originalWidth;
+          originalHeight = result.originalHeight;
+          note = result.note;
+        } else if (effectiveTargetSizeBytes) {
+          if (effectiveAction === 'compress') {
             const { compressImage } = await import('../lib/compress');
-            const result = await compressImage({ file, targetSizeBytes, format: format ? `image/${format}` : undefined });
+            const result = await compressImage({
+              file,
+              targetSizeBytes: effectiveTargetSizeBytes,
+              format: format ? `image/${format}` : undefined,
+            });
             blob = result.blob;
+            width = result.width;
+            height = result.height;
+            originalWidth = result.originalWidth;
+            originalHeight = result.originalHeight;
+            note = result.note;
           } else {
             const { resizeImage } = await import('../lib/resize');
-            const result = await resizeImage({ file, targetSizeBytes });
+            const result = await resizeImage({
+              file,
+              targetSizeBytes: effectiveTargetSizeBytes,
+            });
             blob = result.blob;
+            width = result.width;
+            height = result.height;
+            originalWidth = result.originalWidth;
+            originalHeight = result.originalHeight;
+            note = result.note;
           }
         } else {
           blob = file;
+          const fallbackDimensions = await readImageDimensions(file);
+          width = fallbackDimensions.width;
+          height = fallbackDimensions.height;
+          originalWidth = fallbackDimensions.width;
+          originalHeight = fallbackDimensions.height;
+          note = 'No processing settings were applied, so the original file was kept.';
         }
 
         const url = URL.createObjectURL(blob);
-        processed.push({ name: file.name, originalSize: file.size, processedSize: blob.size, url, blob });
-        setProgress(Math.round(((i + 1) / files.length) * 100));
+        processed.push({
+          name: file.name,
+          originalSize: file.size,
+          processedSize: blob.size,
+          url,
+          blob,
+          width,
+          height,
+          originalWidth,
+          originalHeight,
+          note,
+        });
+        setProgress(Math.round(((index + 1) / files.length) * 100));
       }
+
       setResults(processed);
       setStatus('done');
-    } catch (e) {
-      setError(e instanceof Error ? e.message : 'Processing failed');
+    } catch (processingError) {
+      revokeUrls(processed);
+      setError(processingError instanceof Error ? processingError.message : 'Processing failed.');
       setStatus('error');
     }
-  }, [files, action, format, targetSizeBytes, dimensions]);
+  }, [
+    effectiveAction,
+    effectiveDimensions,
+    effectiveTargetSizeBytes,
+    files,
+    forceCanvasSize,
+    format,
+    resizeMode,
+  ]);
 
-  const downloadFile = (r: ProcessedFile) => {
-    const a = document.createElement('a');
-    a.href = r.url;
-    a.download = r.name;
-    a.click();
-  };
+  const downloadFile = useCallback((result: ProcessedFile) => {
+    const anchor = document.createElement('a');
+    anchor.href = result.url;
+    anchor.download = result.name;
+    anchor.click();
+  }, []);
 
-  const reset = () => {
+  const reset = useCallback(() => {
+    revokeUrls(results);
     setFiles([]);
     setResults([]);
     setStatus('idle');
     setProgress(0);
     setError('');
-  };
-
-  const reduction = (orig: number, proc: number) => Math.max(0, Math.round((1 - proc / orig) * 100));
+  }, [results]);
 
   return (
     <section className="max-w-2xl mx-auto px-5 py-6">
-      {/* Dropzone */}
       {status !== 'done' && (
         <div
           role="button"
           tabIndex={0}
-          aria-label="Upload images"
+          aria-label="Upload static images"
           className="relative group"
           onClick={() => inputRef.current?.click()}
-          onKeyDown={e => e.key === 'Enter' && inputRef.current?.click()}
-          onDragOver={e => { e.preventDefault(); setDragOver(true); }}
+          onKeyDown={(event) => {
+            if (event.key === 'Enter' || event.key === ' ') {
+              event.preventDefault();
+              inputRef.current?.click();
+            }
+          }}
+          onDragOver={(event) => {
+            event.preventDefault();
+            setDragOver(true);
+          }}
           onDragLeave={() => setDragOver(false)}
-          onDrop={e => { e.preventDefault(); setDragOver(false); handleFiles(e.dataTransfer.files); }}
+          onDrop={(event) => {
+            event.preventDefault();
+            setDragOver(false);
+            handleFiles(event.dataTransfer.files);
+          }}
         >
-          {/* Animated gradient border */}
           <div className={`absolute -inset-[2px] rounded-2xl transition-opacity duration-300 ${
             dragOver ? 'opacity-100 dropzone-active-border' : 'opacity-0 group-hover:opacity-100 dropzone-active-border'
           }`} />
@@ -132,9 +334,20 @@ export default function ImageProcessor({ action, format, targetSizeBytes, dimens
               ? 'border-teal-400 bg-teal-50/50 scale-[1.01]'
               : 'border-stone-200 hover:border-transparent'
           }`}>
-            <input ref={inputRef} type="file" accept={accept} multiple className="hidden" onChange={e => e.target.files && handleFiles(e.target.files)} />
+            <input
+              ref={inputRef}
+              type="file"
+              accept={accept}
+              multiple
+              aria-label={`Upload static images (${acceptLabels.join(', ')})`}
+              className="hidden"
+              onChange={(event) => {
+                if (event.target.files) {
+                  handleFiles(event.target.files);
+                }
+              }}
+            />
 
-            {/* Upload icon */}
             <div className={`mx-auto mb-5 w-16 h-16 rounded-2xl flex items-center justify-center transition-all duration-300 ${
               dragOver ? 'bg-teal-100 scale-110' : 'bg-stone-100 group-hover:bg-teal-50'
             }`}>
@@ -146,57 +359,139 @@ export default function ImageProcessor({ action, format, targetSizeBytes, dimens
             </div>
 
             <p className="font-[var(--font-heading)] text-lg font-semibold text-stone-800 mb-1.5">
-              {dragOver ? 'Drop to upload' : 'Drop images here or click to browse'}
+              {dragOver ? 'Drop to upload' : 'Drop static images here or click to browse'}
             </p>
             <p className="text-sm text-stone-400 mb-4">
-              Up to 20 files &middot; Max {fmtBytes(maxFileSize)} each &middot; JPEG, PNG, WebP, GIF
+              Up to 20 files - Max {fmtBytes(maxFileSize)} each - {acceptLabels.join(', ')}
             </p>
             <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-50 text-emerald-700 text-xs font-medium">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-              Files never leave your device
+              Processed locally in your browser
             </div>
+
+            {!isConfigurable && (
+              <p className="mt-4 text-xs text-stone-500">{processorHint}</p>
+            )}
           </div>
         </div>
       )}
 
-      {/* Selected files + process button */}
-      {files.length > 0 && status === 'idle' && (
-        <div className="mt-5 animate-fade-up">
-          <div className="bg-white rounded-xl border border-stone-200 shadow-soft overflow-hidden">
-            <div className="px-4 py-3 border-b border-stone-100 flex items-center justify-between">
-              <span className="text-sm font-medium text-stone-600">
-                {files.length} file{files.length > 1 ? 's' : ''} ready
-              </span>
-              <button onClick={reset} className="text-xs text-stone-400 hover:text-stone-600 transition-colors">
-                Clear
-              </button>
+      {isConfigurable && (
+        <div className="mt-5 bg-white rounded-2xl border border-stone-200 shadow-soft p-5 animate-fade-up">
+          <div className="flex gap-2 mb-4">
+            <button type="button" className={tabClass(toolAction === 'compress')} onClick={() => setToolAction('compress')}>Compress</button>
+            <button type="button" className={tabClass(toolAction === 'resize')} onClick={() => setToolAction('resize')}>Resize</button>
+          </div>
+
+          {toolAction === 'compress' && (
+            <div>
+              <label className="block text-sm font-medium text-stone-700 mb-2">Target file size</label>
+              <div className="flex gap-2">
+                <input
+                  type="number"
+                  min="1"
+                  value={sizeValue}
+                  onChange={(e) => setSizeValue(e.target.value)}
+                  className="flex-1 px-3 py-2 border border-stone-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                  placeholder="e.g. 200"
+                />
+                <select
+                  value={sizeUnit}
+                  onChange={(e) => setSizeUnit(e.target.value as 'kb' | 'mb')}
+                  className="px-3 py-2 border border-stone-200 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                >
+                  <option value="kb">KB</option>
+                  <option value="mb">MB</option>
+                </select>
+              </div>
+              <div className="flex flex-wrap gap-1.5 mt-2.5">
+                {SIZE_PRESETS.map((preset) => (
+                  <button
+                    key={preset.label}
+                    type="button"
+                    onClick={() => { setSizeValue(preset.value); setSizeUnit(preset.unit); }}
+                    className="px-2.5 py-1 rounded-lg text-xs font-medium bg-stone-50 border border-stone-200 text-stone-600 hover:border-teal-300 hover:text-teal-700 transition-colors"
+                  >
+                    {preset.label}
+                  </button>
+                ))}
+              </div>
             </div>
-            <div className="max-h-40 overflow-y-auto">
-              {files.map((f, i) => (
-                <div key={i} className="px-4 py-2.5 flex items-center gap-3 text-sm border-b border-stone-50 last:border-0">
-                  <div className="w-8 h-8 rounded-lg bg-stone-100 flex items-center justify-center shrink-0">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-stone-400">
-                      <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
-                      <circle cx="8.5" cy="8.5" r="1.5" />
-                      <polyline points="21 15 16 10 5 21" />
-                    </svg>
-                  </div>
-                  <span className="truncate text-stone-700 flex-1">{f.name}</span>
-                  <span className="text-stone-400 text-xs shrink-0">{fmtBytes(f.size)}</span>
+          )}
+
+          {toolAction === 'resize' && (
+            <div>
+              <label className="block text-sm font-medium text-stone-700 mb-2">Output dimensions (px)</label>
+              <div className="flex gap-2 items-center">
+                <input
+                  type="number"
+                  min="1"
+                  value={widthValue}
+                  onChange={(e) => setWidthValue(e.target.value)}
+                  className="flex-1 px-3 py-2 border border-stone-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                  placeholder="Width"
+                />
+                <span className="text-stone-400 text-sm">x</span>
+                <input
+                  type="number"
+                  min="1"
+                  value={heightValue}
+                  onChange={(e) => setHeightValue(e.target.value)}
+                  className="flex-1 px-3 py-2 border border-stone-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                  placeholder="Height"
+                />
+              </div>
+              <div className="flex flex-wrap gap-1.5 mt-2.5">
+                {DIMENSION_PRESETS.map((preset) => (
+                  <button
+                    key={preset.label}
+                    type="button"
+                    onClick={() => { setWidthValue(String(preset.width)); setHeightValue(String(preset.height)); }}
+                    className="px-2.5 py-1 rounded-lg text-xs font-medium bg-stone-50 border border-stone-200 text-stone-600 hover:border-teal-300 hover:text-teal-700 transition-colors"
+                  >
+                    {preset.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          <p className="mt-3 text-xs text-stone-500">{processorHint}</p>
+        </div>
+      )}
+
+      {files.length > 0 && status !== 'done' && (
+        <div className="mt-4 bg-white rounded-xl border border-stone-200 shadow-soft overflow-hidden animate-fade-up">
+          <div className="px-4 py-3 border-b border-stone-100 flex items-center justify-between">
+            <span className="text-sm font-medium text-stone-700">{files.length} file{files.length > 1 ? 's' : ''} selected</span>
+            <button onClick={reset} className="text-xs text-stone-400 hover:text-stone-600 transition-colors">Clear</button>
+          </div>
+          <div className="max-h-40 overflow-y-auto">
+            {files.map((file, index) => (
+              <div key={`${file.name}-${index}`} className="px-4 py-2.5 flex items-center gap-3 text-sm border-b border-stone-50 last:border-0">
+                <div className="w-8 h-8 rounded-lg bg-stone-100 flex items-center justify-center shrink-0">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-stone-400">
+                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+                    <circle cx="8.5" cy="8.5" r="1.5" />
+                    <polyline points="21 15 16 10 5 21" />
+                  </svg>
                 </div>
-              ))}
-            </div>
+                <span className="truncate text-stone-700 flex-1">{file.name}</span>
+                <span className="text-stone-400 text-xs shrink-0">{fmtBytes(file.size)}</span>
+              </div>
+            ))}
           </div>
-          <button
-            onClick={processFiles}
-            className="mt-4 w-full py-3.5 bg-gradient-to-r from-teal-600 to-teal-500 text-white rounded-xl font-[var(--font-heading)] font-semibold text-[15px] shadow-soft hover:shadow-soft-lg hover:from-teal-700 hover:to-teal-600 active:scale-[0.99] transition-all duration-200"
-          >
-            {action === 'compress' ? 'Compress' : 'Resize'} {files.length > 1 ? `${files.length} Files` : 'File'}
-          </button>
+          <div className="p-3 border-t border-stone-100">
+            <button
+              onClick={processFiles}
+              className="w-full py-3.5 bg-gradient-to-r from-teal-600 to-teal-500 text-white rounded-xl font-[var(--font-heading)] font-semibold text-[15px] shadow-soft hover:shadow-soft-lg hover:from-teal-700 hover:to-teal-600 active:scale-[0.99] transition-all duration-200"
+            >
+              {effectiveAction === 'compress' ? 'Compress' : 'Resize'} {files.length > 1 ? `${files.length} Files` : 'File'}
+            </button>
+          </div>
         </div>
       )}
 
-      {/* Processing */}
       {status === 'processing' && (
         <div className="mt-6 animate-fade-up">
           <div className="bg-white rounded-xl border border-stone-200 shadow-soft p-6">
@@ -214,69 +509,77 @@ export default function ImageProcessor({ action, format, targetSizeBytes, dimens
         </div>
       )}
 
-      {/* Error */}
       {error && (
         <div className="mt-4 flex items-start gap-3 p-4 bg-red-50 border border-red-100 rounded-xl text-sm text-red-700 animate-fade-up">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="shrink-0 mt-0.5 text-red-400">
-            <circle cx="12" cy="12" r="10" /><line x1="15" y1="9" x2="9" y2="15" /><line x1="9" y1="9" x2="15" y2="15" />
+            <circle cx="12" cy="12" r="10" />
+            <line x1="15" y1="9" x2="9" y2="15" />
+            <line x1="9" y1="9" x2="15" y2="15" />
           </svg>
           <span>{error}</span>
         </div>
       )}
 
-      {/* Results */}
       {status === 'done' && results.length > 0 && (
         <div className="animate-fade-up">
-          {/* Summary bar */}
           <div className="bg-gradient-to-r from-teal-600 to-emerald-500 rounded-2xl p-5 text-white mb-4 shadow-soft-lg">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-teal-100 text-sm mb-0.5">Total saved</p>
                 <p className="text-2xl font-[var(--font-heading)] font-bold">
-                  {fmtBytes(results.reduce((s, r) => s + (r.originalSize - r.processedSize), 0))}
+                  {fmtBytes(results.reduce((sum, result) => sum + (result.originalSize - result.processedSize), 0))}
                 </p>
               </div>
               <div className="text-right">
                 <p className="text-teal-100 text-sm mb-0.5">{results.length} file{results.length > 1 ? 's' : ''}</p>
                 <p className="text-2xl font-[var(--font-heading)] font-bold">
                   {reduction(
-                    results.reduce((s, r) => s + r.originalSize, 0),
-                    results.reduce((s, r) => s + r.processedSize, 0),
+                    results.reduce((sum, result) => sum + result.originalSize, 0),
+                    results.reduce((sum, result) => sum + result.processedSize, 0),
                   )}%
                 </p>
               </div>
             </div>
           </div>
 
-          {/* File results */}
-          <div className="space-y-2.5 stagger-children">
-            {results.map((r, i) => (
-              <div key={i} className="bg-white rounded-xl border border-stone-200 shadow-soft p-4 flex items-center gap-4">
-                <div className="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center shrink-0">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-emerald-500">
-                    <polyline points="20 6 9 17 4 12" />
-                  </svg>
+          <div className="space-y-2.5 stagger-children" role="list" aria-label="Processed files">
+            {results.map((result, index) => (
+              <div key={`${result.name}-${index}`} role="listitem" className="bg-white rounded-xl border border-stone-200 shadow-soft p-4">
+                <div className="flex items-start gap-4">
+                  <div className="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center shrink-0">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-emerald-500">
+                      <polyline points="20 6 9 17 4 12" />
+                    </svg>
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-medium text-stone-800 truncate">{result.name}</p>
+                    <p className="text-xs text-stone-400 mt-0.5">
+                      {fmtBytes(result.originalSize)}
+                      <span className="mx-1.5 text-stone-300">-&gt;</span>
+                      {fmtBytes(result.processedSize)}
+                      <span className="ml-2 text-emerald-600 font-medium">-{reduction(result.originalSize, result.processedSize)}%</span>
+                    </p>
+                    <p className="text-xs text-stone-500 mt-1.5">
+                      {result.originalWidth} x {result.originalHeight}px
+                      <span className="mx-1.5 text-stone-300">-&gt;</span>
+                      {result.width} x {result.height}px
+                    </p>
+                    {result.note && (
+                      <p className="text-xs text-stone-500 mt-2">{result.note}</p>
+                    )}
+                  </div>
+                  <button
+                    onClick={() => downloadFile(result)}
+                    aria-label={`Download ${result.name}`}
+                    className="px-4 py-2 bg-stone-900 text-white text-sm font-medium rounded-lg hover:bg-stone-800 active:scale-[0.97] transition-all shrink-0"
+                  >
+                    Download
+                  </button>
                 </div>
-                <div className="min-w-0 flex-1">
-                  <p className="text-sm font-medium text-stone-800 truncate">{r.name}</p>
-                  <p className="text-xs text-stone-400 mt-0.5">
-                    {fmtBytes(r.originalSize)}
-                    <span className="mx-1.5 text-stone-300">&rarr;</span>
-                    {fmtBytes(r.processedSize)}
-                    <span className="ml-2 text-emerald-600 font-medium">-{reduction(r.originalSize, r.processedSize)}%</span>
-                  </p>
-                </div>
-                <button
-                  onClick={() => downloadFile(r)}
-                  className="px-4 py-2 bg-stone-900 text-white text-sm font-medium rounded-lg hover:bg-stone-800 active:scale-[0.97] transition-all shrink-0"
-                >
-                  Download
-                </button>
               </div>
             ))}
           </div>
 
-          {/* Actions */}
           <div className="mt-5 flex gap-3">
             <button
               onClick={reset}
@@ -291,8 +594,89 @@ export default function ImageProcessor({ action, format, targetSizeBytes, dimens
   );
 }
 
+function getInitialSizeUnit(targetSizeBytes?: number): 'kb' | 'mb' {
+  if (!targetSizeBytes || targetSizeBytes < 1024 * 1024) {
+    return 'kb';
+  }
+
+  return 'mb';
+}
+
+function getInitialSizeValue(targetSizeBytes?: number): string {
+  if (!targetSizeBytes) {
+    return '200';
+  }
+
+  if (targetSizeBytes >= 1024 * 1024) {
+    const value = targetSizeBytes / (1024 * 1024);
+    return Number.isInteger(value) ? String(value) : value.toFixed(1);
+  }
+
+  return String(Math.round(targetSizeBytes / 1024));
+}
+
+function parseTargetSize(value: string, unit: 'kb' | 'mb'): number | undefined {
+  const numericValue = Number.parseFloat(value);
+  if (!Number.isFinite(numericValue) || numericValue <= 0) {
+    return undefined;
+  }
+
+  return unit === 'mb'
+    ? Math.round(numericValue * 1024 * 1024)
+    : Math.round(numericValue * 1024);
+}
+
+function parseDimensions(widthValue: string, heightValue: string): { width: number; height: number } | undefined {
+  const width = Number.parseInt(widthValue, 10);
+  const height = Number.parseInt(heightValue, 10);
+  if (!Number.isFinite(width) || width <= 0 || !Number.isFinite(height) || height <= 0) {
+    return undefined;
+  }
+
+  return { width, height };
+}
+
+async function readImageDimensions(file: File): Promise<{ width: number; height: number }> {
+  const image = new Image();
+  image.src = URL.createObjectURL(file);
+
+  try {
+    await image.decode();
+    return { width: image.naturalWidth, height: image.naturalHeight };
+  } finally {
+    URL.revokeObjectURL(image.src);
+  }
+}
+
+function revokeUrls(items: Array<{ url: string }>): void {
+  for (const item of items) {
+    URL.revokeObjectURL(item.url);
+  }
+}
+
 function fmtBytes(bytes: number): string {
-  if (bytes < 1024) return `${bytes} B`;
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+  if (bytes < 1024) {
+    return `${bytes} B`;
+  }
+  if (bytes < 1024 * 1024) {
+    return `${formatDecimal(bytes / 1024)} KB`;
+  }
+  return `${formatDecimal(bytes / (1024 * 1024))} MB`;
+}
+
+function reduction(originalSize: number, processedSize: number): number {
+  return Math.max(0, Math.round((1 - processedSize / originalSize) * 100));
+}
+
+function tabClass(active: boolean): string {
+  return [
+    'px-3.5 py-2 rounded-xl text-sm font-medium transition-all border',
+    active
+      ? 'bg-teal-600 border-teal-600 text-white shadow-soft'
+      : 'bg-stone-50 border-stone-200 text-stone-600 hover:border-teal-300 hover:text-teal-700',
+  ].join(' ');
+}
+
+function formatDecimal(value: number): string {
+  return Number(value.toFixed(1)).toString();
 }

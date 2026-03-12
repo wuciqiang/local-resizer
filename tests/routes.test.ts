@@ -1,5 +1,12 @@
-import { describe, it, expect } from 'vitest';
-import { parseSize, formatSizeLabel, allRoutes, getRouteBySlug, phase0Routes, PHASE0_SLUGS } from '../src/data/routes';
+import { describe, expect, it } from 'vitest';
+import {
+  PHASE0_SLUGS,
+  allRoutes,
+  formatSizeLabel,
+  getRouteBySlug,
+  parseSize,
+  phase0Routes,
+} from '../src/data/routes';
 
 describe('parseSize', () => {
   it('parses KB values', () => {
@@ -23,33 +30,42 @@ describe('formatSizeLabel', () => {
 });
 
 describe('allRoutes', () => {
-  it('generates compress routes for all formats and sizes', () => {
-    const compressRoutes = allRoutes.filter(r => r.action === 'compress' && r.format);
-    expect(compressRoutes.length).toBe(4 * (27 + 7)); // 4 formats × 34 sizes
+  it('generates only active routes matching PHASE0_SLUGS', () => {
+    expect(allRoutes.length).toBe(PHASE0_SLUGS.length);
+    for (const slug of PHASE0_SLUGS) {
+      expect(allRoutes.find((route) => route.slug === slug)).toBeDefined();
+    }
   });
 
-  it('generates resize-image routes', () => {
-    const resizeRoutes = allRoutes.filter(r => r.slug.startsWith('resize-image-to-'));
-    expect(resizeRoutes.length).toBe(20);
+  it('includes compress routes for active slugs', () => {
+    const compressRoutes = allRoutes.filter((route) => route.action === 'compress' && route.format);
+    expect(compressRoutes.length).toBe(3);
   });
 
-  it('generates platform routes', () => {
-    const platformRoutes = allRoutes.filter(r => r.platform);
-    expect(platformRoutes.length).toBe(24);
+  it('includes resize-image routes for active slugs', () => {
+    const resizeRoutes = allRoutes.filter((route) => route.slug.startsWith('resize-image-to-'));
+    expect(resizeRoutes.length).toBe(3);
+  });
+
+  it('includes platform routes for active slugs', () => {
+    const platformRoutes = allRoutes.filter((route) => route.platform);
+    expect(platformRoutes.length).toBe(2);
+    expect(platformRoutes.some((route) => route.slug.includes('gif'))).toBe(false);
   });
 
   it('has unique slugs', () => {
-    const slugs = allRoutes.map(r => r.slug);
+    const slugs = allRoutes.map((route) => route.slug);
     expect(new Set(slugs).size).toBe(slugs.length);
   });
 
-  it('all routes have required SEO fields', () => {
-    for (const r of allRoutes) {
-      expect(r.seo.title).toBeTruthy();
-      expect(r.seo.description).toBeTruthy();
-      expect(r.seo.h1).toBeTruthy();
-      expect(r.faq.length).toBeGreaterThanOrEqual(3);
-      expect(r.howToSteps.length).toBe(3);
+  it('all routes have required SEO and page fields', () => {
+    for (const route of allRoutes) {
+      expect(route.seo.title).toBeTruthy();
+      expect(route.seo.description).toBeTruthy();
+      expect(route.seo.h1).toBeTruthy();
+      expect(route.faq.length).toBeGreaterThanOrEqual(5);
+      expect(route.howToSteps.length).toBe(3);
+      expect(route.acceptFormats.includes('image/gif')).toBe(false);
     }
   });
 });
@@ -58,8 +74,8 @@ describe('getRouteBySlug', () => {
   it('finds existing routes', () => {
     const route = getRouteBySlug('compress-jpeg-to-50kb');
     expect(route).toBeDefined();
-    expect(route!.format).toBe('jpeg');
-    expect(route!.targetSizeBytes).toBe(51200);
+    expect(route?.format).toBe('jpeg');
+    expect(route?.targetSizeBytes).toBe(51200);
   });
 
   it('returns undefined for non-existent slugs', () => {
@@ -68,10 +84,19 @@ describe('getRouteBySlug', () => {
 });
 
 describe('phase0Routes', () => {
-  it('contains all Phase 0 slugs', () => {
+  it('contains all phase 0 slugs', () => {
     expect(phase0Routes.length).toBe(PHASE0_SLUGS.length);
     for (const slug of PHASE0_SLUGS) {
-      expect(phase0Routes.find(r => r.slug === slug)).toBeDefined();
+      expect(phase0Routes.find((route) => route.slug === slug)).toBeDefined();
+    }
+  });
+
+  it('only links to built phase 0 pages', () => {
+    const allowed = new Set(PHASE0_SLUGS);
+    for (const route of phase0Routes) {
+      for (const relatedSlug of route.relatedLinks) {
+        expect(allowed.has(relatedSlug)).toBe(true);
+      }
     }
   });
 });

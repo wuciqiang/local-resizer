@@ -48,6 +48,7 @@ const currentPath = Astro.url.pathname;
       <div class="flex items-center gap-1">
         {[
           { href: '/', label: 'Home' },
+          { href: '/supported-formats', label: 'Supported' },
           { href: '/about', label: 'About' },
           { href: '/privacy', label: 'Privacy' },
         ].map(link => (
@@ -85,6 +86,7 @@ const currentPath = Astro.url.pathname;
           <span class="font-heading text-sm font-semibold text-[var(--color-text-secondary)]">LocalResizer</span>
         </div>
         <div class="flex items-center gap-4 text-sm">
+          <a href="/supported-formats" class="text-[var(--color-text-tertiary)] hover:text-teal-600 transition-colors no-underline">Supported</a>
           <a href="/about" class="text-[var(--color-text-tertiary)] hover:text-teal-600 transition-colors no-underline">About</a>
           <a href="/privacy" class="text-[var(--color-text-tertiary)] hover:text-teal-600 transition-colors no-underline">Privacy</a>
           <a href="/terms" class="text-[var(--color-text-tertiary)] hover:text-teal-600 transition-colors no-underline">Terms</a>

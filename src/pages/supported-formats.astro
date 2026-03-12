@@ -1,0 +1,77 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+<BaseLayout
+  title="Supported Formats and Current Limits - LocalResizer"
+  description="See the current public formats, live page types, and feature limits for LocalResizer."
+>
+  <article class="max-w-4xl mx-auto px-5 py-16">
+    <div class="text-center mb-12">
+      <span class="inline-block px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 text-xs font-semibold tracking-wide uppercase mb-3">Public Scope</span>
+      <h1 class="font-[var(--font-heading)] text-3xl md:text-4xl font-bold text-stone-900 tracking-tight mb-4">Supported formats and current limits</h1>
+      <p class="text-stone-500 max-w-2xl mx-auto leading-relaxed">
+        This page explains what the live public version of LocalResizer supports today, what each page family does, and which workflows are intentionally out of scope for now.
+      </p>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-12">
+      <section class="bg-white rounded-2xl p-7 shadow-soft border border-stone-100">
+        <h2 class="font-[var(--font-heading)] text-xl font-semibold text-stone-900 mb-4">Supported image formats</h2>
+        <ul class="space-y-3 text-sm text-stone-500 leading-relaxed list-disc pl-5">
+          <li><strong>JPEG</strong> for photo-heavy compression and target-size workflows</li>
+          <li><strong>PNG</strong> for graphics and transparent images that need to stay in PNG format</li>
+          <li><strong>WebP</strong> for modern static image resizing and compression workflows</li>
+        </ul>
+      </section>
+
+      <section class="bg-white rounded-2xl p-7 shadow-soft border border-stone-100">
+        <h2 class="font-[var(--font-heading)] text-xl font-semibold text-stone-900 mb-4">Current public page types</h2>
+        <ul class="space-y-3 text-sm text-stone-500 leading-relaxed list-disc pl-5">
+          <li><strong>Homepage quick tool</strong> for compressing by file size or resizing by dimensions</li>
+          <li><strong>Target-size pages</strong> such as 50 KB, 100 KB, 200 KB, and 2 MB workflows</li>
+          <li><strong>Exact canvas pages</strong> for the currently live YouTube banner and thumbnail workflows</li>
+        </ul>
+      </section>
+    </div>
+
+    <section class="bg-white rounded-2xl p-7 shadow-soft border border-stone-100 mb-12">
+      <h2 class="font-[var(--font-heading)] text-xl font-semibold text-stone-900 mb-4">What the current live pages actually guarantee</h2>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+        <div>
+          <h3 class="font-[var(--font-heading)] font-semibold text-stone-900 mb-2">Compress pages</h3>
+          <p class="text-sm text-stone-500 leading-relaxed">They aim for a target file-size budget locally. JPEG and WebP use quality search, while PNG pages keep PNG output and may reduce dimensions if needed.</p>
+        </div>
+        <div>
+          <h3 class="font-[var(--font-heading)] font-semibold text-stone-900 mb-2">Resize-to-size pages</h3>
+          <p class="text-sm text-stone-500 leading-relaxed">They reduce image dimensions toward a smaller file-size budget while preserving the original aspect ratio and keeping already-small files unchanged.</p>
+        </div>
+        <div>
+          <h3 class="font-[var(--font-heading)] font-semibold text-stone-900 mb-2">Exact canvas pages</h3>
+          <p class="text-sm text-stone-500 leading-relaxed">They export an exact output canvas for the live YouTube sizes, keep the whole image visible, and may add padding when the image ratio does not match.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="bg-white rounded-2xl p-7 shadow-soft border border-stone-100 mb-12">
+      <h2 class="font-[var(--font-heading)] text-xl font-semibold text-stone-900 mb-4">Current limits and unsupported workflows</h2>
+      <ul class="space-y-3 text-sm text-stone-500 leading-relaxed list-disc pl-5">
+        <li>Animated GIF workflows are not part of the current public release.</li>
+        <li>Video processing is not part of the current public release.</li>
+        <li>Target-size workflows are best-effort because exact output depends on the source image.</li>
+        <li>The live platform pages do not auto-crop and do not generate alternate social-media safe-area variants.</li>
+        <li>All current public workflows are browser-based and do not require an account.</li>
+      </ul>
+    </section>
+
+    <section class="text-center">
+      <h2 class="font-[var(--font-heading)] text-xl font-semibold text-stone-900 mb-3">Need more detail?</h2>
+      <p class="text-sm text-stone-500 leading-relaxed mb-5">
+        For privacy details, visit the privacy page. For questions, bug reports, or feature requests, use the contact page.
+      </p>
+      <div class="flex flex-wrap justify-center gap-3">
+        <a href="/privacy" class="inline-flex items-center px-4 py-2.5 bg-white border border-stone-200 text-stone-600 text-sm font-medium rounded-xl no-underline hover:border-teal-300 hover:text-teal-700 hover:bg-teal-50 transition-all duration-200">Privacy</a>
+        <a href="/contact" class="inline-flex items-center px-4 py-2.5 bg-white border border-stone-200 text-stone-600 text-sm font-medium rounded-xl no-underline hover:border-teal-300 hover:text-teal-700 hover:bg-teal-50 transition-all duration-200">Contact</a>
+      </div>
+    </section>
+  </article>
+</BaseLayout>

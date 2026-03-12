@@ -7,10 +7,10 @@ import HowToSection from '../components/HowToSection.astro';
 import FaqSection from '../components/FaqSection.astro';
 import FooterLinks from '../components/FooterLinks.astro';
 import { generateHowToSchema, generateFAQSchema } from '../lib/seo';
-import { generateIntroText, generateFormatInfo } from '../lib/content';
+import { generateDetailText, generateFormatInfo, generateIntroText, generatePageHighlights } from '../lib/content';
 
 export function getStaticPaths() {
-  return phase0Routes.map(route => ({
+  return phase0Routes.map((route) => ({
     params: { slug: route.slug },
     props: { route },
   }));
@@ -24,16 +24,17 @@ const { route } = Astro.props;
 const howToSchema = generateHowToSchema(route);
 const faqSchema = generateFAQSchema(route);
 const introText = generateIntroText(route);
+const detailText = generateDetailText(route);
 const formatInfo = route.format ? generateFormatInfo(route.format) : '';
+const pageHighlights = generatePageHighlights(route);
 ---
 <BaseLayout title={route.seo.title} description={route.seo.description} schemas={[howToSchema, faqSchema]}>
-  <!-- Hero -->
   <section class="relative overflow-hidden">
     <div class="absolute inset-0 bg-[radial-gradient(circle_at_30%_-10%,rgba(13,148,136,0.05),transparent_50%)]" />
     <div class="relative max-w-3xl mx-auto px-5 pt-14 pb-6 text-center">
       <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white border border-stone-200 shadow-soft text-xs font-medium text-stone-500 mb-6 animate-fade-up">
         <span class="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-        Processed locally — your files stay private
+        Static images only - Processed locally
       </div>
       <h1 class="font-[var(--font-heading)] text-3xl md:text-4xl font-bold text-stone-900 tracking-tight mb-3 animate-fade-up" style="animation-delay: 0.05s">
         {route.seo.h1}
@@ -42,7 +43,6 @@ const formatInfo = route.format ? generateFormatInfo(route.format) : '';
     </div>
   </section>
 
-  <!-- Processor -->
   <div class="animate-fade-up" style="animation-delay: 0.15s">
     <ImageProcessor
       client:visible
@@ -52,14 +52,31 @@ const formatInfo = route.format ? generateFormatInfo(route.format) : '';
       dimensions={route.dimensions}
       acceptFormats={route.acceptFormats}
       maxFileSize={route.maxFileSize}
+      resizeMode={route.resizeMode}
+      forceCanvasSize={route.forceCanvasSize}
     />
   </div>
 
-  <!-- Intro text -->
   <section class="max-w-2xl mx-auto px-5 py-10">
-    <div class="bg-white rounded-2xl border border-stone-100 shadow-soft p-6 md:p-8">
+    <div class="bg-white rounded-2xl border border-stone-100 shadow-soft p-6 md:p-8 space-y-4">
       <p class="text-stone-500 text-[15px] leading-relaxed">{introText}</p>
-      {formatInfo && <p class="text-stone-500 text-[15px] leading-relaxed mt-4 pt-4 border-t border-stone-100">{formatInfo}</p>}
+      <p class="text-stone-500 text-[15px] leading-relaxed">{detailText}</p>
+      {formatInfo && <p class="text-stone-500 text-[15px] leading-relaxed pt-4 border-t border-stone-100">{formatInfo}</p>}
+    </div>
+  </section>
+
+  <section class="max-w-3xl mx-auto px-5 pb-6">
+    <div class="text-center mb-8">
+      <span class="inline-block px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 text-xs font-semibold tracking-wide uppercase mb-3">Page Fit</span>
+      <h2 class="font-[var(--font-heading)] text-2xl font-bold text-stone-900 tracking-tight">What this page is best for</h2>
+    </div>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+      {pageHighlights.map((item) => (
+        <div class="bg-white rounded-2xl p-6 shadow-soft border border-stone-100">
+          <h3 class="font-[var(--font-heading)] font-semibold text-stone-900 mb-3">{item.title}</h3>
+          <p class="text-sm text-stone-500 leading-relaxed">{item.body}</p>
+        </div>
+      ))}
     </div>
   </section>
 
