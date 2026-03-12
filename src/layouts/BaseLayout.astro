@@ -1,106 +1,104 @@
 ---
+import '../styles/global.css';
+
 interface Props {
   title: string;
   description: string;
-  canonical: string;
-  structuredData?: object[];
+  canonical?: string;
+  schemas?: object[];
 }
 
-const {
-  title,
-  description,
-  canonical,
-  structuredData = []
-} = Astro.props as Props;
+const { title, description, canonical, schemas = [] } = Astro.props;
+const canonicalUrl = canonical || new URL(Astro.url.pathname, Astro.site).href;
+const currentPath = Astro.url.pathname;
 ---
-
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>{title}</title>
-    <meta name="description" content={description} />
-    <link rel="canonical" href={canonical} />
-    <meta name="robots" content="index,follow" />
-    <meta property="og:type" content="website" />
-    <meta property="og:title" content={title} />
-    <meta property="og:description" content={description} />
-    <meta property="og:url" content={canonical} />
-    {structuredData.map((entry) => (
-      <script type="application/ld+json" set:html={JSON.stringify(entry)} />
-    ))}
-  </head>
-  <body>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <title>{title}</title>
+  <meta name="description" content={description} />
+  <link rel="canonical" href={canonicalUrl} />
+  <meta property="og:title" content={title} />
+  <meta property="og:description" content={description} />
+  <meta property="og:url" content={canonicalUrl} />
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="LocalResizer" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content={title} />
+  <meta name="twitter:description" content={description} />
+  {schemas.map(schema => (
+    <script type="application/ld+json" set:html={JSON.stringify(schema)} />
+  ))}
+</head>
+<body class="min-h-screen flex flex-col bg-[var(--color-surface)] text-[var(--color-text-primary)]">
+  <!-- Header -->
+  <header class="sticky top-0 z-50 bg-white/80 backdrop-blur-xl border-b border-[var(--color-border-light)]">
+    <nav class="max-w-5xl mx-auto px-5 h-16 flex items-center justify-between">
+      <a href="/" class="flex items-center gap-2.5 no-underline group">
+        <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-teal-500 to-teal-700 flex items-center justify-center shadow-soft transition-transform group-hover:scale-105">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <path d="M2 11V5h2v4.5h3V11H2zm6 0V5h2v6H8zm-1-2.5L10 11H7.5L5 8l3-3h2.5L8 8.5z" fill="white"/>
+          </svg>
+        </div>
+        <span class="font-heading text-lg font-bold tracking-tight text-[var(--color-text-primary)]">Local<span class="text-teal-600">Resizer</span></span>
+      </a>
+      <div class="flex items-center gap-1">
+        {[
+          { href: '/', label: 'Home' },
+          { href: '/about', label: 'About' },
+          { href: '/privacy', label: 'Privacy' },
+        ].map(link => (
+          <a
+            href={link.href}
+            class:list={[
+              'px-3 py-1.5 rounded-lg text-sm font-medium transition-all no-underline',
+              currentPath === link.href || (link.href !== '/' && currentPath.startsWith(link.href))
+                ? 'text-teal-700 bg-teal-50'
+                : 'text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-stone-100',
+            ]}
+          >
+            {link.label}
+          </a>
+        ))}
+      </div>
+    </nav>
+  </header>
+
+  <!-- Main -->
+  <main class="flex-1">
     <slot />
-  </body>
+  </main>
+
+  <!-- Footer -->
+  <footer class="border-t border-[var(--color-border)] bg-white">
+    <div class="max-w-5xl mx-auto px-5 py-10">
+      <div class="flex flex-col md:flex-row items-center justify-between gap-4">
+        <div class="flex items-center gap-2">
+          <div class="w-6 h-6 rounded-md bg-gradient-to-br from-teal-500 to-teal-700 flex items-center justify-center">
+            <svg width="12" height="12" viewBox="0 0 16 16" fill="none">
+              <path d="M2 11V5h2v4.5h3V11H2zm6 0V5h2v6H8zm-1-2.5L10 11H7.5L5 8l3-3h2.5L8 8.5z" fill="white"/>
+            </svg>
+          </div>
+          <span class="font-heading text-sm font-semibold text-[var(--color-text-secondary)]">LocalResizer</span>
+        </div>
+        <div class="flex items-center gap-4 text-sm">
+          <a href="/about" class="text-[var(--color-text-tertiary)] hover:text-teal-600 transition-colors no-underline">About</a>
+          <a href="/privacy" class="text-[var(--color-text-tertiary)] hover:text-teal-600 transition-colors no-underline">Privacy</a>
+          <a href="/terms" class="text-[var(--color-text-tertiary)] hover:text-teal-600 transition-colors no-underline">Terms</a>
+          <a href="/contact" class="text-[var(--color-text-tertiary)] hover:text-teal-600 transition-colors no-underline">Contact</a>
+        </div>
+      </div>
+      <div class="mt-6 pt-6 border-t border-[var(--color-border-light)] flex flex-col md:flex-row items-center justify-between gap-2 text-xs text-[var(--color-text-tertiary)]">
+        <p>&copy; {new Date().getFullYear()} LocalResizer. All rights reserved.</p>
+        <p class="flex items-center gap-1.5">
+          <span class="inline-block w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+          All processing happens in your browser
+        </p>
+      </div>
+    </div>
+  </footer>
+</body>
 </html>
-
-<style is:global>
-  :root {
-    color-scheme: light;
-    font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    background: #f8fafc;
-    color: #0f172a;
-  }
-
-  body {
-    margin: 0;
-  }
-
-  main {
-    max-width: 1120px;
-    margin: 0 auto;
-    padding: 48px 20px 80px;
-  }
-
-  h1,
-  h2,
-  h3,
-  p,
-  li {
-    line-height: 1.6;
-  }
-
-  .hero {
-    margin-bottom: 32px;
-  }
-
-  .eyebrow {
-    display: inline-block;
-    margin-bottom: 12px;
-    padding: 6px 10px;
-    background: #ede9fe;
-    color: #6d28d9;
-    border-radius: 999px;
-    font-size: 0.9rem;
-    font-weight: 600;
-  }
-
-  .lede {
-    max-width: 760px;
-    color: #475569;
-    font-size: 1.1rem;
-  }
-
-  .content-grid {
-    display: grid;
-    grid-template-columns: 2fr 1fr;
-    gap: 24px;
-    margin-top: 28px;
-  }
-
-  .card {
-    background: #fff;
-    border: 1px solid #e2e8f0;
-    border-radius: 20px;
-    padding: 24px;
-    box-shadow: 0 12px 30px rgba(15, 23, 42, 0.04);
-  }
-
-  @media (max-width: 900px) {
-    .content-grid {
-      grid-template-columns: 1fr;
-    }
-  }
-</style>

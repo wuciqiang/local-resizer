@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://localresizer.com/sitemap-index.xml

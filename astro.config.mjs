@@ -1,14 +1,18 @@
 import { defineConfig } from 'astro/config';
+import react from '@astrojs/react';
+import tailwindcss from '@tailwindcss/vite';
 import sitemap from '@astrojs/sitemap';
 
 export default defineConfig({
-  site: 'https://picresizermatrix.com',
+  site: 'https://localresizer.com',
   output: 'static',
-  trailingSlash: 'never',
-  integrations: [sitemap()],
+  integrations: [react(), sitemap()],
   vite: {
-    build: {
-      target: 'es2020'
-    }
-  }
+    plugins: [tailwindcss()],
+  },
+  i18n: {
+    defaultLocale: 'en',
+    locales: ['en'],
+    routing: { prefixDefaultLocale: false },
+  },
 });

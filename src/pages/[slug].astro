@@ -1,77 +1,69 @@
 ---
-import CompressionDemo from '../components/CompressionDemo.astro';
-import { getRouteBySlug, keywordRoutes } from '../data/routes';
+import { phase0Routes } from '../data/routes';
+import type { RouteConfig } from '../data/routes';
 import BaseLayout from '../layouts/BaseLayout.astro';
-import { buildPageCopy } from '../lib/content';
-import { buildCanonicalUrl, buildFaqSchema, buildHowToSchema } from '../lib/seo';
+import ImageProcessor from '../components/ImageProcessor.tsx';
+import HowToSection from '../components/HowToSection.astro';
+import FaqSection from '../components/FaqSection.astro';
+import FooterLinks from '../components/FooterLinks.astro';
+import { generateHowToSchema, generateFAQSchema } from '../lib/seo';
+import { generateIntroText, generateFormatInfo } from '../lib/content';
 
-export const getStaticPaths = () =>
-  keywordRoutes.map((route) => ({
+export function getStaticPaths() {
+  return phase0Routes.map(route => ({
     params: { slug: route.slug },
-    props: { route }
+    props: { route },
   }));
-
-const { route } = Astro.props;
-const page = route ?? getRouteBySlug(Astro.params.slug ?? '');
-
-if (!page) {
-  throw new Error(`Unknown slug: ${Astro.params.slug}`);
 }
 
-const copy = buildPageCopy(page);
-const canonical = buildCanonicalUrl(page.slug);
-const structuredData = [buildHowToSchema(page, copy), buildFaqSchema(page, copy)];
+interface Props {
+  route: RouteConfig;
+}
+
+const { route } = Astro.props;
+const howToSchema = generateHowToSchema(route);
+const faqSchema = generateFAQSchema(route);
+const introText = generateIntroText(route);
+const formatInfo = route.format ? generateFormatInfo(route.format) : '';
 ---
+<BaseLayout title={route.seo.title} description={route.seo.description} schemas={[howToSchema, faqSchema]}>
+  <!-- Hero -->
+  <section class="relative overflow-hidden">
+    <div class="absolute inset-0 bg-[radial-gradient(circle_at_30%_-10%,rgba(13,148,136,0.05),transparent_50%)]" />
+    <div class="relative max-w-3xl mx-auto px-5 pt-14 pb-6 text-center">
+      <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white border border-stone-200 shadow-soft text-xs font-medium text-stone-500 mb-6 animate-fade-up">
+        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+        Processed locally — your files stay private
+      </div>
+      <h1 class="font-[var(--font-heading)] text-3xl md:text-4xl font-bold text-stone-900 tracking-tight mb-3 animate-fade-up" style="animation-delay: 0.05s">
+        {route.seo.h1}
+      </h1>
+      <p class="text-lg text-stone-500 max-w-lg mx-auto animate-fade-up" style="animation-delay: 0.1s">{route.seo.subtitle}</p>
+    </div>
+  </section>
 
-<BaseLayout
-  title={page.title}
-  description={page.description}
-  canonical={canonical}
-  structuredData={structuredData}
->
-  <main>
-    <section class="hero">
-      <span class="eyebrow">Private, browser-based compression</span>
-      <h1>{page.h1}</h1>
-      <p class="lede">{copy.subtitle}</p>
-    </section>
+  <!-- Processor -->
+  <div class="animate-fade-up" style="animation-delay: 0.15s">
+    <ImageProcessor
+      client:visible
+      action={route.action}
+      format={route.format}
+      targetSizeBytes={route.targetSizeBytes}
+      dimensions={route.dimensions}
+      acceptFormats={route.acceptFormats}
+      maxFileSize={route.maxFileSize}
+    />
+  </div>
 
-    <CompressionDemo targetKB={page.targetKB} />
+  <!-- Intro text -->
+  <section class="max-w-2xl mx-auto px-5 py-10">
+    <div class="bg-white rounded-2xl border border-stone-100 shadow-soft p-6 md:p-8">
+      <p class="text-stone-500 text-[15px] leading-relaxed">{introText}</p>
+      {formatInfo && <p class="text-stone-500 text-[15px] leading-relaxed mt-4 pt-4 border-t border-stone-100">{formatInfo}</p>}
+    </div>
+  </section>
 
-    <section class="content-grid">
-      <article>
-        <section class="card">
-          <h2>{copy.whyTitle}</h2>
-          {copy.whyBullets.map((item) => (
-            <section>
-              <h3>{item.title}</h3>
-              <p>{item.body}</p>
-            </section>
-          ))}
-        </section>
-
-        <section class="card">
-          <h2>{copy.howToTitle}</h2>
-          <ol>
-            {copy.howToSteps.map((step) => <li>{step}</li>)}
-          </ol>
-        </section>
-
-        <section class="card">
-          <h2>{copy.ctaTitle}</h2>
-          <p>{copy.ctaBody}</p>
-        </section>
-      </article>
-
-      <aside class="card">
-        <h2>FAQ</h2>
-        {copy.faq.map((item) => (
-          <section>
-            <h3>{item.question}</h3>
-            <p>{item.answer}</p>
-          </section>
-        ))}
-      </aside>
-    </section>
-  </main>
+  <HowToSection steps={route.howToSteps} />
+  <FaqSection items={route.faq} />
+  <FooterLinks links={route.relatedLinks} />
 </BaseLayout>

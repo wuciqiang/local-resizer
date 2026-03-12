@@ -1,3 +1,19 @@
 node_modules/
 dist/
 .astro/
+.spec-workflow/
+*.csv
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Env
+.env
+.env.*
