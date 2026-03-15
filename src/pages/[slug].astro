@@ -31,7 +31,7 @@ const pageHighlights = generatePageHighlights(route);
 <BaseLayout title={route.seo.title} description={route.seo.description} schemas={[howToSchema, faqSchema]}>
   <section class="relative overflow-hidden">
     <div class="absolute inset-0 bg-[radial-gradient(circle_at_30%_-10%,rgba(13,148,136,0.05),transparent_50%)]" />
-    <div class="relative max-w-3xl mx-auto px-5 pt-14 pb-6 text-center">
+    <div class="relative max-w-3xl mx-auto px-4 sm:px-5 pt-10 sm:pt-14 pb-6 text-center">
       <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white border border-stone-200 shadow-soft text-xs font-medium text-stone-500 mb-6 animate-fade-up">
         <span class="w-1.5 h-1.5 rounded-full bg-emerald-500" />
         Static images only - Processed locally
@@ -57,7 +57,7 @@ const pageHighlights = generatePageHighlights(route);
     />
   </div>
 
-  <section class="max-w-2xl mx-auto px-5 py-10">
+  <section class="max-w-2xl mx-auto px-4 sm:px-5 py-10">
     <div class="bg-white rounded-2xl border border-stone-100 shadow-soft p-6 md:p-8 space-y-4">
       <p class="text-stone-500 text-[15px] leading-relaxed">{introText}</p>
       <p class="text-stone-500 text-[15px] leading-relaxed">{detailText}</p>
@@ -65,7 +65,7 @@ const pageHighlights = generatePageHighlights(route);
     </div>
   </section>
 
-  <section class="max-w-3xl mx-auto px-5 pb-6">
+  <section class="max-w-3xl mx-auto px-4 sm:px-5 pb-6">
     <div class="text-center mb-8">
       <span class="inline-block px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 text-xs font-semibold tracking-wide uppercase mb-3">Page Fit</span>
       <h2 class="font-[var(--font-heading)] text-2xl font-bold text-stone-900 tracking-tight">What this page is best for</h2>
