@@ -365,7 +365,7 @@ export default function ImageProcessor({
             <div className={`mx-auto mb-5 w-16 h-16 rounded-2xl flex items-center justify-center transition-all duration-300 ${
               dragOver ? 'bg-teal-100 scale-110' : 'bg-stone-100 group-hover:bg-teal-50'
             }`}>
-              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className={`transition-colors ${dragOver ? 'text-teal-600' : 'text-stone-400 group-hover:text-teal-500'}`}>
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className={`transition-colors ${dragOver ? 'text-teal-700' : 'text-stone-500 group-hover:text-teal-600'}`}>
                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
                 <polyline points="17 8 12 3 7 8" />
                 <line x1="12" y1="3" x2="12" y2="15" />
@@ -375,7 +375,7 @@ export default function ImageProcessor({
             <p className="font-[var(--font-heading)] text-lg font-semibold text-stone-800 mb-1.5">
               {dragOver ? 'Drop to upload' : 'Drop static images here or click to browse'}
             </p>
-            <p className="text-sm text-stone-400 mb-4">
+            <p className="text-sm text-stone-600 mb-4">
               Up to 20 files - Max {fmtBytes(maxFileSize)} each - {acceptLabels.join(', ')}
             </p>
             <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-50 text-emerald-700 text-xs font-medium">
@@ -399,20 +399,25 @@ export default function ImageProcessor({
 
           {toolAction === 'compress' && (
             <div>
-              <label className="block text-sm font-medium text-stone-700 mb-2">Target file size</label>
+              <label htmlFor="target-size-input" className="block text-sm font-medium text-stone-800 mb-2">Target file size</label>
               <div className="flex gap-2">
                 <input
+                  id="target-size-input"
                   type="number"
                   min="1"
                   value={sizeValue}
                   onChange={(e) => setSizeValue(e.target.value)}
-                  className="flex-1 px-3 py-2 border border-stone-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                  className="flex-1 px-3 py-2 border border-stone-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-600 focus:border-transparent"
                   placeholder="e.g. 200"
+                  aria-label="Target file size value"
                 />
+                <label htmlFor="size-unit-select" className="sr-only">File size unit</label>
                 <select
+                  id="size-unit-select"
                   value={sizeUnit}
                   onChange={(e) => setSizeUnit(e.target.value as 'kb' | 'mb')}
-                  className="px-3 py-2 border border-stone-200 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                  className="px-3 py-2 border border-stone-200 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-teal-600 focus:border-transparent"
+                  aria-label="File size unit (KB or MB)"
                 >
                   <option value="kb">KB</option>
                   <option value="mb">MB</option>
@@ -424,7 +429,7 @@ export default function ImageProcessor({
                     key={preset.label}
                     type="button"
                     onClick={() => { setSizeValue(preset.value); setSizeUnit(preset.unit); }}
-                    className="px-2.5 py-1 rounded-lg text-xs font-medium bg-stone-50 border border-stone-200 text-stone-600 hover:border-teal-300 hover:text-teal-700 transition-colors"
+                    className="px-2.5 py-1 rounded-lg text-xs font-medium bg-stone-50 border border-stone-200 text-stone-700 hover:border-teal-500 hover:text-teal-700 transition-colors"
                   >
                     {preset.label}
                   </button>
@@ -445,7 +450,7 @@ export default function ImageProcessor({
                   className="flex-1 px-3 py-2 border border-stone-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
                   placeholder="Width"
                 />
-                <span className="text-stone-400 text-sm">x</span>
+                <span className="text-stone-500 text-sm">x</span>
                 <input
                   type="number"
                   min="1"
@@ -461,7 +466,7 @@ export default function ImageProcessor({
                     key={preset.label}
                     type="button"
                     onClick={() => { setWidthValue(String(preset.width)); setHeightValue(String(preset.height)); }}
-                    className="px-2.5 py-1 rounded-lg text-xs font-medium bg-stone-50 border border-stone-200 text-stone-600 hover:border-teal-300 hover:text-teal-700 transition-colors"
+                    className="px-2.5 py-1 rounded-lg text-xs font-medium bg-stone-50 border border-stone-200 text-stone-700 hover:border-teal-500 hover:text-teal-700 transition-colors"
                   >
                     {preset.label}
                   </button>
@@ -478,20 +483,20 @@ export default function ImageProcessor({
         <div className="mt-4 bg-white rounded-xl border border-stone-200 shadow-soft overflow-hidden animate-fade-up">
           <div className="px-4 py-3 border-b border-stone-100 flex items-center justify-between">
             <span className="text-sm font-medium text-stone-700">{files.length} file{files.length > 1 ? 's' : ''} selected</span>
-            <button onClick={reset} className="text-xs text-stone-400 hover:text-stone-600 transition-colors">Clear</button>
+            <button onClick={reset} className="text-xs text-stone-500 hover:text-stone-700 transition-colors">Clear</button>
           </div>
           <div className="max-h-40 overflow-y-auto">
             {files.map((file, index) => (
               <div key={`${file.name}-${index}`} className="px-4 py-2.5 flex items-center gap-3 text-sm border-b border-stone-50 last:border-0">
                 <div className="w-8 h-8 rounded-lg bg-stone-100 flex items-center justify-center shrink-0">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-stone-400">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-stone-500">
                     <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
                     <circle cx="8.5" cy="8.5" r="1.5" />
                     <polyline points="21 15 16 10 5 21" />
                   </svg>
                 </div>
                 <span className="truncate text-stone-700 flex-1">{file.name}</span>
-                <span className="text-stone-400 text-xs shrink-0">{fmtBytes(file.size)}</span>
+                <span className="text-stone-600 text-xs shrink-0">{fmtBytes(file.size)}</span>
               </div>
             ))}
           </div>
@@ -542,7 +547,7 @@ export default function ImageProcessor({
           <div className="bg-white rounded-xl border border-stone-200 shadow-soft p-6">
             <div className="flex items-center justify-between mb-3">
               <span className="text-sm font-medium text-stone-700 animate-pulse-soft">Processing...</span>
-              <span className="text-sm font-semibold text-teal-600 tabular-nums">{progress}%</span>
+              <span className="text-sm font-semibold text-teal-700 tabular-nums">{progress}%</span>
             </div>
             <div className="h-2 bg-stone-100 rounded-full overflow-hidden">
               <div
@@ -598,7 +603,7 @@ export default function ImageProcessor({
                   </div>
                   <div className="min-w-0 flex-1">
                     <p className="text-sm font-medium text-stone-800 truncate">{result.name}</p>
-                    <p className="text-xs text-stone-400 mt-0.5">
+                    <p className="text-xs text-stone-600 mt-0.5">
                       {fmtBytes(result.originalSize)}
                       <span className="mx-1.5 text-stone-300">-&gt;</span>
                       {fmtBytes(result.processedSize)}
