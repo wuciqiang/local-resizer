@@ -2,14 +2,35 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Source of truth
+
+Use these sources in this order:
+
+1. `src/data/routes.ts` — shipped route matrix and live tool configuration
+2. `docs/current-public-capabilities.md` — shipped marketing / claim boundaries
+3. `README.md` — developer-facing overview
+
+Treat the files below as planning or historical context, **not** evidence of shipped features:
+
+- `PRD.md`
+- `docs/modules.md`
+- files in `docs/plans/`
+
+If planning docs conflict with shipped code, prefer `src/data/routes.ts` and `docs/current-public-capabilities.md`.
+
 ## Commands
 
 ```bash
-npm run dev        # Start dev server (run manually in terminal)
-npm run build      # Build static site (astro build)
-npm run preview    # Preview production build
-npm run test       # Run all tests (vitest run)
-npx vitest run tests/routes.test.ts   # Run a single test file
+npm run dev           # Start dev server (run manually in terminal)
+npm run build         # Build static site only
+npm run build:deploy  # Build + submit IndexNow (requires env)
+npm run preview       # Preview production build
+npm run typecheck     # astro check + tsc --noEmit
+npm run test          # Run all tests
+npm run smoke:dist    # Check built output against live-scope expectations
+npm run verify        # typecheck + test + build
+npm run test:routes   # Run route-matrix tests only
+npm run test:image    # Run image helper tests only
 ```
 
 ## Architecture
@@ -18,49 +39,65 @@ LocalResizer is a privacy-first browser-based image tool site. All image process
 
 **Stack**: Astro 5 (SSG) + React 19 (islands) + Tailwind CSS 4 + TypeScript strict mode. Deploys as static files to Cloudflare Pages.
 
-### Route-driven pSEO system
+### Route-driven live scope
 
-`src/data/routes.ts` is the central data layer. It defines a `RouteConfig` type and programmatically generates route configs for three page families:
+`src/data/routes.ts` is the central live data layer. It defines `RouteConfig` and generates the currently shipped route set.
 
-- **compress-{format}-to-{size}** — target file-size compression (JPEG/PNG/WebP × 27 KB tiers + 7 MB tiers)
-- **resize-image-to-{size}** — format-agnostic resize to file-size budget (20 sizes)
-- **resize-{platform}-{asset}** — exact canvas dimensions for social platforms (21 assets)
+Three route families exist in code:
 
-Only routes listed in `PHASE0_SLUGS` are actually built. This gates the full matrix (~180 possible routes) down to 8 live pages, preventing SEO dilution during early launch. To add a new page, add its slug to `PHASE0_SLUGS`.
+- `compress-{format}-to-{size}`
+- `resize-image-to-{size}`
+- `resize-{platform}-{asset}`
 
-`src/pages/[slug].astro` consumes `allRoutes` via `getStaticPaths()` and renders each route with the shared layout, `ImageProcessor` component, content sections, FAQ, and HowTo schema.
+Only routes listed in `PHASE0_SLUGS` are currently active. They are exported as:
+
+- `activeRoutes` — all currently shipped routes
+- `phase0Routes` — alias kept for page-level clarity
+
+To ship a new page, add its slug to `PHASE0_SLUGS`.
+
+`src/pages/[slug].astro` consumes `phase0Routes` via `getStaticPaths()` and renders each route with the shared layout, `ImageProcessor`, content sections, FAQ, and HowTo schema.
 
 ### Image processing pipeline
 
-Two independent engines in `src/lib/`:
+Main engines:
 
-- **compress.ts** — Binary-search on JPEG/WebP quality parameter to hit a target file size. For PNG (no quality knob), scales pixel dimensions instead. Tracks `bestUnder` and `bestAny` candidates across iterations.
-- **resize.ts** — Dimension-based resize (fit/contain/cover/stretch) with optional `forceCanvasSize` for platform assets. File-size-targeted resize combines dimension scaling with a compress pass for non-PNG formats.
-
-Both use `loadImage` → Canvas `drawImage` → `toBlob` pattern. Memory management: `URL.revokeObjectURL` in `finally` blocks and canvas zeroing after use.
+- `src/lib/compress.ts` — binary-search quality compression for JPEG/WebP, PNG fallback strategies
+- `src/lib/resize.ts` — dimension-based resize plus exact-canvas export logic
+- `src/lib/image/` — shared canvas and geometry helpers used by both engines
 
 ### Component model
 
-`ImageProcessor.tsx` is the only React island. It has two modes:
-- **Configurable** (homepage): user picks compress/resize, enters size/dimensions, uses presets
-- **Fixed** (slug pages): action, format, target locked by route config via props
+`src/components/ImageProcessor.tsx` is the only React island. It orchestrates smaller UI pieces in `src/components/image-processor/`.
 
-State flow: `idle` → file drop → `processing` (progress %) → `done` (results with download) or `error`.
+Modes:
 
-Astro components (`HowToSection`, `FaqSection`, `FooterLinks`) handle static content sections on slug pages.
+- **Configurable** (homepage): user picks compress/resize and enters values
+- **Fixed** (slug pages): route config locks action, format, and target
 
-### Content generation
+State flow: `idle` → file drop → `processing` → `done` / `error`.
 
-`src/lib/content.ts` generates page copy (intro text, detail text, highlights, format info) from route config properties. `src/lib/seo.ts` generates HowTo and FAQ JSON-LD schemas.
+### Testing focus
 
-### Styling
+Current automated coverage includes:
 
-`src/styles/global.css` uses Tailwind 4's `@theme` block for design tokens. Custom utilities: `shadow-soft`, `shadow-soft-lg`, animations (`fade-up`, `border-flow`, `stagger-children`), and prose styles for long-form pages.
+- route generation and public-scope constraints
+- content / schema helpers
+- extracted image geometry and ImageProcessor utility helpers
+- built-output smoke checks against `dist/` and `docs/current-public-capabilities.md`
+
+When changing image-processing behavior, run at least:
+
+```bash
+npm run test:image
+npm run test
+npm run typecheck
+```
 
 ## Key constraints
 
-- Static images only: JPEG, PNG, WebP. No GIF, no video, no animated formats.
-- `acceptFormats` on every route excludes `image/gif` — tests enforce this.
-- Tests verify all routes have: title, description, h1, ≥5 FAQ items, exactly 3 howToSteps.
-- `relatedLinks` are pruned to only reference other built (Phase 0) slugs.
-- Max 20 files per batch, 50 MB per file default.
+- Static images only: JPEG, PNG, WebP
+- No GIF, no video, no animated formats in the live public release
+- `acceptFormats` on every live route excludes `image/gif`
+- Tests enforce required SEO / FAQ / HowTo fields on live routes
+- `build` must stay side-effect free; external submission belongs in `build:deploy`

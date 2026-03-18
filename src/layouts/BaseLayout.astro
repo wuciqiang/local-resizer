@@ -30,9 +30,9 @@ const currentPath = Astro.url.pathname;
   <meta name="twitter:title" content={title} />
   <meta name="twitter:description" content={description} />
   {schemas.map(schema => (
-    <script type="application/ld+json" set:html={JSON.stringify(schema)} />
+    <script is:inline type="application/ld+json" set:html={JSON.stringify(schema)} />
   ))}
-  <script defer src="https://umami-blue-zeta.vercel.app/script.js" data-website-id="a4db5007-1ce3-438f-b139-1e0e873b46c6"></script>
+  <script is:inline defer src="https://umami-blue-zeta.vercel.app/script.js" data-website-id="a4db5007-1ce3-438f-b139-1e0e873b46c6"></script>
 </head>
 <body class="min-h-screen flex flex-col bg-[var(--color-surface)] text-[var(--color-text-primary)]">
   <!-- Header -->

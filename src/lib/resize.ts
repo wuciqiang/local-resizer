@@ -1,5 +1,7 @@
 import type { ResizeMode } from '../data/routes';
 import { compressImage } from './compress';
+import { canvasToBlob, loadImage, resetCanvas } from './image/canvas';
+import { getContainScale, getCoverScale, getScaledDimensions } from './image/geometry';
 
 export interface ResizeOptions {
   file: File;
@@ -30,19 +32,6 @@ interface SizeCandidate {
   distance: number;
 }
 
-function loadImage(file: File): Promise<HTMLImageElement> {
-  return new Promise((resolve, reject) => {
-    const image = new Image();
-    const url = URL.createObjectURL(file);
-    image.onload = () => resolve(image);
-    image.onerror = () => {
-      URL.revokeObjectURL(url);
-      reject(new Error('Failed to load the image file.'));
-    };
-    image.src = url;
-  });
-}
-
 function getOutputType(fileType: string): string {
   if (fileType === 'image/jpeg' || fileType === 'image/png' || fileType === 'image/webp') {
     return fileType;
@@ -53,18 +42,6 @@ function getOutputType(fileType: string): string {
 
 function getDefaultQuality(type: string): number {
   return type === 'image/png' ? 1 : 0.92;
-}
-
-function canvasToBlob(canvas: HTMLCanvasElement, type: string, quality: number): Promise<Blob> {
-  return new Promise((resolve, reject) => {
-    canvas.toBlob((blob) => {
-      if (blob) {
-        resolve(blob);
-        return;
-      }
-      reject(new Error('Failed to create an output blob.'));
-    }, type, quality);
-  });
 }
 
 function fillCanvasBackground(
@@ -86,14 +63,6 @@ function fillCanvasBackground(
   context.restore();
 }
 
-function getContainScale(originalWidth: number, originalHeight: number, targetWidth: number, targetHeight: number): number {
-  return Math.min(targetWidth / originalWidth, targetHeight / originalHeight);
-}
-
-function getCoverScale(originalWidth: number, originalHeight: number, targetWidth: number, targetHeight: number): number {
-  return Math.max(targetWidth / originalWidth, targetHeight / originalHeight);
-}
-
 async function renderScaledBlob(
   image: HTMLImageElement,
   width: number,
@@ -111,8 +80,7 @@ async function renderScaledBlob(
 
   context.drawImage(image, 0, 0, width, height);
   const blob = await canvasToBlob(canvas, outputType, quality);
-  canvas.width = 0;
-  canvas.height = 0;
+  resetCanvas(canvas);
   return blob;
 }
 
@@ -246,11 +214,12 @@ async function resizeToDimensions(args: {
   }
 
   const blob = await canvasToBlob(canvas, outputType, getDefaultQuality(outputType));
+  resetCanvas(canvas);
 
   return {
     blob,
-    width: canvas.width,
-    height: canvas.height,
+    width: forceCanvasSize ? targetWidth : finalWidth,
+    height: forceCanvasSize ? targetHeight : finalHeight,
     originalWidth,
     originalHeight,
     note,
@@ -318,8 +287,7 @@ async function resizeToTargetFileSize(args: {
 
   for (let index = 0; index < maxIterations; index += 1) {
     const scale = (low + high) / 2;
-    const width = Math.max(1, Math.round(originalWidth * scale));
-    const height = Math.max(1, Math.round(originalHeight * scale));
+    const { width, height } = getScaledDimensions(originalWidth, originalHeight, scale);
     const blob = await renderScaledBlob(image, width, height, outputType, baseQuality);
     const distance = Math.abs(blob.size - targetSizeBytes);
 

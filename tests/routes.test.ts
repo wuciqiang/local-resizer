@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   PHASE0_SLUGS,
-  allRoutes,
+  activeRoutes,
   formatSizeLabel,
   getRouteBySlug,
   parseSize,
@@ -29,37 +29,37 @@ describe('formatSizeLabel', () => {
   });
 });
 
-describe('allRoutes', () => {
+describe('activeRoutes', () => {
   it('generates only active routes matching PHASE0_SLUGS', () => {
-    expect(allRoutes.length).toBe(PHASE0_SLUGS.length);
+    expect(activeRoutes.length).toBe(PHASE0_SLUGS.length);
     for (const slug of PHASE0_SLUGS) {
-      expect(allRoutes.find((route) => route.slug === slug)).toBeDefined();
+      expect(activeRoutes.find((route) => route.slug === slug)).toBeDefined();
     }
   });
 
   it('includes compress routes for active slugs', () => {
-    const compressRoutes = allRoutes.filter((route) => route.action === 'compress' && route.format);
+    const compressRoutes = activeRoutes.filter((route) => route.action === 'compress' && route.format);
     expect(compressRoutes.length).toBe(3);
   });
 
   it('includes resize-image routes for active slugs', () => {
-    const resizeRoutes = allRoutes.filter((route) => route.slug.startsWith('resize-image-to-'));
+    const resizeRoutes = activeRoutes.filter((route) => route.slug.startsWith('resize-image-to-'));
     expect(resizeRoutes.length).toBe(3);
   });
 
   it('includes platform routes for active slugs', () => {
-    const platformRoutes = allRoutes.filter((route) => route.platform);
+    const platformRoutes = activeRoutes.filter((route) => route.platform);
     expect(platformRoutes.length).toBe(2);
     expect(platformRoutes.some((route) => route.slug.includes('gif'))).toBe(false);
   });
 
   it('has unique slugs', () => {
-    const slugs = allRoutes.map((route) => route.slug);
+    const slugs = activeRoutes.map((route) => route.slug);
     expect(new Set(slugs).size).toBe(slugs.length);
   });
 
   it('all routes have required SEO and page fields', () => {
-    for (const route of allRoutes) {
+    for (const route of activeRoutes) {
       expect(route.seo.title).toBeTruthy();
       expect(route.seo.description).toBeTruthy();
       expect(route.seo.h1).toBeTruthy();

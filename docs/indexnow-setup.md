@@ -18,9 +18,10 @@
    - 变量名：`INDEXNOW_KEY`
    - 值：`4ca258e2-7679-4bfb-85fd-97c5855d7a1a`
 
-   然后在 `package.json` 的 `build` 脚本中添加提交步骤：
+   然后使用 `build:deploy` 脚本触发“构建 + 提交”：
    ```json
-   "build": "astro build && node scripts/submit-indexnow.js"
+   "build": "astro build",
+   "build:deploy": "npm run build && npm run submit-indexnow"
    ```
 
 4. **验证**：
@@ -37,5 +38,6 @@
 ## 注意事项
 
 - IndexNow 支持 Bing、Yandex 等搜索引擎
-- 每次构建后自动提交所有 URL
+- 普通 `npm run build` 只负责构建，不应带外部副作用
+- 只有 `npm run build:deploy` 或显式执行 `npm run submit-indexnow` 才会向 IndexNow 提交
 - 无需重复提交未变化的页面（IndexNow 会自动去重）

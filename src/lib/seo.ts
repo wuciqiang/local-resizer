@@ -1,4 +1,4 @@
-import type { RouteConfig, FaqItem } from '../data/routes';
+import type { RouteConfig } from '../data/routes';
 
 export function generateHowToSchema(route: RouteConfig): object {
   return {

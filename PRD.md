@@ -6,6 +6,12 @@
 **优先级**：P0
 **版本**：2.0
 
+> [!IMPORTANT]
+> 本文件是**规划文档**，包含大量未来阶段设想，不代表当前已上线能力。  
+> 判断 live scope 时，请优先使用：
+> - `src/data/routes.ts`
+> - `docs/current-public-capabilities.md`
+
 ---
 
 ## 1. 战略路径 — 农村包围城市

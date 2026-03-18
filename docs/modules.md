@@ -1,69 +1,93 @@
-# LocalResizer — 模块文档
+# LocalResizer — 模块文档（当前实现）
+
+> 本文档描述当前仓库中的**已实现结构**。  
+> 若与规划文档冲突，请以 `src/data/routes.ts` 和 `docs/current-public-capabilities.md` 为准。
 
 ## 架构概览
 
 Astro 5.x SSG + React 19 岛屿 + Tailwind CSS 4，纯前端图片处理，零服务器上传。
 
-```
+```text
 src/
-├── components/     # Astro 组件 + React 岛屿
-├── data/routes.ts  # 关键词矩阵 + 路由生成器（核心数据层）
-├── layouts/        # BaseLayout（全局布局 + SEO 注入）
-├── lib/            # 压缩/resize/SEO/内容引擎
-├── pages/          # Astro 页面（动态路由 + 静态页）
-└── styles/         # Tailwind 入口
+├── components/              # Astro 组件 + React 岛屿
+│   └── image-processor/     # ImageProcessor 拆分后的子组件与工具
+├── data/routes.ts           # 当前上线路由矩阵（唯一 live route 源）
+├── layouts/                 # BaseLayout（全局布局 + SEO 注入）
+├── lib/
+│   ├── compress.ts          # 目标体积压缩引擎
+│   ├── resize.ts            # 目标尺寸 / 精确画布引擎
+│   ├── image/               # canvas / geometry 共享辅助
+│   ├── content.ts           # 页面内容生成
+│   └── seo.ts               # JSON-LD / canonical 生成
+├── pages/                   # 首页、动态工具页、静态说明页
+└── styles/                  # 全局样式
 ```
 
 ## 模块说明
 
-### `src/data/routes.ts` — 路由矩阵引擎
+### `src/data/routes.ts` — 当前上线路由矩阵
 
-核心数据层，程序化生成所有路由配置。
+核心数据层，负责生成当前已发布页面。
 
-- **类型定义**: `RouteConfig`, `SEOMeta`, `FaqItem`, `Action`, `Format`
-- **矩阵常量**: `FORMATS`, `SIZE_TIERS_KB/MB`, `PLATFORM_ASSETS`
-- **生成器**: `generateCompressRoutes()`, `generateResizeImageRoutes()`, `generatePlatformRoutes()`
-- **内链**: `buildRelatedLinks()` — 同格式/同尺寸/同平台互链
-- **导出**: `allRoutes`(全量), `phase0Routes`(Phase 0 子集), `getRouteBySlug()`
+- **类型定义**：`RouteConfig`, `SEOMeta`, `FaqItem`, `Action`, `Format`
+- **路由家族**：
+  - `compress-{format}-to-{size}`
+  - `resize-image-to-{size}`
+  - `resize-{platform}-{asset}`
+- **当前导出**：
+  - `activeRoutes`：当前 live 路由全集
+  - `phase0Routes`：当前 live 路由别名，便于页面语义表达
+  - `getRouteBySlug()`
+- **当前发布开关**：`PHASE0_SLUGS`
 
-Phase 0 导出 8 个 P0 页面，Phase 1 切换为 `allRoutes` 即可铺开全部 ~200 页。
+### `src/lib/compress.ts` — 压缩引擎
 
-### `src/lib/compress.ts` — 二分法压缩引擎
+- JPEG / WebP：通过二分搜索 quality 逼近目标体积
+- PNG：优先重编码，再按策略选择转 WebP 或缩放尺寸
+- 返回最接近目标的候选结果，并附带说明文本
 
-- `compressImage(options)`: JPEG/WebP/GIF 通过二分搜索 quality 参数逼近目标体积
-- `compressByScaling()`: PNG 无 quality 参数，通过缩放尺寸逼近目标
-- 容差 ±5%，最大 20 次迭代
+### `src/lib/resize.ts` — 缩放引擎
 
-### `src/lib/resize.ts` — 尺寸缩放引擎
+- 支持目标尺寸缩放
+- 支持精确画布导出（平台尺寸页）
+- 支持面向目标体积的缩放 + 压缩组合策略
 
-- `resizeImage(options)`: 支持目标尺寸和目标体积两种模式
-- 目标体积模式：先按面积比缩尺寸，再调用 compress 微调
-- 默认保持宽高比
+### `src/lib/image/` — 共享图像工具
 
-### `src/lib/seo.ts` — SEO Schema 生成
+- `canvas.ts`：`loadImage` / `canvasToBlob` / `resetCanvas`
+- `geometry.ts`：contain / cover 缩放比例与尺寸计算
 
-- `generateHowToSchema()`: HowTo JSON-LD
-- `generateFAQSchema()`: FAQPage JSON-LD
-- `generateCanonicalUrl()`: canonical URL
+### `src/components/ImageProcessor.tsx` — React 岛屿入口
 
-### `src/lib/content.ts` — 内容引擎
+职责：
 
-- `generateIntroText()`: 按路由类型生成差异化介绍文案
-- `generateFormatInfo()`: 格式科普段落
+- 管理文件、状态、进度、错误和结果
+- 按模式调度 `compress.ts` 或 `resize.ts`
+- 组合以下子模块：
+  - `UploadDropzone`
+  - `ConfigPanel`
+  - `SelectedFilesPanel`
+  - `ProgressPanel`
+  - `ResultsPanel`
 
-### `src/components/ImageProcessor.tsx` — React 岛屿
+### `src/lib/content.ts` / `src/lib/seo.ts`
 
-状态机: `idle → processing → done | error`
+- `content.ts`：根据 route config 生成 intro / detail / highlights / format info
+- `seo.ts`：生成 HowTo、FAQ、canonical 等结构化输出
 
-功能: 拖拽上传、批量处理(≤20)、实时进度、下载、动态 import 压缩引擎。
+## 当前公开能力边界
 
-### 页面路由
+以 `docs/current-public-capabilities.md` 为准，当前 live scope 是：
 
-- `src/pages/index.astro` — 首页（品牌 + 工具入口）
-- `src/pages/[slug].astro` — 动态路由（所有工具页）
-- `src/pages/{about,privacy,terms,contact}.astro` — 静态页
+- 仅支持静态 JPEG / PNG / WebP
+- 不支持 GIF / video / AI 编辑
+- 当前平台专用页仅覆盖已发布的 live pages
 
-## Phase 1 扩展指南
+## 推荐验证命令
 
-1. `src/pages/[slug].astro` 中将 `phase0Routes` 改为 `allRoutes`
-2. 构建即自动生成全部 ~200 页 + sitemap
+```bash
+npm run typecheck
+npm run test
+npm run test:image
+npm run build
+```

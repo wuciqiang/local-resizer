@@ -1,3 +1,6 @@
+import { canvasToBlob, loadImage, resetCanvas } from './image/canvas';
+import { getScaledDimensions } from './image/geometry';
+
 export type PngStrategy = 'auto' | 'webp' | 'png-scale';
 
 export interface CompressOptions {
@@ -32,31 +35,6 @@ interface CompressionCandidate {
   distance: number;
 }
 
-function loadImage(file: File): Promise<HTMLImageElement> {
-  return new Promise((resolve, reject) => {
-    const image = new Image();
-    const url = URL.createObjectURL(file);
-    image.onload = () => resolve(image);
-    image.onerror = () => {
-      URL.revokeObjectURL(url);
-      reject(new Error('Failed to load the image file.'));
-    };
-    image.src = url;
-  });
-}
-
-function canvasToBlob(canvas: HTMLCanvasElement, type: string, quality: number): Promise<Blob> {
-  return new Promise((resolve, reject) => {
-    canvas.toBlob((blob) => {
-      if (blob) {
-        resolve(blob);
-        return;
-      }
-      reject(new Error('Failed to create an output blob.'));
-    }, type, quality);
-  });
-}
-
 function buildNote(blobSize: number, targetSizeBytes: number): string | undefined {
   const allowedDifference = targetSizeBytes * 0.05;
   if (Math.abs(blobSize - targetSizeBytes) <= allowedDifference) {
@@ -77,6 +55,7 @@ export async function compressImage(options: CompressOptions): Promise<CompressR
   } = options;
   const format = options.format || file.type || 'image/jpeg';
   const image = await loadImage(file);
+  let canvas: HTMLCanvasElement | undefined;
 
   try {
     const originalWidth = image.naturalWidth;
@@ -98,7 +77,7 @@ export async function compressImage(options: CompressOptions): Promise<CompressR
       };
     }
 
-    const canvas = document.createElement('canvas');
+    canvas = document.createElement('canvas');
     canvas.width = originalWidth;
     canvas.height = originalHeight;
     const context = canvas.getContext('2d');
@@ -194,6 +173,9 @@ export async function compressImage(options: CompressOptions): Promise<CompressR
     onProgress?.(100);
     return result;
   } finally {
+    if (canvas) {
+      resetCanvas(canvas);
+    }
     URL.revokeObjectURL(image.src);
   }
 }
@@ -325,8 +307,7 @@ async function compressPngByScaling(args: {
 
   for (let index = 0; index < maxIterations; index += 1) {
     const scale = (low + high) / 2;
-    const width = Math.max(1, Math.round(originalWidth * scale));
-    const height = Math.max(1, Math.round(originalHeight * scale));
+    const { width, height } = getScaledDimensions(originalWidth, originalHeight, scale);
     canvas.width = width;
     canvas.height = height;
 
