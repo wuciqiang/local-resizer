@@ -1,0 +1,93 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Breadcrumbs from '../components/Breadcrumbs.astro';
+import { generateBreadcrumbSchema } from '../lib/seo';
+
+const title = 'JPEG vs PNG vs WebP for Upload Limits | LocalResizer';
+const description = 'Compare JPEG, PNG, and WebP for upload-size limits, transparency, and visual quality so you can choose the right current LocalResizer workflow.';
+const breadcrumbItems = [
+  { href: '/', label: 'Home' },
+  { href: '/jpeg-vs-png-vs-webp-for-upload-limits', label: 'JPEG vs PNG vs WebP guide' },
+];
+const breadcrumbSchema = generateBreadcrumbSchema(breadcrumbItems);
+---
+<BaseLayout title={title} description={description} schemas={[breadcrumbSchema]}>
+  <Breadcrumbs items={breadcrumbItems} />
+
+  <article class="max-w-4xl mx-auto px-4 sm:px-5 py-10 sm:py-14">
+    <div class="text-center mb-10">
+      <span class="inline-block px-3 py-1 rounded-full bg-sky-50 text-sky-700 text-xs font-semibold tracking-wide uppercase mb-3">Support guide</span>
+      <h1 class="font-[var(--font-heading)] text-3xl md:text-4xl font-bold text-stone-900 tracking-tight mb-4">JPEG vs PNG vs WebP for upload limits</h1>
+      <p class="text-stone-500 max-w-2xl mx-auto leading-relaxed">
+        The best format is not the one with the fanciest name. It is the one that fits your real constraint: upload size, transparency, text clarity, or cross-platform compatibility. This guide explains how the three formats currently supported on LocalResizer behave when file size matters.
+      </p>
+    </div>
+
+    <section class="bg-white rounded-2xl p-7 shadow-soft border border-stone-100 mb-8 space-y-4">
+      <h2 class="font-[var(--font-heading)] text-xl font-semibold text-stone-900">The short version</h2>
+      <p class="text-stone-500 leading-relaxed">
+        <strong>JPEG</strong> is usually the practical default for photos when the upload limit is tight. <strong>PNG</strong> is the right choice when the image must stay crisp or keep transparency, but it is often harder to shrink aggressively. <strong>WebP</strong> can be very efficient, but your real choice still depends on where the file will be used and whether the destination accepts that format.
+      </p>
+      <p class="text-stone-500 leading-relaxed">
+        That is why LocalResizer does not pretend one format wins every time. The current live pages are intentionally split by workflow so people can choose a format or target-size page that matches the destination instead of forcing every file through the same path.
+      </p>
+    </section>
+
+    <section class="grid grid-cols-1 md:grid-cols-3 gap-5 mb-8">
+      <div class="bg-white rounded-2xl p-6 shadow-soft border border-stone-100">
+        <h2 class="font-[var(--font-heading)] text-lg font-semibold text-stone-900 mb-3">JPEG</h2>
+        <p class="text-sm text-stone-500 leading-relaxed">
+          Best for photos, portraits, product images, and situations where smaller file size matters more than pixel-perfect edges. JPEG is usually the easiest format to push toward strict targets such as 50KB or 200KB.
+        </p>
+      </div>
+      <div class="bg-white rounded-2xl p-6 shadow-soft border border-stone-100">
+        <h2 class="font-[var(--font-heading)] text-lg font-semibold text-stone-900 mb-3">PNG</h2>
+        <p class="text-sm text-stone-500 leading-relaxed">
+          Best for screenshots, interface graphics, logos, and transparent assets. PNG preserves visual clarity in those cases, but the file can stay stubbornly large when the target budget is very small.
+        </p>
+      </div>
+      <div class="bg-white rounded-2xl p-6 shadow-soft border border-stone-100">
+        <h2 class="font-[var(--font-heading)] text-lg font-semibold text-stone-900 mb-3">WebP</h2>
+        <p class="text-sm text-stone-500 leading-relaxed">
+          Best when the destination accepts WebP and you want a modern static-image format with strong compression efficiency. It can be a smart choice for web-first workflows, but format compatibility still matters more than theory.
+        </p>
+      </div>
+    </section>
+
+    <section class="bg-white rounded-2xl p-7 shadow-soft border border-stone-100 mb-8">
+      <h2 class="font-[var(--font-heading)] text-xl font-semibold text-stone-900 mb-4">How to decide under a real upload limit</h2>
+      <ul class="space-y-3 text-sm text-stone-500 leading-relaxed list-disc pl-5">
+        <li><strong>If the file is a photo and the cap is strict:</strong> start with JPEG.</li>
+        <li><strong>If the file contains text, UI, or transparency:</strong> start with PNG, but expect that you may need more pixels removed to hit the target.</li>
+        <li><strong>If the destination is web-first and accepts WebP:</strong> WebP may give you a smaller result without pushing quality as hard.</li>
+        <li><strong>If the platform rejects one format:</strong> compatibility beats theoretical efficiency every time.</li>
+        <li><strong>If you only care about “smaller overall”:</strong> use the resize-by-size pages and let the workflow balance dimensions with format behavior.</li>
+      </ul>
+    </section>
+
+    <section class="bg-white rounded-2xl p-7 shadow-soft border border-stone-100 mb-10 space-y-4">
+      <h2 class="font-[var(--font-heading)] text-xl font-semibold text-stone-900">How this maps to the current LocalResizer pages</h2>
+      <p class="text-stone-500 leading-relaxed">
+        The live release currently includes JPEG compression pages for strict target budgets, one PNG compression page for people who must keep PNG output, and resize-by-size pages that work across JPEG, PNG, and WebP when the main goal is to move toward a size budget rather than preserve one exact format workflow. This structure is intentional: it matches the real tradeoffs users face instead of flattening every case into a single tool page.
+      </p>
+      <p class="text-stone-500 leading-relaxed">
+        If you are comparing formats before choosing a page, use this rule of thumb: <strong>pick the page that matches the destination’s non-negotiable constraint first</strong>. If the destination requires PNG, keep PNG. If it only requires “under 200KB,” a JPEG workflow may be more forgiving. If your problem is really file size rather than format identity, the resize-by-size pages can be the better first stop.
+      </p>
+    </section>
+
+    <section class="grid grid-cols-1 md:grid-cols-3 gap-5">
+      <a href="/compress-image" class="no-underline bg-white rounded-2xl p-6 shadow-soft border border-stone-100 hover:border-teal-200 hover:bg-teal-50/40 transition-all">
+        <h2 class="font-[var(--font-heading)] text-lg font-semibold text-stone-900 mb-2">Compare compression pages</h2>
+        <p class="text-sm text-stone-500 leading-relaxed">Use the compression guide when your constraint is mainly file size and you need to choose between the current live JPEG and PNG pages.</p>
+      </a>
+      <a href="/resize-image" class="no-underline bg-white rounded-2xl p-6 shadow-soft border border-stone-100 hover:border-teal-200 hover:bg-teal-50/40 transition-all">
+        <h2 class="font-[var(--font-heading)] text-lg font-semibold text-stone-900 mb-2">Compare resize-by-size pages</h2>
+        <p class="text-sm text-stone-500 leading-relaxed">Use the resize guide when the destination cares about getting under a budget more than preserving one specific format workflow.</p>
+      </a>
+      <a href="/supported-formats" class="no-underline bg-white rounded-2xl p-6 shadow-soft border border-stone-100 hover:border-teal-200 hover:bg-teal-50/40 transition-all">
+        <h2 class="font-[var(--font-heading)] text-lg font-semibold text-stone-900 mb-2">Review supported formats</h2>
+        <p class="text-sm text-stone-500 leading-relaxed">Double-check the current public scope and make sure the live release matches the format you plan to use.</p>
+      </a>
+    </section>
+  </article>
+</BaseLayout>

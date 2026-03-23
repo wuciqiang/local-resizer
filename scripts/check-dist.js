@@ -102,6 +102,7 @@ function assertRouteHtml(slug, htmlFile) {
   const jsonLd = extractJsonLd(html);
   const faqSchema = jsonLd.find((item) => item?.['@type'] === 'FAQPage');
   const howToSchema = jsonLd.find((item) => item?.['@type'] === 'HowTo');
+  const breadcrumbSchema = jsonLd.find((item) => item?.['@type'] === 'BreadcrumbList');
 
   assert(title.includes('LocalResizer'), `Built route page is missing LocalResizer in <title>: ${slug}`);
   assert(h1.length > 0, `Built route page is missing a visible <h1>: ${slug}`);
@@ -113,8 +114,13 @@ function assertRouteHtml(slug, htmlFile) {
     html.includes('What this page is best for'),
     `Built route page lost the page-fit content section: ${slug}`,
   );
+  assert(
+    html.includes('How this live page differs from nearby workflows'),
+    `Built route page lost the deeper-context section: ${slug}`,
+  );
   assert(faqSchema, `Built route page is missing FAQ schema: ${slug}`);
   assert(howToSchema, `Built route page is missing HowTo schema: ${slug}`);
+  assert(breadcrumbSchema, `Built route page is missing BreadcrumbList schema: ${slug}`);
   assert(
     Array.isArray(faqSchema.mainEntity) && faqSchema.mainEntity.length >= 5,
     `Built route page FAQ schema is incomplete: ${slug}`,
@@ -139,10 +145,15 @@ function main() {
   const staticPages = [
     '/',
     '/about',
+    '/compress-image',
     '/contact',
+    '/jpeg-vs-png-vs-webp-for-upload-limits',
     '/privacy',
+    '/resize-image',
     '/supported-formats',
     '/terms',
+    '/why-image-size-is-best-effort',
+    '/youtube-image-sizes',
   ];
 
   for (const pathname of staticPages) {
@@ -170,11 +181,42 @@ function main() {
   const homeHtml = readUtf8(path.join(DIST_DIR, 'index.html'));
   assert(homeHtml.includes('Static images only'), 'Homepage no longer states the static-image-only scope.');
   assert(homeHtml.includes('What the current public release actually does'), 'Homepage live-scope section is missing.');
+  assert(homeHtml.includes('Start with the right guide'), 'Homepage guide section is missing.');
 
   const supportedHtml = readUtf8(path.join(DIST_DIR, 'supported-formats', 'index.html'));
   assert(
     supportedHtml.includes('Animated GIF workflows are not part of the current public release.'),
     'Supported formats page lost the current GIF exclusion text.',
+  );
+  assert(
+    supportedHtml.includes('Why target size is best-effort'),
+    'Supported formats page lost the best-effort explainer link.',
+  );
+  assert(
+    supportedHtml.includes('JPEG vs PNG vs WebP guide'),
+    'Supported formats page lost the format-comparison explainer link.',
+  );
+
+  const contactHtml = readUtf8(path.join(DIST_DIR, 'contact', 'index.html'));
+  assert(contactHtml.includes('support@localresizer.com'), 'Contact page lost the support@localresizer.com email.');
+  assert(contactHtml.includes('What to Contact Us About'), 'Contact page lost the support-scope section.');
+
+  const aboutHtml = readUtf8(path.join(DIST_DIR, 'about', 'index.html'));
+  assert(aboutHtml.includes('How We Publish Pages'), 'About page lost the publishing-approach section.');
+
+  const termsHtml = readUtf8(path.join(DIST_DIR, 'terms', 'index.html'));
+  assert(termsHtml.includes('Current Service Stage'), 'Terms page lost the current-service-stage section.');
+
+  const bestEffortHtml = readUtf8(path.join(DIST_DIR, 'why-image-size-is-best-effort', 'index.html'));
+  assert(
+    bestEffortHtml.includes('Why image size targets are best-effort'),
+    'Best-effort support page lost its core heading.',
+  );
+
+  const formatGuideHtml = readUtf8(path.join(DIST_DIR, 'jpeg-vs-png-vs-webp-for-upload-limits', 'index.html'));
+  assert(
+    formatGuideHtml.includes('JPEG vs PNG vs WebP for upload limits'),
+    'Format-comparison support page lost its core heading.',
   );
 
   console.log(`dist smoke checks passed for ${urls.length} pages and ${liveSlugs.length} documented live tool routes.`);

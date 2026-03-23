@@ -1,0 +1,64 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Breadcrumbs from '../components/Breadcrumbs.astro';
+import { phase0Routes } from '../data/routes';
+import { generateBreadcrumbSchema } from '../lib/seo';
+import { getHubBreadcrumbs } from '../lib/site-structure';
+
+const title = 'Resize Image Guide - Current Target-Size Workflows | LocalResizer';
+const description = 'Compare the current resize-by-size pages on LocalResizer, understand best-effort file-size results, and choose the right target-size workflow.';
+const breadcrumbItems = getHubBreadcrumbs('resize-image');
+const breadcrumbSchema = generateBreadcrumbSchema(breadcrumbItems);
+const resizeRoutes = phase0Routes.filter((route) => route.slug.startsWith('resize-image-to-'));
+---
+<BaseLayout title={title} description={description} schemas={[breadcrumbSchema]}>
+  <Breadcrumbs items={breadcrumbItems} />
+
+  <article class="max-w-4xl mx-auto px-4 sm:px-5 py-10 sm:py-14">
+    <div class="text-center mb-10">
+      <span class="inline-block px-3 py-1 rounded-full bg-sky-50 text-sky-700 text-xs font-semibold tracking-wide uppercase mb-3">Guide</span>
+      <h1 class="font-[var(--font-heading)] text-3xl md:text-4xl font-bold text-stone-900 tracking-tight mb-4">Resize image guide for current target-size pages</h1>
+      <p class="text-stone-500 max-w-2xl mx-auto leading-relaxed">
+        These live pages are for people who care about the upload budget more than a fixed pixel size. They shrink the image in a controlled way so the result moves toward a smaller file-size limit without distorting the aspect ratio.
+      </p>
+    </div>
+
+    <section class="bg-white rounded-2xl p-7 shadow-soft border border-stone-100 mb-8 space-y-4">
+      <h2 class="font-[var(--font-heading)] text-xl font-semibold text-stone-900">What makes these pages different from the homepage tool</h2>
+      <p class="text-stone-500 leading-relaxed">
+        The homepage lets you choose your own dimensions or file-size target. These route pages are more focused. Each one is tuned around a specific upload budget, such as 20KB, 100KB, or 2MB, so the copy, FAQ, and internal links all match one concrete need instead of a generic workflow.
+      </p>
+      <p class="text-stone-500 leading-relaxed">
+        The result is still best-effort because file size depends on the source image. A flat graphic, a noisy photo, and a transparent PNG all behave differently. The live pages are designed to make that tradeoff clearer before you start, which is why they are useful as standalone landing pages and not just thin variants of the homepage.
+      </p>
+    </section>
+
+    <section class="grid grid-cols-1 md:grid-cols-3 gap-5 mb-10">
+      {resizeRoutes.map((route) => (
+        <a href={`/${route.slug}`} class="no-underline bg-white rounded-2xl p-6 shadow-soft border border-stone-100 hover:border-teal-200 hover:bg-teal-50/40 transition-all">
+          <h2 class="font-[var(--font-heading)] text-lg font-semibold text-stone-900 mb-2">{route.seo.h1}</h2>
+          <p class="text-sm text-stone-500 leading-relaxed">{route.seo.subtitle}</p>
+        </a>
+      ))}
+    </section>
+
+    <section class="grid grid-cols-1 md:grid-cols-2 gap-5">
+      <div class="bg-white rounded-2xl p-6 shadow-soft border border-stone-100">
+        <h2 class="font-[var(--font-heading)] text-lg font-semibold text-stone-900 mb-3">Choose a smaller target when</h2>
+        <ul class="space-y-3 text-sm text-stone-500 leading-relaxed list-disc pl-5">
+          <li>You are submitting to a strict form with a hard cap.</li>
+          <li>You can accept a noticeable size reduction to get under the limit.</li>
+          <li>The image is mainly for compliance, not maximum fidelity.</li>
+        </ul>
+      </div>
+      <div class="bg-white rounded-2xl p-6 shadow-soft border border-stone-100">
+        <h2 class="font-[var(--font-heading)] text-lg font-semibold text-stone-900 mb-3">Choose a larger target when</h2>
+        <ul class="space-y-3 text-sm text-stone-500 leading-relaxed list-disc pl-5">
+          <li>You need to preserve more visual quality.</li>
+          <li>The platform limit is generous, like 2MB.</li>
+          <li>You want a better first pass before trying a smaller budget.</li>
+        </ul>
+      </div>
+    </section>
+  </article>
+</BaseLayout>

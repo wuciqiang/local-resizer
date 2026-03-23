@@ -1,0 +1,64 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Breadcrumbs from '../components/Breadcrumbs.astro';
+import { phase0Routes } from '../data/routes';
+import { generateBreadcrumbSchema } from '../lib/seo';
+import { getHubBreadcrumbs } from '../lib/site-structure';
+
+const title = 'YouTube Image Size Guide - Current Banner and Thumbnail Pages | LocalResizer';
+const description = 'See the current live YouTube banner and thumbnail pages on LocalResizer, compare exact canvas sizes, and understand the current no-auto-crop behavior.';
+const breadcrumbItems = getHubBreadcrumbs('youtube-image-sizes');
+const breadcrumbSchema = generateBreadcrumbSchema(breadcrumbItems);
+const youtubeRoutes = phase0Routes.filter((route) => route.platform === 'youtube');
+---
+<BaseLayout title={title} description={description} schemas={[breadcrumbSchema]}>
+  <Breadcrumbs items={breadcrumbItems} />
+
+  <article class="max-w-4xl mx-auto px-4 sm:px-5 py-10 sm:py-14">
+    <div class="text-center mb-10">
+      <span class="inline-block px-3 py-1 rounded-full bg-amber-50 text-amber-700 text-xs font-semibold tracking-wide uppercase mb-3">Guide</span>
+      <h1 class="font-[var(--font-heading)] text-3xl md:text-4xl font-bold text-stone-900 tracking-tight mb-4">YouTube image size guide for current live pages</h1>
+      <p class="text-stone-500 max-w-2xl mx-auto leading-relaxed">
+        The current live YouTube pages are exact-canvas workflows. They are useful when the destination cares about width and height first, and file size second. Use this guide when you need to choose between the banner and thumbnail pages or explain the current no-auto-crop behavior to a teammate.
+      </p>
+    </div>
+
+    <section class="bg-white rounded-2xl p-7 shadow-soft border border-stone-100 mb-8 space-y-4">
+      <h2 class="font-[var(--font-heading)] text-xl font-semibold text-stone-900">What the current YouTube pages guarantee</h2>
+      <p class="text-stone-500 leading-relaxed">
+        Both live pages export an exact canvas size. The current release keeps the whole image visible and may add padding when the source ratio does not match the target. That means these pages are good for safe, predictable sizing, but they are not smart crop tools yet.
+      </p>
+      <p class="text-stone-500 leading-relaxed">
+        This distinction matters for SEO and user trust. A banner page should not claim the same thing as a cropper, and a thumbnail page should not imply platform-safe framing beyond the exact output canvas. The guide exists to make those boundaries clearer while still helping users reach the right live tool quickly.
+      </p>
+    </section>
+
+    <section class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-10">
+      {youtubeRoutes.map((route) => (
+        <a href={`/${route.slug}`} class="no-underline bg-white rounded-2xl p-6 shadow-soft border border-stone-100 hover:border-teal-200 hover:bg-teal-50/40 transition-all">
+          <h2 class="font-[var(--font-heading)] text-lg font-semibold text-stone-900 mb-2">{route.seo.h1}</h2>
+          <p class="text-sm text-stone-500 leading-relaxed">{route.seo.subtitle}</p>
+        </a>
+      ))}
+    </section>
+
+    <section class="grid grid-cols-1 md:grid-cols-2 gap-5">
+      <div class="bg-white rounded-2xl p-6 shadow-soft border border-stone-100">
+        <h2 class="font-[var(--font-heading)] text-lg font-semibold text-stone-900 mb-3">Use the banner page when</h2>
+        <ul class="space-y-3 text-sm text-stone-500 leading-relaxed list-disc pl-5">
+          <li>You need a wide channel-art canvas.</li>
+          <li>You want a predictable export size without building a design file manually.</li>
+          <li>You can tolerate padding when the source image is not wide enough.</li>
+        </ul>
+      </div>
+      <div class="bg-white rounded-2xl p-6 shadow-soft border border-stone-100">
+        <h2 class="font-[var(--font-heading)] text-lg font-semibold text-stone-900 mb-3">Use the thumbnail page when</h2>
+        <ul class="space-y-3 text-sm text-stone-500 leading-relaxed list-disc pl-5">
+          <li>You need the exact thumbnail canvas quickly.</li>
+          <li>You want the entire source image kept visible.</li>
+          <li>You plan to do manual composition elsewhere if a crop is required.</li>
+        </ul>
+      </div>
+    </section>
+  </article>
+</BaseLayout>

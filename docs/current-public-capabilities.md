@@ -13,6 +13,19 @@ This document defines what the live public site can claim today.
   - compress by file size
   - resize by dimensions
 
+## Current supporting guide pages
+
+The live public site also includes a small set of guide pages that explain the current scope and link to the published tools:
+
+- `/compress-image`
+- `/resize-image`
+- `/youtube-image-sizes`
+- `/why-image-size-is-best-effort`
+- `/jpeg-vs-png-vs-webp-for-upload-limits`
+- `/supported-formats`
+
+These guide pages help users navigate the current release. They do not expand the live processing scope beyond the homepage tool and the current published tool pages.
+
 ## Live tool-page claim set
 
 The current public release includes 8 focused tool pages:

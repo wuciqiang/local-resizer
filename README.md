@@ -283,7 +283,7 @@ npm run test
 如有问题或建议，欢迎通过以下方式联系：
 
 - **GitHub Issues**：https://github.com/wuciqiang/local-resizer/issues
-- **Email**：[待补充]
+- **Email**：support@localresizer.com
 
 ---
 

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { getRouteBySlug } from '../src/data/routes';
-import { generateDetailText, generateIntroText, generatePageHighlights } from '../src/lib/content';
+import { generateContextSections, generateDetailText, generateIntroText, generatePageHighlights } from '../src/lib/content';
 
 describe('generatePageHighlights', () => {
   it('returns consistent cards for JPEG compress pages', () => {
@@ -77,5 +77,44 @@ describe('generateDetailText', () => {
     const detail = generateDetailText(route!);
     expect(detail).toContain('padding');
     expect(detail).toContain('without distortion');
+  });
+});
+
+describe('generateContextSections', () => {
+  it('returns size-specific context for strict JPEG workflows', () => {
+    const route = getRouteBySlug('compress-jpeg-to-50kb');
+    expect(route).toBeDefined();
+
+    const sections = generateContextSections(route!);
+    expect(sections).toHaveLength(3);
+    expect(sections[0]?.body).toContain('strict upload gates');
+    expect(sections[2]?.body).toContain('200KB page');
+  });
+
+  it('returns PNG-specific context for PNG workflows', () => {
+    const route = getRouteBySlug('compress-png-to-200kb');
+    expect(route).toBeDefined();
+
+    const sections = generateContextSections(route!);
+    expect(sections[0]?.body).toContain('stay PNG');
+    expect(sections[1]?.body).toContain('reduce pixel dimensions');
+  });
+
+  it('returns comparison guidance for resize-by-size routes', () => {
+    const route = getRouteBySlug('resize-image-to-20kb');
+    expect(route).toBeDefined();
+
+    const sections = generateContextSections(route!);
+    expect(sections[0]?.body).toContain('strict upload limits');
+    expect(sections[2]?.body).toContain('100KB page');
+  });
+
+  it('returns platform-specific context for YouTube pages', () => {
+    const route = getRouteBySlug('resize-youtube-banner');
+    expect(route).toBeDefined();
+
+    const sections = generateContextSections(route!);
+    expect(sections[0]?.body).toContain('exact 2560 x 1440 canvas');
+    expect(sections[2]?.body).toContain('thumbnail page');
   });
 });

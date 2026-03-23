@@ -1,4 +1,5 @@
 import type { RouteConfig } from '../data/routes';
+import type { BreadcrumbItem } from './site-structure';
 
 export function generateHowToSchema(route: RouteConfig): object {
   return {
@@ -24,6 +25,19 @@ export function generateFAQSchema(route: RouteConfig): object {
         '@type': 'Answer',
         text: item.answer,
       },
+    })),
+  };
+}
+
+export function generateBreadcrumbSchema(items: BreadcrumbItem[]): object {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: items.map((item, index) => ({
+      '@type': 'ListItem',
+      position: index + 1,
+      name: item.label,
+      item: new URL(item.href, 'https://localresizer.com').href,
     })),
   };
 }

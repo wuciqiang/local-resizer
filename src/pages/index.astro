@@ -2,9 +2,11 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import ImageProcessor from '../components/ImageProcessor.tsx';
 import { STATIC_IMAGE_ACCEPT_FORMATS, phase0Routes } from '../data/routes';
+import { listHubInfos } from '../lib/site-structure';
 
 const title = 'Free Local Image Resizer and Compressor for Static Images | LocalResizer';
 const description = 'Resize or compress static JPEG, PNG, and WebP images directly in your browser. No uploads, no server processing, and no account required.';
+const hubGuides = listHubInfos();
 ---
 <BaseLayout title={title} description={description}>
   <section class="relative overflow-hidden">
@@ -55,7 +57,7 @@ const description = 'Resize or compress static JPEG, PNG, and WebP images direct
           </svg>
         </div>
         <h3 class="font-[var(--font-heading)] font-semibold text-stone-900 mb-2">100% private</h3>
-        <p class="text-sm text-stone-500 leading-relaxed">Your images never leave your browser. No server upload, no tracking, no data breach risk. Everything runs on your device.</p>
+        <p class="text-sm text-stone-500 leading-relaxed">Your image files stay in your browser for the current workflow. We use privacy-friendly site analytics for page usage, but we do not upload or store image content.</p>
       </div>
       <div class="bg-white rounded-2xl p-7 shadow-soft border border-stone-100 hover:shadow-soft-lg hover:-translate-y-0.5 transition-all duration-300">
         <div class="w-11 h-11 rounded-xl bg-amber-50 flex items-center justify-center mb-4">
@@ -88,12 +90,33 @@ const description = 'Resize or compress static JPEG, PNG, and WebP images direct
       </span>
       <span class="inline-flex items-center gap-1.5">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="text-emerald-500"><polyline points="20 6 9 17 4 12" /></svg>
-        No file-count limits
+        Up to 20 files per batch
       </span>
       <span class="inline-flex items-center gap-1.5">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="text-emerald-500"><polyline points="20 6 9 17 4 12" /></svg>
         No watermarks
       </span>
+    </div>
+  </section>
+
+  <section class="max-w-4xl mx-auto px-4 sm:px-5 pb-14 sm:pb-20">
+    <div class="text-center mb-10">
+      <span class="inline-block px-3 py-1 rounded-full bg-sky-50 text-sky-700 text-xs font-semibold tracking-wide uppercase mb-3">Guides</span>
+      <h2 class="font-[var(--font-heading)] text-2xl md:text-3xl font-bold text-stone-900 tracking-tight">Start with the right guide</h2>
+      <p class="text-stone-500 max-w-2xl mx-auto leading-relaxed">
+        These guide pages connect the live tools into clearer task groups, which makes the site easier to navigate for both users and search engines.
+      </p>
+    </div>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+      {hubGuides.map((guide) => (
+        <a
+          href={guide.href}
+          class="bg-white rounded-2xl p-6 shadow-soft border border-stone-100 no-underline hover:shadow-soft-lg hover:border-teal-200 hover:-translate-y-0.5 transition-all duration-300"
+        >
+          <h3 class="font-[var(--font-heading)] font-semibold text-stone-900 mb-3">{guide.label}</h3>
+          <p class="text-sm text-stone-500 leading-relaxed">{guide.description}</p>
+        </a>
+      ))}
     </div>
   </section>
 
