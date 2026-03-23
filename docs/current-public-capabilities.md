@@ -1,6 +1,6 @@
 # Current Public Capabilities
 
-Last updated: March 12, 2026
+Last updated: March 23, 2026
 
 This document defines what the live public site can claim today.
 
