@@ -2,10 +2,13 @@ import { DIMENSION_PRESETS, SIZE_PRESETS } from './presets';
 import { tabClass } from './utils';
 
 interface ConfigPanelProps {
+  hideActionTabs?: boolean;
   heightValue: string;
   processorHint: string;
   sizeUnit: 'kb' | 'mb';
   sizeValue: string;
+  showResizeControls: boolean;
+  showSizeControls: boolean;
   toolAction: 'compress' | 'resize';
   widthValue: string;
   onHeightChange: (value: string) => void;
@@ -16,10 +19,13 @@ interface ConfigPanelProps {
 }
 
 export function ConfigPanel({
+  hideActionTabs = false,
   heightValue,
   processorHint,
   sizeUnit,
   sizeValue,
+  showResizeControls,
+  showSizeControls,
   toolAction,
   widthValue,
   onHeightChange,
@@ -30,24 +36,26 @@ export function ConfigPanel({
 }: ConfigPanelProps) {
   return (
     <div className="mt-5 bg-white rounded-2xl border border-stone-200 shadow-soft p-5 animate-fade-up">
-      <div className="flex gap-2 mb-4">
-        <button
-          type="button"
-          className={tabClass(toolAction === 'compress')}
-          onClick={() => onToolActionChange('compress')}
-        >
-          Compress
-        </button>
-        <button
-          type="button"
-          className={tabClass(toolAction === 'resize')}
-          onClick={() => onToolActionChange('resize')}
-        >
-          Resize
-        </button>
-      </div>
+      {!hideActionTabs && (
+        <div className="flex gap-2 mb-4">
+          <button
+            type="button"
+            className={tabClass(toolAction === 'compress')}
+            onClick={() => onToolActionChange('compress')}
+          >
+            Compress
+          </button>
+          <button
+            type="button"
+            className={tabClass(toolAction === 'resize')}
+            onClick={() => onToolActionChange('resize')}
+          >
+            Resize
+          </button>
+        </div>
+      )}
 
-      {toolAction === 'compress' && (
+      {showSizeControls && toolAction === 'compress' && (
         <div>
           <label htmlFor="target-size-input" className="block text-sm font-medium text-stone-800 mb-2">
             Target file size
@@ -93,7 +101,7 @@ export function ConfigPanel({
         </div>
       )}
 
-      {toolAction === 'resize' && (
+      {showResizeControls && toolAction === 'resize' && (
         <div>
           <label className="block text-sm font-medium text-stone-700 mb-2">Output dimensions (px)</label>
           <div className="flex gap-2 items-center">

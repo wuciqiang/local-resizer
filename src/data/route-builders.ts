@@ -18,6 +18,161 @@ import {
 } from './route-formatters';
 import type { Format, RouteConfig } from './route-types';
 
+function buildPhotoResizer20kbRoute(): RouteConfig {
+  return {
+    slug: 'photo-resizer-20kb',
+    action: 'resize',
+    intent: 'document-photo',
+    targetSize: '20kb',
+    targetSizeBytes: parseSize('20kb'),
+    tier: 4,
+    seo: {
+      title: 'Photo Resizer 20KB Online - Private Browser Tool | LocalResizer',
+      description: 'Resize a static photo toward a 20KB upload limit in your browser. No image upload, no signup, and best-effort local processing.',
+      h1: 'Photo Resizer 20KB',
+      subtitle: 'Resize a static photo toward 20KB locally with no server upload and no signup.',
+    },
+    faq: [
+      {
+        question: 'How do I resize a photo to 20KB on this page?',
+        answer: 'Upload a static JPEG, PNG, or WebP photo, let the page reduce the image toward the 20KB target, and then download the result locally in your browser.',
+      },
+      {
+        question: 'Can every photo become exactly 20KB?',
+        answer: 'No. The current workflow is best-effort, which means the tool aims to get close to 20KB but cannot guarantee an exact result on every source image.',
+      },
+      {
+        question: 'What happens if my photo is already under 20KB?',
+        answer: 'The page keeps the original file when it is already within the requested size budget instead of forcing another round of compression.',
+      },
+      {
+        question: 'Is this an official passport or exam photo validator?',
+        answer: 'No. The page helps reduce a static image toward a 20KB limit, but it does not certify official upload rules, crop photos automatically, or validate government or exam requirements.',
+      },
+      {
+        question: 'Are my photos uploaded anywhere?',
+        answer: 'No. The current public tool processes static images locally in your browser with no server upload.',
+      },
+    ],
+    howToSteps: [
+      'Upload a static JPEG, PNG, or WebP photo',
+      'Resize the photo toward the 20KB target locally',
+      'Download the processed result',
+    ],
+    relatedLinks: [],
+    acceptFormats: STATIC_IMAGE_ACCEPT_FORMATS,
+    maxFileSize: 50 * 1024 * 1024,
+  };
+}
+
+function buildCompressJpgFileRoute(): RouteConfig {
+  return {
+    slug: 'compress-jpg-file',
+    action: 'compress',
+    intent: 'generic-compress',
+    format: 'jpeg',
+    defaultTargetSizeBytes: parseSize('200kb'),
+    tier: 4,
+    seo: {
+      title: 'Compress JPG File Online - Private JPG Compressor | LocalResizer',
+      description: 'Compress a JPG file in your browser with no upload. Choose a target size and download a smaller JPEG locally.',
+      h1: 'Compress JPG File Online',
+      subtitle: 'Choose a target size and compress a JPG locally without uploading the image to a server.',
+    },
+    faq: [
+      {
+        question: 'Does this page work with JPG and JPEG files?',
+        answer: 'Yes. The page accepts JPEG images, including files that use either the .jpg or .jpeg extension, and processes them locally in the browser.',
+      },
+      {
+        question: 'Can I choose a custom target size for my JPG?',
+        answer: 'Yes. This page opens in JPEG compression mode and lets you enter a target file size before processing.',
+      },
+      {
+        question: 'Will the result stay JPEG?',
+        answer: 'Yes. The current JPG page keeps JPEG output rather than converting the file to another format.',
+      },
+      {
+        question: 'Can this tool guarantee an exact final file size?',
+        answer: 'No. JPEG compression is best-effort here. The tool aims to get close to the requested target size, but the exact result still depends on the source image.',
+      },
+      {
+        question: 'Are my JPG files uploaded?',
+        answer: 'No. The current public tool processes static JPEG images locally in your browser with no server upload.',
+      },
+    ],
+    howToSteps: [
+      'Upload a JPG or JPEG image',
+      'Choose the target size you want for the smaller JPEG',
+      'Process and download the result locally',
+    ],
+    relatedLinks: [],
+    acceptFormats: [MIME_MAP.jpeg],
+    maxFileSize: 50 * 1024 * 1024,
+    lockedAction: 'compress',
+    hideActionTabs: true,
+  };
+}
+
+function buildResizePngRoute(): RouteConfig {
+  return {
+    slug: 'resize-png',
+    action: 'resize',
+    intent: 'format-resize',
+    format: 'png',
+    defaultDimensions: { width: 1280, height: 720 },
+    tier: 4,
+    seo: {
+      title: 'Resize PNG Online - Private PNG Resizer | LocalResizer',
+      description: 'Resize a PNG image in your browser with no upload. Adjust pixel dimensions locally and download a new PNG.',
+      h1: 'Resize PNG Online',
+      subtitle: 'Resize a PNG by pixel dimensions locally and download a new PNG without server upload.',
+    },
+    faq: [
+      {
+        question: 'Does this page only accept PNG images?',
+        answer: 'Yes. This page is focused on PNG resizing and currently accepts static PNG files only.',
+      },
+      {
+        question: 'Can I enter custom width and height values?',
+        answer: 'Yes. The page opens in resize mode and lets you enter the pixel dimensions you want before processing.',
+      },
+      {
+        question: 'Will the output stay PNG?',
+        answer: 'Yes. The current resize-png page keeps PNG output.',
+      },
+      {
+        question: 'Does resizing a PNG preserve transparency?',
+        answer: 'Yes. The current PNG resize path keeps PNG output, and transparent padding remains transparent when the page exports a PNG canvas.',
+      },
+      {
+        question: 'Does this page work with PDF, SVG, or GIF files?',
+        answer: 'No. The current public workflow is limited to static image files, and this page is specifically limited to PNG.',
+      },
+    ],
+    howToSteps: [
+      'Upload a static PNG image',
+      'Enter the pixel dimensions you want for the new PNG',
+      'Resize and download the PNG locally',
+    ],
+    relatedLinks: [],
+    acceptFormats: [MIME_MAP.png],
+    maxFileSize: 50 * 1024 * 1024,
+    lockedAction: 'resize',
+    hideActionTabs: true,
+    resizeMode: 'contain',
+    forceCanvasSize: false,
+  };
+}
+
+function buildExplicitRoutes(): RouteConfig[] {
+  return [
+    buildPhotoResizer20kbRoute(),
+    buildCompressJpgFileRoute(),
+    buildResizePngRoute(),
+  ].filter((route) => ACTIVE_SLUGS.has(route.slug));
+}
+
 export function buildCompressRoute(format: Format, size: string): RouteConfig {
   const formatName = formatLabel(format);
   const sizeLabel = formatSizeLabel(size);
@@ -54,6 +209,7 @@ export function buildRelatedLinks(routes: RouteConfig[]): void {
   const byFormat = new Map<string, RouteConfig[]>();
   const bySize = new Map<string, RouteConfig[]>();
   const byPlatform = new Map<string, RouteConfig[]>();
+  const byIntent = new Map<string, RouteConfig[]>();
 
   for (const route of routes) {
     if (route.format) {
@@ -73,10 +229,27 @@ export function buildRelatedLinks(routes: RouteConfig[]): void {
       items.push(route);
       byPlatform.set(route.platform, items);
     }
+
+    if (route.intent) {
+      const items = byIntent.get(route.intent) ?? [];
+      items.push(route);
+      byIntent.set(route.intent, items);
+    }
   }
 
   for (const route of routes) {
     const links = new Set<string>();
+
+    if (route.intent) {
+      for (const other of byIntent.get(route.intent) ?? []) {
+        if (other.slug !== route.slug) {
+          links.add(other.slug);
+        }
+        if (links.size >= 4) {
+          break;
+        }
+      }
+    }
 
     if (route.format) {
       for (const other of byFormat.get(route.format) ?? []) {
@@ -194,11 +367,13 @@ export function generateActiveRoutes(): RouteConfig[] {
         relatedLinks: [],
         acceptFormats: STATIC_IMAGE_ACCEPT_FORMATS,
         maxFileSize: asset.maxFileSize ?? 50 * 1024 * 1024,
-        resizeMode: 'cover',
+        resizeMode: 'contain',
         forceCanvasSize: true,
       });
     }
   }
+
+  routes.push(...buildExplicitRoutes());
 
   return routes;
 }

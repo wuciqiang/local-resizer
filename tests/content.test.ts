@@ -47,6 +47,34 @@ describe('generatePageHighlights', () => {
     expect(highlights[1]?.body).toContain('exact');
     expect(highlights[2]?.body).toContain('auto-crop');
   });
+
+  it('returns semantic photo-route guidance', () => {
+    const route = getRouteBySlug('photo-resizer-20kb');
+    expect(route).toBeDefined();
+
+    const highlights = generatePageHighlights(route!);
+    expect(highlights[0]?.body).toContain('20KB');
+    expect(highlights[1]?.body).toContain('best-effort');
+    expect(highlights[2]?.body).toContain('passport');
+  });
+
+  it('returns semantic JPG-route guidance', () => {
+    const route = getRouteBySlug('compress-jpg-file');
+    expect(route).toBeDefined();
+
+    const highlights = generatePageHighlights(route!);
+    expect(highlights[0]?.body).toContain('JPG');
+    expect(highlights[1]?.body).toContain('JPEG output');
+  });
+
+  it('returns semantic PNG-route guidance', () => {
+    const route = getRouteBySlug('resize-png');
+    expect(route).toBeDefined();
+
+    const highlights = generatePageHighlights(route!);
+    expect(highlights[0]?.body).toContain('PNG');
+    expect(highlights[1]?.body).toContain('PNG output');
+  });
 });
 
 describe('generateIntroText', () => {
@@ -66,6 +94,29 @@ describe('generateIntroText', () => {
     const intro = generateIntroText(route!);
     expect(intro).toContain('JPEG, PNG, and WebP');
     expect(intro).toContain('aspect ratios');
+  });
+
+  it('keeps semantic photo copy aligned with non-official claims', () => {
+    const route = getRouteBySlug('photo-resizer-20kb');
+    expect(route).toBeDefined();
+
+    const intro = generateIntroText(route!);
+    const detail = generateDetailText(route!);
+    expect(intro).toContain('20KB');
+    expect(detail).toContain('best-effort');
+    expect(detail).toContain('not an official');
+  });
+
+  it('keeps semantic JPG and PNG copy aligned with local browser claims', () => {
+    const jpgRoute = getRouteBySlug('compress-jpg-file');
+    const pngRoute = getRouteBySlug('resize-png');
+    expect(jpgRoute).toBeDefined();
+    expect(pngRoute).toBeDefined();
+
+    expect(generateIntroText(jpgRoute!)).toContain('browser');
+    expect(generateDetailText(jpgRoute!)).toContain('best-effort');
+    expect(generateIntroText(pngRoute!)).toContain('PNG');
+    expect(generateDetailText(pngRoute!)).toContain('transparency');
   });
 });
 
@@ -116,5 +167,15 @@ describe('generateContextSections', () => {
     const sections = generateContextSections(route!);
     expect(sections[0]?.body).toContain('exact 2560 x 1440 canvas');
     expect(sections[2]?.body).toContain('thumbnail page');
+  });
+
+  it('returns semantic context for the new route intents', () => {
+    const photoSections = generateContextSections(getRouteBySlug('photo-resizer-20kb')!);
+    const jpgSections = generateContextSections(getRouteBySlug('compress-jpg-file')!);
+    const pngSections = generateContextSections(getRouteBySlug('resize-png')!);
+
+    expect(photoSections[0]?.body).toContain('strict photo-upload');
+    expect(jpgSections[0]?.body).toContain('JPG');
+    expect(pngSections[0]?.body).toContain('PNG');
   });
 });

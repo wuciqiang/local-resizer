@@ -13,6 +13,7 @@ describe('image processor utils', () => {
     expect(getInitialSizeUnit()).toBe('kb');
     expect(getInitialSizeUnit(2 * 1024 * 1024)).toBe('mb');
     expect(getInitialSizeValue()).toBe('200');
+    expect(getInitialSizeValue(20 * 1024)).toBe('20');
     expect(getInitialSizeValue(1536 * 1024)).toBe('1.5');
     expect(getInitialSizeValue(200 * 1024)).toBe('200');
   });

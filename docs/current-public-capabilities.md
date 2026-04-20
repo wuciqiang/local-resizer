@@ -1,6 +1,6 @@
 # Current Public Capabilities
 
-Last updated: March 23, 2026
+Last updated: April 20, 2026
 
 This document defines what the live public site can claim today.
 
@@ -28,7 +28,7 @@ These guide pages help users navigate the current release. They do not expand th
 
 ## Live tool-page claim set
 
-The current public release includes 8 focused tool pages:
+The current public release includes 11 focused tool pages:
 
 - `compress-jpeg-to-50kb`
 - `compress-jpeg-to-200kb`
@@ -38,6 +38,9 @@ The current public release includes 8 focused tool pages:
 - `resize-image-to-2mb`
 - `resize-youtube-banner`
 - `resize-youtube-thumbnail`
+- `photo-resizer-20kb`
+- `compress-jpg-file`
+- `resize-png`
 
 ### Compress JPEG pages
 
@@ -78,6 +81,20 @@ Do not claim:
 
 - exact target size on every image
 - distortion-free enlargement to hit a target
+
+### Semantic tool pages
+
+Allowed claims:
+
+- `photo-resizer-20kb` is a best-effort static-photo page built on the current 20KB target-size workflow
+- `compress-jpg-file` keeps JPEG output and lets the user choose a JPEG target size locally
+- `resize-png` keeps PNG output and resizes static PNG files by pixel dimensions locally
+
+Do not claim:
+
+- official passport, exam, or government compliance guarantees
+- PDF, SVG, GIF, or video support on these pages
+- exact byte-for-byte target-size guarantees
 
 ### Exact canvas pages
 

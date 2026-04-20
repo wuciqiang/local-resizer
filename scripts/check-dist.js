@@ -23,7 +23,7 @@ function parseLiveToolSlugs(markdown) {
   let insideList = false;
 
   for (const line of lines) {
-    if (line.trim() === 'The current public release includes 8 focused tool pages:') {
+    if (/^The current public release includes \d+ focused tool pages:$/.test(line.trim())) {
       insideList = true;
       continue;
     }

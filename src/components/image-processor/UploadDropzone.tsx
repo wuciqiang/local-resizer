@@ -5,7 +5,7 @@ interface UploadDropzoneProps {
   acceptLabels: string[];
   dragOver: boolean;
   inputRef: RefObject<HTMLInputElement | null>;
-  isConfigurable: boolean;
+  showConfigPanel: boolean;
   maxFileSizeLabel: string;
   processorHint: string;
   onDragStateChange: (dragging: boolean) => void;
@@ -17,7 +17,7 @@ export function UploadDropzone({
   acceptLabels,
   dragOver,
   inputRef,
-  isConfigurable,
+  showConfigPanel,
   maxFileSizeLabel,
   processorHint,
   onDragStateChange,
@@ -105,7 +105,7 @@ export function UploadDropzone({
           Processed locally in your browser
         </div>
 
-        {!isConfigurable && (
+        {!showConfigPanel && (
           <p className="mt-4 text-xs text-stone-500">{processorHint}</p>
         )}
       </div>

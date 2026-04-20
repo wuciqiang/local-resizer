@@ -8,6 +8,57 @@ import {
 import type { PageHighlight } from './types';
 
 export function generatePageHighlights(route: RouteConfig): PageHighlight[] {
+  if (route.intent === 'document-photo' && route.targetSize === '20kb') {
+    return [
+      {
+        title: 'Best for',
+        body: 'Use this page when the real requirement is a very small photo upload budget such as 20KB, and you want a direct local workflow instead of manually guessing settings.',
+      },
+      {
+        title: 'Output behavior',
+        body: 'The page moves a static photo toward 20KB with a best-effort workflow. If the photo is already under the limit, the original file is kept.',
+      },
+      {
+        title: 'Current limits',
+        body: 'This page does not certify passport, ID, government, or exam photo compliance, and it does not guarantee an exact 20KB result on every file.',
+      },
+    ];
+  }
+
+  if (route.intent === 'generic-compress' && route.format === 'jpeg') {
+    return [
+      {
+        title: 'Best for',
+        body: 'Use this page when you need a smaller JPG or JPEG but want to choose the size budget yourself instead of landing on only one fixed-size route.',
+      },
+      {
+        title: 'Output behavior',
+        body: 'The page keeps JPEG output, lets you choose the target size, and keeps the original file when the JPG is already under the requested limit.',
+      },
+      {
+        title: 'Current limits',
+        body: 'Compression is still best-effort. The page cannot guarantee an exact final size on every image, and stronger compression can still change visible quality.',
+      },
+    ];
+  }
+
+  if (route.intent === 'format-resize' && route.format === 'png') {
+    return [
+      {
+        title: 'Best for',
+        body: 'Use this page when you specifically need a PNG-only resize workflow with custom width and height input.',
+      },
+      {
+        title: 'Output behavior',
+        body: 'The page keeps PNG output and rescales the image to fit within the requested dimensions while preserving the original aspect ratio.',
+      },
+      {
+        title: 'Current limits',
+        body: 'This page is for static PNG files only. It does not add PDF, SVG, GIF, AI editing, or official upload-rule validation.',
+      },
+    ];
+  }
+
   if (route.platform && route.asset && route.dimensions) {
     const platformName = platformLabel(route.platform);
     const assetName = assetLabel(route.asset);

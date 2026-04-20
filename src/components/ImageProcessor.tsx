@@ -27,9 +27,13 @@ export default function ImageProcessor({
   action,
   format,
   targetSizeBytes,
+  defaultTargetSizeBytes,
   dimensions,
+  defaultDimensions,
   acceptFormats,
   maxFileSize,
+  lockedAction,
+  hideActionTabs = false,
   resizeMode = 'fit',
   forceCanvasSize = false,
 }: ImageProcessorProps) {
@@ -39,18 +43,24 @@ export default function ImageProcessor({
   const [progress, setProgress] = useState(0);
   const [error, setError] = useState('');
   const [dragOver, setDragOver] = useState(false);
-  const [toolAction, setToolAction] = useState<'compress' | 'resize'>(action);
+  const [toolAction, setToolAction] = useState<'compress' | 'resize'>(lockedAction ?? action);
   const [pngChoice, setPngChoice] = useState<PngChoice>('none');
-  const [sizeValue, setSizeValue] = useState(() => getInitialSizeValue(targetSizeBytes));
-  const [sizeUnit, setSizeUnit] = useState<'kb' | 'mb'>(() => getInitialSizeUnit(targetSizeBytes));
-  const [widthValue, setWidthValue] = useState(() => dimensions?.width?.toString() ?? '1280');
-  const [heightValue, setHeightValue] = useState(() => dimensions?.height?.toString() ?? '720');
+  const initialSizeBytes = targetSizeBytes ?? defaultTargetSizeBytes;
+  const initialDimensions = dimensions ?? defaultDimensions;
+  const [sizeValue, setSizeValue] = useState(() => getInitialSizeValue(initialSizeBytes));
+  const [sizeUnit, setSizeUnit] = useState<'kb' | 'mb'>(() => getInitialSizeUnit(initialSizeBytes));
+  const [widthValue, setWidthValue] = useState(() => initialDimensions?.width?.toString() ?? '1280');
+  const [heightValue, setHeightValue] = useState(() => initialDimensions?.height?.toString() ?? '720');
   const inputRef = useRef<HTMLInputElement>(null);
-  const isConfigurable = !targetSizeBytes && !dimensions;
+  const hasFixedTargetSize = typeof targetSizeBytes === 'number';
+  const hasFixedDimensions = Boolean(dimensions);
+  const canConfigureTargetSize = !hasFixedTargetSize && (lockedAction === 'compress' || (!lockedAction && !hasFixedDimensions));
+  const canConfigureDimensions = !hasFixedDimensions && (lockedAction === 'resize' || (!lockedAction && !hasFixedTargetSize));
+  const showConfigPanel = canConfigureTargetSize || canConfigureDimensions;
 
   useEffect(() => {
-    setToolAction(action);
-  }, [action]);
+    setToolAction(lockedAction ?? action);
+  }, [action, lockedAction]);
 
   useEffect(() => {
     return () => {
@@ -64,30 +74,44 @@ export default function ImageProcessor({
     [acceptFormats],
   );
 
-  const effectiveAction = isConfigurable ? toolAction : action;
+  const effectiveAction = lockedAction ?? toolAction;
   const effectiveTargetSizeBytes = useMemo(() => {
-    if (!isConfigurable) {
+    if (hasFixedTargetSize) {
       return targetSizeBytes;
     }
 
-    if (toolAction !== 'compress') {
+    if (effectiveAction !== 'compress' || !canConfigureTargetSize) {
       return undefined;
     }
 
     return parseTargetSize(sizeValue, sizeUnit);
-  }, [isConfigurable, sizeUnit, sizeValue, targetSizeBytes, toolAction]);
+  }, [
+    canConfigureTargetSize,
+    effectiveAction,
+    hasFixedTargetSize,
+    sizeUnit,
+    sizeValue,
+    targetSizeBytes,
+  ]);
 
   const effectiveDimensions = useMemo(() => {
-    if (!isConfigurable) {
+    if (hasFixedDimensions) {
       return dimensions;
     }
 
-    if (toolAction !== 'resize') {
+    if (effectiveAction !== 'resize' || !canConfigureDimensions) {
       return undefined;
     }
 
     return parseDimensions(widthValue, heightValue);
-  }, [dimensions, heightValue, isConfigurable, toolAction, widthValue]);
+  }, [
+    canConfigureDimensions,
+    dimensions,
+    effectiveAction,
+    hasFixedDimensions,
+    heightValue,
+    widthValue,
+  ]);
 
   const processorHint = useMemo(() => {
     if (effectiveTargetSizeBytes) {
@@ -181,8 +205,8 @@ export default function ImageProcessor({
           const result = await resizeImage({
             file,
             targetDimensions: effectiveDimensions,
-            resizeMode: isConfigurable ? 'cover' : resizeMode,
-            forceCanvasSize: isConfigurable ? true : forceCanvasSize,
+            resizeMode,
+            forceCanvasSize,
           });
           blob = result.blob;
           width = result.width;
@@ -252,7 +276,6 @@ export default function ImageProcessor({
     files,
     forceCanvasSize,
     format,
-    isConfigurable,
     pngChoice,
     resizeMode,
   ]);
@@ -282,7 +305,7 @@ export default function ImageProcessor({
           acceptLabels={acceptLabels}
           dragOver={dragOver}
           inputRef={inputRef}
-          isConfigurable={isConfigurable}
+          showConfigPanel={showConfigPanel}
           maxFileSizeLabel={fmtBytes(maxFileSize)}
           processorHint={processorHint}
           onDragStateChange={setDragOver}
@@ -290,12 +313,15 @@ export default function ImageProcessor({
         />
       )}
 
-      {isConfigurable && (
+      {showConfigPanel && (
         <ConfigPanel
+          hideActionTabs={hideActionTabs || Boolean(lockedAction)}
           heightValue={heightValue}
           processorHint={processorHint}
           sizeUnit={sizeUnit}
           sizeValue={sizeValue}
+          showResizeControls={canConfigureDimensions}
+          showSizeControls={canConfigureTargetSize}
           toolAction={toolAction}
           widthValue={widthValue}
           onHeightChange={setHeightValue}

@@ -57,9 +57,13 @@ const guideLinks = getGuideLinksForRoute(route);
       action={route.action}
       format={route.format}
       targetSizeBytes={route.targetSizeBytes}
+      defaultTargetSizeBytes={route.defaultTargetSizeBytes}
       dimensions={route.dimensions}
+      defaultDimensions={route.defaultDimensions}
       acceptFormats={route.acceptFormats}
       maxFileSize={route.maxFileSize}
+      lockedAction={route.lockedAction}
+      hideActionTabs={route.hideActionTabs}
       resizeMode={route.resizeMode}
       forceCanvasSize={route.forceCanvasSize}
     />

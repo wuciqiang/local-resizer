@@ -3,6 +3,7 @@ export type {
   Dimensions,
   FaqItem,
   Format,
+  RouteIntent,
   ResizeMode,
   RouteConfig,
   SEOMeta,

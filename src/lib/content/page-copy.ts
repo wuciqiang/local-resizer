@@ -7,6 +7,18 @@ import {
 } from '../../data/routes';
 
 export function generateIntroText(route: RouteConfig): string {
+  if (route.intent === 'document-photo' && route.targetSize === '20kb') {
+    return 'Resize a static photo toward a 20KB upload limit directly in your browser. This page is meant for users who know the real constraint is a very small file-size budget, but who still want a simple local workflow instead of repeated manual trial and error. The current tool supports static JPEG, PNG, and WebP images only, keeps processing local to your device, and does not require signup or server upload.';
+  }
+
+  if (route.intent === 'generic-compress' && route.format === 'jpeg') {
+    return 'Compress a JPG or JPEG image locally in your browser by choosing the target size that fits your upload rule. This page is designed for people who know they need a smaller JPEG, but do not want to jump between separate fixed-size pages before deciding whether 50KB, 100KB, or 200KB is the better target. The result stays JPEG, and the current public workflow never uploads image content to a server.';
+  }
+
+  if (route.intent === 'format-resize' && route.format === 'png') {
+    return 'Resize a static PNG by pixel dimensions directly in your browser with no upload. This page is useful when the real requirement is a PNG-specific resize workflow rather than a generic file-size target. It keeps PNG output, supports custom width and height values, and fits the image to the requested dimensions without stretching it out of proportion.';
+  }
+
   if (route.platform && route.asset && route.dimensions) {
     const platformName = platformLabel(route.platform);
     const assetName = assetLabel(route.asset);
@@ -42,6 +54,18 @@ export function generateIntroText(route: RouteConfig): string {
 }
 
 export function generateDetailText(route: RouteConfig): string {
+  if (route.intent === 'document-photo' && route.targetSize === '20kb') {
+    return 'This page uses the same best-effort target-size workflow as the current 20KB resize route. If the original image is already under 20KB, the original file is kept. If the image needs more reduction, the page can scale dimensions and apply format-specific compression to move closer to the target. That makes it useful for strict upload limits, but it is not an official passport, ID, visa, government, or exam compliance checker, and it does not automatically crop a portrait into a certified document-photo layout.';
+  }
+
+  if (route.intent === 'generic-compress' && route.format === 'jpeg') {
+    return 'Because this is a configurable JPG compressor page, you can choose the size budget that matches the real upload gate instead of relying on a single fixed-size preset. The output remains JPEG, and the tool uses a quality-search pass to move as close as practical to the requested target size. If the original JPG is already below the target, the page keeps the original file. The result is still best-effort, so exact byte-for-byte guarantees are outside the current public promise.';
+  }
+
+  if (route.intent === 'format-resize' && route.format === 'png') {
+    return 'The current PNG resize page focuses on pixel dimensions rather than a file-size budget. The page keeps PNG output, which means transparency remains in the normal PNG export path. Unlike exact-canvas platform pages, this workflow does not force an exact canvas with padding. Instead, it scales the PNG to fit within the dimensions you enter while preserving the image aspect ratio. It does not add PDF, SVG, GIF, or smart-editing support beyond the current static-image toolset.';
+  }
+
   if (route.platform && route.asset && route.dimensions) {
     return `If your source image uses a different aspect ratio, the page fits it inside the exact output size without distortion. That means the final file always matches the requested canvas dimensions, while some padding may appear around the image when needed. This approach ensures your ${route.platform} ${route.asset} meets platform specifications without cropping important content. The tool uses the Canvas API's "contain" mode to preserve the entire image, making it ideal for logos, graphics, and photos where every pixel matters. For best results, prepare your source image with an aspect ratio close to the target dimensions to minimize padding.`;
   }

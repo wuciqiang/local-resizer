@@ -15,6 +15,57 @@ function resizeComparisonText(size: string): string {
 }
 
 export function generateContextSections(route: RouteConfig): PageContextSection[] {
+  if (route.intent === 'document-photo' && route.targetSize === '20kb') {
+    return [
+      {
+        title: 'Common real-world use cases',
+        body: 'This page fits strict photo-upload gates where the real blocker is a tiny file-size cap rather than a platform-specific canvas. Typical examples are lightweight form uploads, profile-image gates, and older systems that reject larger files immediately.',
+      },
+      {
+        title: 'What changes the final result',
+        body: 'The final size still depends on the source image. A tightly cropped portrait or already-optimized image usually gets closer to 20KB more easily than a large, noisy photo with heavy background detail.',
+      },
+      {
+        title: 'When to choose a different live page',
+        body: 'If 20KB is too aggressive for acceptable quality, move to the 100KB resize page first. If your real need is a fixed social-media canvas instead of a file-size budget, use one of the exact YouTube size pages instead.',
+      },
+    ];
+  }
+
+  if (route.intent === 'generic-compress' && route.format === 'jpeg') {
+    return [
+      {
+        title: 'Common real-world use cases',
+        body: 'This page is for people who know the image should stay JPG, but the exact upload limit varies from one destination to another. It is a better starting point than a fixed 50KB or 200KB route when you need to decide the budget on the page itself.',
+      },
+      {
+        title: 'What changes the final result',
+        body: 'Busy photos with fine detail, text overlays, or low-light noise usually need stronger JPEG compression than simpler product shots or portraits. The chosen target size also changes how aggressive the quality search needs to be.',
+      },
+      {
+        title: 'When to choose a different live page',
+        body: 'If the destination is a strict known limit, jump to the fixed 50KB or 200KB JPEG pages. If the image should stay PNG because of transparency or UI fidelity, use the PNG-specific workflows instead.',
+      },
+    ];
+  }
+
+  if (route.intent === 'format-resize' && route.format === 'png') {
+    return [
+      {
+        title: 'Common real-world use cases',
+        body: 'This page fits PNG workflows such as screenshots, interface graphics, diagrams, logos, and transparent assets that need specific pixel dimensions without converting the file to JPEG.',
+      },
+      {
+        title: 'What changes the final result',
+        body: 'The output dimensions come from the values you enter, but the visual result still depends on the source ratio. Because this page preserves aspect ratio, the PNG is scaled to fit rather than stretched to force an exact mismatch.',
+      },
+      {
+        title: 'When to choose a different live page',
+        body: 'If the real goal is a smaller file-size budget instead of pixel dimensions, compare the PNG 200KB page or the generic resize-by-size pages. If the destination requires an exact platform canvas, use the relevant exact-size route instead.',
+      },
+    ];
+  }
+
   if (route.platform && route.asset && route.dimensions) {
     const platformName = platformLabel(route.platform);
     const assetName = assetLabel(route.asset);

@@ -39,7 +39,7 @@ describe('activeRoutes', () => {
 
   it('includes compress routes for active slugs', () => {
     const compressRoutes = activeRoutes.filter((route) => route.action === 'compress' && route.format);
-    expect(compressRoutes.length).toBe(3);
+    expect(compressRoutes.length).toBe(4);
   });
 
   it('includes resize-image routes for active slugs', () => {
@@ -51,6 +51,12 @@ describe('activeRoutes', () => {
     const platformRoutes = activeRoutes.filter((route) => route.platform);
     expect(platformRoutes.length).toBe(2);
     expect(platformRoutes.some((route) => route.slug.includes('gif'))).toBe(false);
+  });
+
+  it('includes explicit semantic routes for active slugs', () => {
+    expect(getRouteBySlug('photo-resizer-20kb')?.intent).toBe('document-photo');
+    expect(getRouteBySlug('compress-jpg-file')?.intent).toBe('generic-compress');
+    expect(getRouteBySlug('resize-png')?.intent).toBe('format-resize');
   });
 
   it('has unique slugs', () => {
@@ -68,6 +74,13 @@ describe('activeRoutes', () => {
       expect(route.acceptFormats.includes('image/gif')).toBe(false);
     }
   });
+
+  it('uses contain mode for current YouTube exact-canvas pages', () => {
+    expect(getRouteBySlug('resize-youtube-banner')?.resizeMode).toBe('contain');
+    expect(getRouteBySlug('resize-youtube-thumbnail')?.resizeMode).toBe('contain');
+    expect(getRouteBySlug('resize-youtube-banner')?.forceCanvasSize).toBe(true);
+    expect(getRouteBySlug('resize-youtube-thumbnail')?.forceCanvasSize).toBe(true);
+  });
 });
 
 describe('getRouteBySlug', () => {
@@ -76,6 +89,13 @@ describe('getRouteBySlug', () => {
     expect(route).toBeDefined();
     expect(route?.format).toBe('jpeg');
     expect(route?.targetSizeBytes).toBe(51200);
+  });
+
+  it('returns explicit semantic routes with expected processor defaults', () => {
+    expect(getRouteBySlug('compress-jpg-file')?.lockedAction).toBe('compress');
+    expect(getRouteBySlug('compress-jpg-file')?.defaultTargetSizeBytes).toBe(200 * 1024);
+    expect(getRouteBySlug('resize-png')?.lockedAction).toBe('resize');
+    expect(getRouteBySlug('resize-png')?.defaultDimensions).toEqual({ width: 1280, height: 720 });
   });
 
   it('returns undefined for non-existent slugs', () => {

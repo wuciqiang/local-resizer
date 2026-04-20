@@ -65,6 +65,9 @@ export const PHASE0_SLUGS = [
   'resize-image-to-2mb',
   'resize-youtube-banner',
   'resize-youtube-thumbnail',
+  'photo-resizer-20kb',
+  'compress-jpg-file',
+  'resize-png',
 ];
 
 export const ACTIVE_SLUGS = new Set(PHASE0_SLUGS);

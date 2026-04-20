@@ -4,9 +4,13 @@ export interface ImageProcessorProps {
   action: 'compress' | 'resize';
   format?: string;
   targetSizeBytes?: number;
+  defaultTargetSizeBytes?: number;
   dimensions?: { width: number; height: number };
+  defaultDimensions?: { width: number; height: number };
   acceptFormats: string[];
   maxFileSize: number;
+  lockedAction?: 'compress' | 'resize';
+  hideActionTabs?: boolean;
   resizeMode?: ResizeMode;
   forceCanvasSize?: boolean;
 }

@@ -21,6 +21,12 @@ describe('site structure helpers', () => {
     expect(getHubForRoute(route).slug).toBe('resize-image');
   });
 
+  it('maps new semantic routes to the expected hubs', () => {
+    expect(getHubForRoute(getRouteBySlug('photo-resizer-20kb')!).slug).toBe('resize-image');
+    expect(getHubForRoute(getRouteBySlug('compress-jpg-file')!).slug).toBe('compress-image');
+    expect(getHubForRoute(getRouteBySlug('resize-png')!).slug).toBe('resize-image');
+  });
+
   it('maps YouTube routes to the YouTube guide hub', () => {
     const route = getRouteBySlug('resize-youtube-thumbnail')!;
     expect(getHubForRoute(route).slug).toBe('youtube-image-sizes');
@@ -38,5 +44,12 @@ describe('site structure helpers', () => {
     const links = getGuideLinksForRoute(route);
     expect(links.some((item) => item.href === '/resize-image')).toBe(true);
     expect(links.some((item) => item.href === '/supported-formats')).toBe(true);
+  });
+
+  it('adds guide links for semantic workflow pages', () => {
+    const jpgLinks = getGuideLinksForRoute(getRouteBySlug('compress-jpg-file')!);
+    const pngLinks = getGuideLinksForRoute(getRouteBySlug('resize-png')!);
+    expect(jpgLinks.some((item) => item.href === '/compress-image')).toBe(true);
+    expect(pngLinks.some((item) => item.href === '/resize-image')).toBe(true);
   });
 });
