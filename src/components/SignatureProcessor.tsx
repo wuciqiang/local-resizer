@@ -4,6 +4,8 @@ import { ResultsPanel } from './image-processor/ResultsPanel';
 import { UploadDropzone } from './image-processor/UploadDropzone';
 import type { ProcessedFile, Status } from './image-processor/types';
 import { fmtBytes, getDownloadName, parseDimensions, parseTargetSize, revokeUrls } from './image-processor/utils';
+import { getGuideLinksForRoute } from '../lib/site-structure';
+import { getRouteBySlug } from '../data/routes';
 
 interface SignatureProcessorProps {
   acceptFormats: string[];
@@ -42,7 +44,10 @@ export default function SignatureProcessor({
   const [heightValue, setHeightValue] = useState(String(defaultDimensions.height));
   const [sizeValue, setSizeValue] = useState(String(Math.round(defaultTargetSizeBytes / 1024)));
   const [trimPreview, setTrimPreview] = useState<TrimPreviewState | null>(null);
+  const previewRequestRef = useRef(0);
   const inputRef = useRef<HTMLInputElement>(null);
+  const route = getRouteBySlug('signature-resizer');
+  const guideLinks = route ? getGuideLinksForRoute(route) : [];
 
   useEffect(() => {
     return () => {
@@ -71,6 +76,8 @@ export default function SignatureProcessor({
   }, [heightValue, outputMode, widthValue]);
 
   const buildTrimPreview = useCallback(async (sourceFile: File) => {
+    const requestId = previewRequestRef.current + 1;
+    previewRequestRef.current = requestId;
     const { detectTrimBounds } = await import('../lib/image/trim');
     const bounds = await detectTrimBounds({ file: sourceFile });
     clearTrimPreview();
@@ -85,6 +92,16 @@ export default function SignatureProcessor({
 
     try {
       await image.decode();
+
+      if (
+        bounds.left === 0 &&
+        bounds.top === 0 &&
+        bounds.width === image.naturalWidth &&
+        bounds.height === image.naturalHeight
+      ) {
+        URL.revokeObjectURL(originalUrl);
+        return null;
+      }
 
       const canvas = document.createElement('canvas');
       canvas.width = bounds.width;
@@ -125,6 +142,11 @@ export default function SignatureProcessor({
         width: bounds.width,
         height: bounds.height,
       };
+      if (requestId !== previewRequestRef.current) {
+        URL.revokeObjectURL(preview.originalUrl);
+        URL.revokeObjectURL(preview.trimmedUrl);
+        return null;
+      }
       setTrimPreview(preview);
       return { preview, blob };
     } catch (error) {
@@ -472,6 +494,30 @@ export default function SignatureProcessor({
             </p>
           )}
         </div>
+      )}
+
+      {guideLinks.length > 0 && (
+        <section className="max-w-4xl mx-auto px-5 py-8 sm:py-10">
+          <div className="text-center mb-8">
+            <span className="inline-block px-3 py-1 rounded-full bg-sky-50 text-sky-700 text-xs font-semibold tracking-wide uppercase mb-3">Context</span>
+            <h2 className="font-[var(--font-heading)] text-2xl font-bold text-stone-900 tracking-tight">Broader guides for this workflow</h2>
+            <p className="text-sm text-stone-500 max-w-2xl mx-auto leading-relaxed">
+              Use these guide pages to compare related upload tasks and choose the right live tool before you process more files.
+            </p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+            {guideLinks.map((item) => (
+              <a
+                key={item.href}
+                href={item.href}
+                className="bg-white rounded-2xl p-6 shadow-soft border border-stone-100 no-underline hover:shadow-soft-lg hover:border-teal-200 hover:-translate-y-0.5 transition-all duration-300"
+              >
+                <h3 className="font-[var(--font-heading)] font-semibold text-stone-900 mb-3">{item.label}</h3>
+                <p className="text-sm text-stone-500 leading-relaxed">{item.description}</p>
+              </a>
+            ))}
+          </div>
+        </section>
       )}
 
       {file && status !== 'done' && (

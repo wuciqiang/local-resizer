@@ -9,7 +9,12 @@ export interface GuideLink extends BreadcrumbItem {
   description: string;
 }
 
-export type HubSlug = 'compress-image' | 'resize-image' | 'youtube-image-sizes';
+export type HubSlug =
+  | 'compress-image'
+  | 'resize-image'
+  | 'youtube-image-sizes'
+  | 'signature-tools'
+  | 'image-tools';
 
 export interface HubInfo {
   slug: HubSlug;
@@ -41,6 +46,20 @@ const HUBS: Record<HubSlug, HubInfo> = {
     title: 'YouTube image size guides for current live pages',
     description: 'Review the live YouTube banner and thumbnail pages, the exact canvas sizes they export, and what to expect when your source ratio does not match.',
   },
+  'signature-tools': {
+    slug: 'signature-tools',
+    href: '/signature-tools',
+    label: 'Signature Tools Guide',
+    title: 'Signature image tools for current live workflows',
+    description: 'Understand the current signature cleanup workflow, when to keep PNG vs JPG output, and how the live tool handles whitespace trimming and best-effort file-size limits.',
+  },
+  'image-tools': {
+    slug: 'image-tools',
+    href: '/image-tools',
+    label: 'Image Tools Guide',
+    title: 'Utility image tools for current live workflows',
+    description: 'Browse the current utility workflows beyond basic resize and compress pages, including signature cleanup and grid-based image splitting.',
+  },
 };
 
 export function getHubInfo(slug: HubSlug): HubInfo {
@@ -52,10 +71,20 @@ export function listHubInfos(): HubInfo[] {
     HUBS['compress-image'],
     HUBS['resize-image'],
     HUBS['youtube-image-sizes'],
+    HUBS['signature-tools'],
+    HUBS['image-tools'],
   ];
 }
 
 export function getHubForRoute(route: RouteConfig): HubInfo {
+  if (route.intent === 'signature') {
+    return HUBS['signature-tools'];
+  }
+
+  if (route.intent === 'image-splitter') {
+    return HUBS['image-tools'];
+  }
+
   if (route.platform === 'youtube') {
     return HUBS['youtube-image-sizes'];
   }

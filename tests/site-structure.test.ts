@@ -8,6 +8,8 @@ describe('site structure helpers', () => {
       'compress-image',
       'resize-image',
       'youtube-image-sizes',
+      'signature-tools',
+      'image-tools',
     ]);
   });
 
@@ -25,6 +27,8 @@ describe('site structure helpers', () => {
     expect(getHubForRoute(getRouteBySlug('photo-resizer-20kb')!).slug).toBe('resize-image');
     expect(getHubForRoute(getRouteBySlug('compress-jpg-file')!).slug).toBe('compress-image');
     expect(getHubForRoute(getRouteBySlug('resize-png')!).slug).toBe('resize-image');
+    expect(getHubForRoute(getRouteBySlug('signature-resizer')!).slug).toBe('signature-tools');
+    expect(getHubForRoute(getRouteBySlug('image-splitter')!).slug).toBe('image-tools');
   });
 
   it('maps YouTube routes to the YouTube guide hub', () => {

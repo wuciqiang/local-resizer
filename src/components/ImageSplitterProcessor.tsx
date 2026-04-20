@@ -4,6 +4,8 @@ import { UploadDropzone } from './image-processor/UploadDropzone';
 import type { ProcessedFile, Status } from './image-processor/types';
 import { fmtBytes, readImageDimensions, revokeUrls } from './image-processor/utils';
 import { getSplitRects, splitImage } from '../lib/split';
+import { getGuideLinksForRoute } from '../lib/site-structure';
+import { getRouteBySlug } from '../data/routes';
 
 interface ImageSplitterProcessorProps {
   acceptFormats: string[];
@@ -25,7 +27,10 @@ export default function ImageSplitterProcessor({
   const [previewUrl, setPreviewUrl] = useState('');
   const [previewWidth, setPreviewWidth] = useState(0);
   const [previewHeight, setPreviewHeight] = useState(0);
+  const previewRequestRef = useRef(0);
   const inputRef = useRef<HTMLInputElement>(null);
+  const route = getRouteBySlug('image-splitter');
+  const guideLinks = route ? getGuideLinksForRoute(route) : [];
 
   useEffect(() => {
     return () => {
@@ -60,11 +65,16 @@ export default function ImageSplitterProcessor({
     if (previewUrl) {
       URL.revokeObjectURL(previewUrl);
     }
+    const requestId = previewRequestRef.current + 1;
+    previewRequestRef.current = requestId;
     setFile(nextFile);
     setResults([]);
     setStatus('idle');
     setError('');
     void readImageDimensions(nextFile).then((dimensions) => {
+      if (requestId !== previewRequestRef.current) {
+        return;
+      }
       setPreviewWidth(dimensions.width);
       setPreviewHeight(dimensions.height);
     });
@@ -227,6 +237,30 @@ export default function ImageSplitterProcessor({
             Source image: {previewWidth} x {previewHeight}px. The tool splits evenly by rounded pixel boundaries and exports each tile separately.
           </p>
         </div>
+      )}
+
+      {guideLinks.length > 0 && (
+        <section className="max-w-4xl mx-auto px-5 py-8 sm:py-10">
+          <div className="text-center mb-8">
+            <span className="inline-block px-3 py-1 rounded-full bg-sky-50 text-sky-700 text-xs font-semibold tracking-wide uppercase mb-3">Context</span>
+            <h2 className="font-[var(--font-heading)] text-2xl font-bold text-stone-900 tracking-tight">Broader guides for this workflow</h2>
+            <p className="text-sm text-stone-500 max-w-2xl mx-auto leading-relaxed">
+              These guide pages help users compare the splitter with other live workflows instead of treating every image task as a generic resize problem.
+            </p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+            {guideLinks.map((item) => (
+              <a
+                key={item.href}
+                href={item.href}
+                className="bg-white rounded-2xl p-6 shadow-soft border border-stone-100 no-underline hover:shadow-soft-lg hover:border-teal-200 hover:-translate-y-0.5 transition-all duration-300"
+              >
+                <h3 className="font-[var(--font-heading)] font-semibold text-stone-900 mb-3">{item.label}</h3>
+                <p className="text-sm text-stone-500 leading-relaxed">{item.description}</p>
+              </a>
+            ))}
+          </div>
+        </section>
       )}
 
       {file && status !== 'done' && (

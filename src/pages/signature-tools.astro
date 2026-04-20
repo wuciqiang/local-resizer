@@ -1,0 +1,80 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Breadcrumbs from '../components/Breadcrumbs.astro';
+import { phase0Routes } from '../data/routes';
+import { generateBreadcrumbSchema } from '../lib/seo';
+import { getHubBreadcrumbs } from '../lib/site-structure';
+
+const title = 'Signature Tools Guide - Trim and Resize Signature Images | LocalResizer';
+const description = 'Review the current signature image workflow on LocalResizer, understand trimming and output-format tradeoffs, and choose the right related page before export.';
+const breadcrumbItems = getHubBreadcrumbs('signature-tools');
+const breadcrumbSchema = generateBreadcrumbSchema(breadcrumbItems);
+const signatureRoute = phase0Routes.find((route) => route.slug === 'signature-resizer');
+---
+<BaseLayout title={title} description={description} schemas={[breadcrumbSchema]}>
+  <Breadcrumbs items={breadcrumbItems} />
+
+  <article class="max-w-4xl mx-auto px-4 sm:px-5 py-10 sm:py-14">
+    <div class="text-center mb-10">
+      <span class="inline-block px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 text-xs font-semibold tracking-wide uppercase mb-3">Guide</span>
+      <h1 class="font-[var(--font-heading)] text-3xl md:text-4xl font-bold text-stone-900 tracking-tight mb-4">Signature tools guide for the current live workflow</h1>
+      <p class="text-stone-500 max-w-2xl mx-auto leading-relaxed">
+        This guide explains what the current signature page actually does today, where it helps most, and what boundaries still apply before you use the result in an upload form.
+      </p>
+    </div>
+
+    <section class="bg-white rounded-2xl p-7 shadow-soft border border-stone-100 mb-8 space-y-4">
+      <h2 class="font-[var(--font-heading)] text-xl font-semibold text-stone-900">What the current signature workflow is for</h2>
+      <p class="text-stone-500 leading-relaxed">
+        The live signature workflow is for cleaning up an existing signature image before upload. It can trim extra whitespace, fit the signature into target dimensions, and export either a transparent PNG or a white-background JPG depending on what the destination expects.
+      </p>
+      <p class="text-stone-500 leading-relaxed">
+        The page is still best-effort when file size is involved. If you ask for an aggressive KB target while keeping PNG output, the tool now prioritizes the requested dimensions instead of silently shrinking the image again. That is safer for signature uploads that care about width and height first.
+      </p>
+    </section>
+
+    <section class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-8">
+      <div class="bg-white rounded-2xl p-6 shadow-soft border border-stone-100">
+        <h2 class="font-[var(--font-heading)] text-lg font-semibold text-stone-900 mb-3">Choose PNG output when</h2>
+        <ul class="space-y-3 text-sm text-stone-500 leading-relaxed list-disc pl-5">
+          <li>The upload form expects transparency around the signature.</li>
+          <li>You care more about preserving the requested canvas than reaching a smaller KB target.</li>
+          <li>The signature will be placed on a colored or non-white background later.</li>
+        </ul>
+      </div>
+      <div class="bg-white rounded-2xl p-6 shadow-soft border border-stone-100">
+        <h2 class="font-[var(--font-heading)] text-lg font-semibold text-stone-900 mb-3">Choose JPG output when</h2>
+        <ul class="space-y-3 text-sm text-stone-500 leading-relaxed list-disc pl-5">
+          <li>The destination only accepts JPG or JPEG uploads.</li>
+          <li>You need a smaller file and can accept a white background.</li>
+          <li>The upload rule cares about size budget more than transparency.</li>
+        </ul>
+      </div>
+    </section>
+
+    {signatureRoute && (
+      <section class="bg-white rounded-2xl p-7 shadow-soft border border-stone-100 mb-10">
+        <h2 class="font-[var(--font-heading)] text-xl font-semibold text-stone-900 mb-4">Current live signature page</h2>
+        <a href={`/${signatureRoute.slug}`} class="no-underline rounded-xl border border-stone-100 p-5 block hover:border-teal-200 hover:bg-teal-50/40 transition-all">
+          <h3 class="font-[var(--font-heading)] font-semibold text-stone-900 mb-2">{signatureRoute.seo.h1}</h3>
+          <p class="text-sm text-stone-500 leading-relaxed">{signatureRoute.seo.subtitle}</p>
+        </a>
+      </section>
+    )}
+
+    <section class="grid grid-cols-1 md:grid-cols-3 gap-5">
+      <a href="/photo-resizer-20kb" class="no-underline bg-white rounded-2xl p-6 shadow-soft border border-stone-100 hover:border-teal-200 hover:bg-teal-50/40 transition-all">
+        <h2 class="font-[var(--font-heading)] text-lg font-semibold text-stone-900 mb-2">Photo Resizer 20KB</h2>
+        <p class="text-sm text-stone-500 leading-relaxed">Use this when the real problem is a strict document-photo size cap rather than a signature crop.</p>
+      </a>
+      <a href="/compress-jpg-file" class="no-underline bg-white rounded-2xl p-6 shadow-soft border border-stone-100 hover:border-teal-200 hover:bg-teal-50/40 transition-all">
+        <h2 class="font-[var(--font-heading)] text-lg font-semibold text-stone-900 mb-2">Compress JPG File</h2>
+        <p class="text-sm text-stone-500 leading-relaxed">Use the JPEG compressor when the upload rule is mainly about KB and transparency is irrelevant.</p>
+      </a>
+      <a href="/supported-formats" class="no-underline bg-white rounded-2xl p-6 shadow-soft border border-stone-100 hover:border-teal-200 hover:bg-teal-50/40 transition-all">
+        <h2 class="font-[var(--font-heading)] text-lg font-semibold text-stone-900 mb-2">Supported Formats</h2>
+        <p class="text-sm text-stone-500 leading-relaxed">Double-check the current public boundaries before you assume the page validates official signature rules.</p>
+      </a>
+    </section>
+  </article>
+</BaseLayout>
