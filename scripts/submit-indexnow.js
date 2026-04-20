@@ -1,10 +1,37 @@
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import { XMLParser } from 'fast-xml-parser';
 
-const INDEXNOW_KEY = process.env.INDEXNOW_KEY?.trim();
+const ROOT = process.cwd();
+const PUBLIC_DIR = path.join(ROOT, 'public');
 const SITE_URL = process.env.SITE_URL?.trim() || 'https://localresizer.com';
 const SITEMAP_PATH = process.env.SITEMAP_PATH?.trim() || './dist/sitemap-0.xml';
+
+function resolveIndexNowKey() {
+  const envKey = process.env.INDEXNOW_KEY?.trim();
+  if (envKey) {
+    return envKey;
+  }
+
+  if (!existsSync(PUBLIC_DIR)) {
+    return '';
+  }
+
+  const keyFile = readdirSync(PUBLIC_DIR).find((fileName) => {
+    if (!/^[0-9a-f-]{36}\.txt$/i.test(fileName)) {
+      return false;
+    }
+
+    const keyFromName = path.basename(fileName, '.txt');
+    const keyFilePath = path.join(PUBLIC_DIR, fileName);
+    const keyFromFile = readFileSync(keyFilePath, 'utf-8').trim();
+    return keyFromFile === keyFromName;
+  });
+
+  return keyFile ? path.basename(keyFile, '.txt') : '';
+}
+
+const INDEXNOW_KEY = resolveIndexNowKey();
 
 /**
  * @param {string[]} urls
@@ -47,7 +74,7 @@ function normalizeUrls(value) {
 
 async function main() {
   if (!INDEXNOW_KEY) {
-    console.log('Skipping IndexNow submission because INDEXNOW_KEY is not set.');
+    console.log('Skipping IndexNow submission because no IndexNow key was found in env or public/*.txt.');
     return;
   }
 
