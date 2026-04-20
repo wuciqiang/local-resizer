@@ -75,6 +75,11 @@ describe('generatePageHighlights', () => {
     expect(highlights[0]?.body).toContain('PNG');
     expect(highlights[1]?.body).toContain('PNG output');
   });
+
+  it('keeps signature and splitter pages available as real live routes', () => {
+    expect(getRouteBySlug('signature-resizer')?.seo.h1).toContain('Signature');
+    expect(getRouteBySlug('image-splitter')?.seo.h1).toContain('Image Splitter');
+  });
 });
 
 describe('generateIntroText', () => {

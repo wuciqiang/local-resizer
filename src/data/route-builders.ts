@@ -166,10 +166,103 @@ function buildResizePngRoute(): RouteConfig {
 }
 
 function buildExplicitRoutes(): RouteConfig[] {
+  const signatureRoute: RouteConfig = {
+    slug: 'signature-resizer',
+    action: 'resize',
+    intent: 'signature',
+    format: 'png',
+    defaultTargetSizeBytes: parseSize('50kb'),
+    defaultDimensions: { width: 800, height: 300 },
+    tier: 4,
+    seo: {
+      title: 'Signature Resizer Online - Resize Signature Image Privately | LocalResizer',
+      description: 'Resize and compress a signature image locally in your browser. Trim extra whitespace, choose transparent PNG or white-background JPG, and download the result privately.',
+      h1: 'Signature Resizer Online',
+      subtitle: 'Trim extra whitespace, resize the signature image, and export a lighter result locally in your browser.',
+    },
+    faq: [
+      {
+        question: 'Does this page automatically remove extra whitespace around a signature?',
+        answer: 'Yes. The signature workflow can trim empty white or transparent margins before export so the final image stays tighter around the signature itself.',
+      },
+      {
+        question: 'Can I keep the signature on a transparent background?',
+        answer: 'Yes. The page supports transparent PNG output, and it can also export a white-background JPG if that better matches the upload form you need to use.',
+      },
+      {
+        question: 'Can I control both dimensions and file size?',
+        answer: 'Yes. This workflow lets you set target dimensions and apply an optional target-size budget so the result is easier to fit into common upload rules.',
+      },
+      {
+        question: 'Does this page generate or verify an official signature format?',
+        answer: 'No. The tool resizes and trims an existing signature image locally, but it does not generate signatures or certify compliance with any government, exam, or portal-specific rules.',
+      },
+      {
+        question: 'Are signature images uploaded anywhere?',
+        answer: 'No. The current signature workflow processes the image locally in your browser with no server upload.',
+      },
+    ],
+    howToSteps: [
+      'Upload a static signature image',
+      'Trim extra whitespace and choose the output settings you want',
+      'Export and download the processed signature locally',
+    ],
+    relatedLinks: [],
+    acceptFormats: STATIC_IMAGE_ACCEPT_FORMATS,
+    maxFileSize: 50 * 1024 * 1024,
+    lockedAction: 'resize',
+    hideActionTabs: true,
+  };
+
+  const splitterRoute: RouteConfig = {
+    slug: 'image-splitter',
+    action: 'split',
+    intent: 'image-splitter',
+    tier: 4,
+    seo: {
+      title: 'Image Splitter Online - Split Image into Grid Pieces | LocalResizer',
+      description: 'Split a static image into rows and columns in your browser. Preview the pieces and download each result locally.',
+      h1: 'Image Splitter Online',
+      subtitle: 'Split a static image into grid pieces locally and download each exported tile without server upload.',
+    },
+    faq: [
+      {
+        question: 'What does this image splitter do?',
+        answer: 'It cuts one static image into a grid of rows and columns, then lets you download each resulting tile locally in your browser.',
+      },
+      {
+        question: 'What grid size does the page support?',
+        answer: 'You can choose the number of rows and columns for the split. The first version starts with a simple grid workflow rather than freeform slicing.',
+      },
+      {
+        question: 'Can I split PNG, JPG, and WebP files?',
+        answer: 'Yes. The current image splitter works with static JPEG, PNG, and WebP files.',
+      },
+      {
+        question: 'Does this page split PDF pages, GIF frames, or video?',
+        answer: 'No. The current public workflow is limited to static images only and does not include PDF, GIF-frame, or video splitting.',
+      },
+      {
+        question: 'Are my images uploaded for splitting?',
+        answer: 'No. The image is split locally in your browser with no server upload.',
+      },
+    ],
+    howToSteps: [
+      'Upload one static image',
+      'Choose the rows and columns for the grid split',
+      'Download the generated image pieces locally',
+    ],
+    relatedLinks: [],
+    acceptFormats: STATIC_IMAGE_ACCEPT_FORMATS,
+    maxFileSize: 50 * 1024 * 1024,
+  };
+
   return [
     buildPhotoResizer20kbRoute(),
     buildCompressJpgFileRoute(),
     buildResizePngRoute(),
+    signatureRoute,
+    splitterRoute,
   ].filter((route) => ACTIVE_SLUGS.has(route.slug));
 }
 

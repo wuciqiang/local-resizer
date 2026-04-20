@@ -28,7 +28,7 @@ These guide pages help users navigate the current release. They do not expand th
 
 ## Live tool-page claim set
 
-The current public release includes 11 focused tool pages:
+The current public release includes 13 focused tool pages:
 
 - `compress-jpeg-to-50kb`
 - `compress-jpeg-to-200kb`
@@ -41,6 +41,8 @@ The current public release includes 11 focused tool pages:
 - `photo-resizer-20kb`
 - `compress-jpg-file`
 - `resize-png`
+- `signature-resizer`
+- `image-splitter`
 
 ### Compress JPEG pages
 
@@ -89,6 +91,8 @@ Allowed claims:
 - `photo-resizer-20kb` is a best-effort static-photo page built on the current 20KB target-size workflow
 - `compress-jpg-file` keeps JPEG output and lets the user choose a JPEG target size locally
 - `resize-png` keeps PNG output and resizes static PNG files by pixel dimensions locally
+- `signature-resizer` can trim extra whitespace around a signature image and export a resized PNG or JPG locally
+- `image-splitter` splits a static image into a rows-by-columns grid locally
 
 Do not claim:
 

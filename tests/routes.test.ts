@@ -57,6 +57,8 @@ describe('activeRoutes', () => {
     expect(getRouteBySlug('photo-resizer-20kb')?.intent).toBe('document-photo');
     expect(getRouteBySlug('compress-jpg-file')?.intent).toBe('generic-compress');
     expect(getRouteBySlug('resize-png')?.intent).toBe('format-resize');
+    expect(getRouteBySlug('signature-resizer')?.intent).toBe('signature');
+    expect(getRouteBySlug('image-splitter')?.intent).toBe('image-splitter');
   });
 
   it('has unique slugs', () => {

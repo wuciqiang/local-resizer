@@ -12,10 +12,12 @@ import { generateContextSections, generateDetailText, generateFormatInfo, genera
 import { getGuideLinksForRoute, getRouteBreadcrumbs } from '../lib/site-structure';
 
 export function getStaticPaths() {
-  return phase0Routes.map((route) => ({
+  return phase0Routes
+    .filter((route) => route.slug !== 'signature-resizer' && route.slug !== 'image-splitter')
+    .map((route) => ({
     params: { slug: route.slug },
     props: { route },
-  }));
+    }));
 }
 
 interface Props {
@@ -33,6 +35,10 @@ const formatInfo = route.format ? generateFormatInfo(route.format) : '';
 const pageHighlights = generatePageHighlights(route);
 const contextSections = generateContextSections(route);
 const guideLinks = getGuideLinksForRoute(route);
+
+if (route.action === 'split' || route.intent === 'signature' || route.intent === 'image-splitter') {
+  throw new Error(`Route ${route.slug} must use its dedicated page implementation.`);
+}
 ---
 <BaseLayout title={route.seo.title} description={route.seo.description} schemas={[howToSchema, faqSchema, breadcrumbSchema]}>
   <Breadcrumbs items={breadcrumbItems} />

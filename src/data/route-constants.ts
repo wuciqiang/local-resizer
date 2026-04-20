@@ -68,6 +68,8 @@ export const PHASE0_SLUGS = [
   'photo-resizer-20kb',
   'compress-jpg-file',
   'resize-png',
+  'signature-resizer',
+  'image-splitter',
 ];
 
 export const ACTIVE_SLUGS = new Set(PHASE0_SLUGS);
