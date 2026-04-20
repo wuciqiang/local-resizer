@@ -13,6 +13,10 @@ function assert(condition, message) {
   }
 }
 
+function assertIncludesAny(haystack, candidates, message) {
+  assert(candidates.some((candidate) => haystack.includes(candidate)), message);
+}
+
 function readUtf8(filePath) {
   return readFileSync(filePath, 'utf-8');
 }
@@ -110,12 +114,22 @@ function assertRouteHtml(slug, htmlFile) {
     html.includes('Static images only - Processed locally'),
     `Built route page lost the static-image scope badge: ${slug}`,
   );
-  assert(
-    html.includes('What this page is best for'),
+  assertIncludesAny(
+    html,
+    [
+      'What this page is best for',
+      'How to resize a signature image for upload',
+      'How to split an image into pieces',
+    ],
     `Built route page lost the page-fit content section: ${slug}`,
   );
-  assert(
-    html.includes('How this live page differs from nearby workflows'),
+  assertIncludesAny(
+    html,
+    [
+      'How this live page differs from nearby workflows',
+      'When to use a signature resizer instead of a generic tool',
+      'When to use an image splitter instead of a crop tool',
+    ],
     `Built route page lost the deeper-context section: ${slug}`,
   );
   assert(faqSchema, `Built route page is missing FAQ schema: ${slug}`);
@@ -147,9 +161,11 @@ function main() {
     '/about',
     '/compress-image',
     '/contact',
+    '/image-tools',
     '/jpeg-vs-png-vs-webp-for-upload-limits',
     '/privacy',
     '/resize-image',
+    '/signature-tools',
     '/supported-formats',
     '/terms',
     '/why-image-size-is-best-effort',

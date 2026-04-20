@@ -36,7 +36,7 @@ const utilityRoutes = phase0Routes.filter((route) => route.intent === 'image-spl
     <section class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-10">
       {utilityRoutes.map((route) => (
         <a href={`/${route.slug}`} class="no-underline bg-white rounded-2xl p-6 shadow-soft border border-stone-100 hover:border-teal-200 hover:bg-teal-50/40 transition-all">
-          <h2 class="font-[var(--font-heading)] text-lg font-semibold text-stone-900 mb-2">{route.seo.h1}</h2>
+          <h3 class="font-[var(--font-heading)] text-lg font-semibold text-stone-900 mb-2">{route.seo.h1}</h3>
           <p class="text-sm text-stone-500 leading-relaxed">{route.seo.subtitle}</p>
         </a>
       ))}
@@ -44,7 +44,7 @@ const utilityRoutes = phase0Routes.filter((route) => route.intent === 'image-spl
 
     <section class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-8">
       <div class="bg-white rounded-2xl p-6 shadow-soft border border-stone-100">
-        <h2 class="font-[var(--font-heading)] text-lg font-semibold text-stone-900 mb-3">Use image splitter when</h2>
+        <h3 class="font-[var(--font-heading)] text-lg font-semibold text-stone-900 mb-3">Use image splitter when</h3>
         <ul class="space-y-3 text-sm text-stone-500 leading-relaxed list-disc pl-5">
           <li>You need evenly divided tiles from one static image.</li>
           <li>You want a preview of the grid before export.</li>
@@ -52,7 +52,7 @@ const utilityRoutes = phase0Routes.filter((route) => route.intent === 'image-spl
         </ul>
       </div>
       <div class="bg-white rounded-2xl p-6 shadow-soft border border-stone-100">
-        <h2 class="font-[var(--font-heading)] text-lg font-semibold text-stone-900 mb-3">Use another page instead when</h2>
+        <h3 class="font-[var(--font-heading)] text-lg font-semibold text-stone-900 mb-3">Use another page instead when</h3>
         <ul class="space-y-3 text-sm text-stone-500 leading-relaxed list-disc pl-5">
           <li>The real goal is just to reduce file size.</li>
           <li>You need one resized output instead of multiple pieces.</li>
@@ -63,15 +63,15 @@ const utilityRoutes = phase0Routes.filter((route) => route.intent === 'image-spl
 
     <section class="grid grid-cols-1 md:grid-cols-3 gap-5">
       <a href="/image-splitter" class="no-underline bg-white rounded-2xl p-6 shadow-soft border border-stone-100 hover:border-teal-200 hover:bg-teal-50/40 transition-all">
-        <h2 class="font-[var(--font-heading)] text-lg font-semibold text-stone-900 mb-2">Image Splitter Online</h2>
+        <h3 class="font-[var(--font-heading)] text-lg font-semibold text-stone-900 mb-2">Image Splitter Online</h3>
         <p class="text-sm text-stone-500 leading-relaxed">Open the live splitter page when you need a rows-by-columns grid with visual split lines before processing.</p>
       </a>
       <a href="/resize-png" class="no-underline bg-white rounded-2xl p-6 shadow-soft border border-stone-100 hover:border-teal-200 hover:bg-teal-50/40 transition-all">
-        <h2 class="font-[var(--font-heading)] text-lg font-semibold text-stone-900 mb-2">Resize PNG</h2>
+        <h3 class="font-[var(--font-heading)] text-lg font-semibold text-stone-900 mb-2">Resize PNG</h3>
         <p class="text-sm text-stone-500 leading-relaxed">Use the PNG resize page when you need one adjusted image instead of multiple split pieces.</p>
       </a>
       <a href="/supported-formats" class="no-underline bg-white rounded-2xl p-6 shadow-soft border border-stone-100 hover:border-teal-200 hover:bg-teal-50/40 transition-all">
-        <h2 class="font-[var(--font-heading)] text-lg font-semibold text-stone-900 mb-2">Supported Formats</h2>
+        <h3 class="font-[var(--font-heading)] text-lg font-semibold text-stone-900 mb-2">Supported Formats</h3>
         <p class="text-sm text-stone-500 leading-relaxed">Review the live scope before you expect PDF, video, or animated GIF workflows from these utility pages.</p>
       </a>
     </section>

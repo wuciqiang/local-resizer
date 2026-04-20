@@ -35,7 +35,7 @@ const signatureRoute = phase0Routes.find((route) => route.slug === 'signature-re
 
     <section class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-8">
       <div class="bg-white rounded-2xl p-6 shadow-soft border border-stone-100">
-        <h2 class="font-[var(--font-heading)] text-lg font-semibold text-stone-900 mb-3">Choose PNG output when</h2>
+        <h3 class="font-[var(--font-heading)] text-lg font-semibold text-stone-900 mb-3">Choose PNG output when</h3>
         <ul class="space-y-3 text-sm text-stone-500 leading-relaxed list-disc pl-5">
           <li>The upload form expects transparency around the signature.</li>
           <li>You care more about preserving the requested canvas than reaching a smaller KB target.</li>
@@ -43,7 +43,7 @@ const signatureRoute = phase0Routes.find((route) => route.slug === 'signature-re
         </ul>
       </div>
       <div class="bg-white rounded-2xl p-6 shadow-soft border border-stone-100">
-        <h2 class="font-[var(--font-heading)] text-lg font-semibold text-stone-900 mb-3">Choose JPG output when</h2>
+        <h3 class="font-[var(--font-heading)] text-lg font-semibold text-stone-900 mb-3">Choose JPG output when</h3>
         <ul class="space-y-3 text-sm text-stone-500 leading-relaxed list-disc pl-5">
           <li>The destination only accepts JPG or JPEG uploads.</li>
           <li>You need a smaller file and can accept a white background.</li>
@@ -64,15 +64,15 @@ const signatureRoute = phase0Routes.find((route) => route.slug === 'signature-re
 
     <section class="grid grid-cols-1 md:grid-cols-3 gap-5">
       <a href="/photo-resizer-20kb" class="no-underline bg-white rounded-2xl p-6 shadow-soft border border-stone-100 hover:border-teal-200 hover:bg-teal-50/40 transition-all">
-        <h2 class="font-[var(--font-heading)] text-lg font-semibold text-stone-900 mb-2">Photo Resizer 20KB</h2>
+        <h3 class="font-[var(--font-heading)] text-lg font-semibold text-stone-900 mb-2">Photo Resizer 20KB</h3>
         <p class="text-sm text-stone-500 leading-relaxed">Use this when the real problem is a strict document-photo size cap rather than a signature crop.</p>
       </a>
       <a href="/compress-jpg-file" class="no-underline bg-white rounded-2xl p-6 shadow-soft border border-stone-100 hover:border-teal-200 hover:bg-teal-50/40 transition-all">
-        <h2 class="font-[var(--font-heading)] text-lg font-semibold text-stone-900 mb-2">Compress JPG File</h2>
+        <h3 class="font-[var(--font-heading)] text-lg font-semibold text-stone-900 mb-2">Compress JPG File</h3>
         <p class="text-sm text-stone-500 leading-relaxed">Use the JPEG compressor when the upload rule is mainly about KB and transparency is irrelevant.</p>
       </a>
       <a href="/supported-formats" class="no-underline bg-white rounded-2xl p-6 shadow-soft border border-stone-100 hover:border-teal-200 hover:bg-teal-50/40 transition-all">
-        <h2 class="font-[var(--font-heading)] text-lg font-semibold text-stone-900 mb-2">Supported Formats</h2>
+        <h3 class="font-[var(--font-heading)] text-lg font-semibold text-stone-900 mb-2">Supported Formats</h3>
         <p class="text-sm text-stone-500 leading-relaxed">Double-check the current public boundaries before you assume the page validates official signature rules.</p>
       </a>
     </section>
