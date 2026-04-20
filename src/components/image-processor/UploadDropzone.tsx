@@ -8,6 +8,8 @@ interface UploadDropzoneProps {
   showConfigPanel: boolean;
   maxFileSizeLabel: string;
   processorHint: string;
+  multiple?: boolean;
+  fileCountLabel?: string;
   onDragStateChange: (dragging: boolean) => void;
   onFilesSelected: (files: FileList) => void;
 }
@@ -20,14 +22,22 @@ export function UploadDropzone({
   showConfigPanel,
   maxFileSizeLabel,
   processorHint,
+  multiple = true,
+  fileCountLabel,
   onDragStateChange,
   onFilesSelected,
 }: UploadDropzoneProps) {
+  const resolvedFileCountLabel = fileCountLabel ?? (multiple ? 'Up to 20 files' : '1 file only');
+  const uploadLabel = multiple ? 'Upload static images' : 'Upload a static image';
+  const dropLabel = multiple
+    ? 'Drop static images here or click to browse'
+    : 'Drop a static image here or click to browse';
+
   return (
     <div
       role="button"
       tabIndex={0}
-      aria-label="Upload static images"
+      aria-label={uploadLabel}
       className="relative group"
       onClick={() => inputRef.current?.click()}
       onKeyDown={(event) => {
@@ -63,8 +73,8 @@ export function UploadDropzone({
           ref={inputRef}
           type="file"
           accept={accept}
-          multiple
-          aria-label={`Upload static images (${acceptLabels.join(', ')})`}
+          multiple={multiple}
+          aria-label={`${uploadLabel} (${acceptLabels.join(', ')})`}
           className="hidden"
           onChange={(event) => {
             if (event.target.files) {
@@ -95,10 +105,10 @@ export function UploadDropzone({
         </div>
 
         <p className="font-[var(--font-heading)] text-lg font-semibold text-stone-800 mb-1.5">
-          {dragOver ? 'Drop to upload' : 'Drop static images here or click to browse'}
+          {dragOver ? 'Drop to upload' : dropLabel}
         </p>
         <p className="text-sm text-stone-600 mb-4">
-          Up to 20 files - Max {maxFileSizeLabel} each - {acceptLabels.join(', ')}
+          {resolvedFileCountLabel} - Max {maxFileSizeLabel} each - {acceptLabels.join(', ')}
         </p>
         <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-50 text-emerald-700 text-xs font-medium">
           <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />

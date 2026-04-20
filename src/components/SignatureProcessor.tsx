@@ -14,6 +14,16 @@ interface SignatureProcessorProps {
 
 type OutputMode = 'png' | 'jpeg';
 
+interface TrimPreviewState {
+  blob: Blob;
+  originalUrl: string;
+  trimmedUrl: string;
+  left: number;
+  top: number;
+  width: number;
+  height: number;
+}
+
 export default function SignatureProcessor({
   acceptFormats,
   defaultDimensions,
@@ -31,6 +41,7 @@ export default function SignatureProcessor({
   const [widthValue, setWidthValue] = useState(String(defaultDimensions.width));
   const [heightValue, setHeightValue] = useState(String(defaultDimensions.height));
   const [sizeValue, setSizeValue] = useState(String(Math.round(defaultTargetSizeBytes / 1024)));
+  const [trimPreview, setTrimPreview] = useState<TrimPreviewState | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -38,12 +49,89 @@ export default function SignatureProcessor({
       if (result) {
         revokeUrls([result]);
       }
+      if (trimPreview) {
+        URL.revokeObjectURL(trimPreview.originalUrl);
+        URL.revokeObjectURL(trimPreview.trimmedUrl);
+      }
     };
-  }, [result]);
+  }, [result, trimPreview]);
+
+  const clearTrimPreview = useCallback(() => {
+    setTrimPreview((current) => {
+      if (current) {
+        URL.revokeObjectURL(current.originalUrl);
+        URL.revokeObjectURL(current.trimmedUrl);
+      }
+      return null;
+    });
+  }, []);
 
   const processorHint = useMemo(() => {
     return `Trim extra whitespace, resize the signature to ${widthValue} x ${heightValue}px, and export as ${outputMode.toUpperCase()}.`;
   }, [heightValue, outputMode, widthValue]);
+
+  const buildTrimPreview = useCallback(async (sourceFile: File) => {
+    const { detectTrimBounds } = await import('../lib/image/trim');
+    const bounds = await detectTrimBounds({ file: sourceFile });
+    clearTrimPreview();
+
+    if (!bounds) {
+      return null;
+    }
+
+    const image = new Image();
+    const originalUrl = URL.createObjectURL(sourceFile);
+    image.src = originalUrl;
+
+    try {
+      await image.decode();
+
+      const canvas = document.createElement('canvas');
+      canvas.width = bounds.width;
+      canvas.height = bounds.height;
+      const context = canvas.getContext('2d');
+      if (!context) {
+        throw new Error('Canvas is not available in this browser.');
+      }
+
+      context.drawImage(
+        image,
+        bounds.left,
+        bounds.top,
+        bounds.width,
+        bounds.height,
+        0,
+        0,
+        bounds.width,
+        bounds.height,
+      );
+
+      const blob = await new Promise<Blob>((resolve, reject) => {
+        canvas.toBlob((createdBlob) => {
+          if (createdBlob) {
+            resolve(createdBlob);
+            return;
+          }
+          reject(new Error('Failed to trim the signature image.'));
+        }, 'image/png', 1);
+      });
+
+      const preview: TrimPreviewState = {
+        blob,
+        originalUrl,
+        trimmedUrl: URL.createObjectURL(blob),
+        left: bounds.left,
+        top: bounds.top,
+        width: bounds.width,
+        height: bounds.height,
+      };
+      setTrimPreview(preview);
+      return { preview, blob };
+    } catch (error) {
+      URL.revokeObjectURL(originalUrl);
+      throw error;
+    }
+  }, [clearTrimPreview]);
 
   const handleFiles = useCallback((incoming: FileList | File[]) => {
     const nextFile = Array.from(incoming)[0];
@@ -61,6 +149,8 @@ export default function SignatureProcessor({
       return;
     }
 
+    clearTrimPreview();
+
     if (result) {
       revokeUrls([result]);
     }
@@ -69,7 +159,24 @@ export default function SignatureProcessor({
     setResult(null);
     setStatus('idle');
     setError('');
-  }, [acceptFormats, maxFileSize, result]);
+    if (trimWhitespace) {
+      void buildTrimPreview(nextFile).catch((previewError) => {
+        setError(previewError instanceof Error ? previewError.message : 'Failed to prepare trim preview.');
+      });
+    }
+  }, [acceptFormats, buildTrimPreview, clearTrimPreview, maxFileSize, result, trimWhitespace]);
+
+  const refreshTrimPreview = useCallback(async () => {
+    if (!file || !trimWhitespace) {
+      clearTrimPreview();
+      return;
+    }
+
+    const previewResult = await buildTrimPreview(file);
+    if (!previewResult) {
+      setError('');
+    }
+  }, [buildTrimPreview, clearTrimPreview, file, trimWhitespace]);
 
   const handleProcess = useCallback(async () => {
     if (!file) {
@@ -94,7 +201,6 @@ export default function SignatureProcessor({
     setError('');
 
     try {
-      const { detectTrimBounds } = await import('../lib/image/trim');
       const { resizeImage } = await import('../lib/resize');
       const { compressImage } = await import('../lib/compress');
 
@@ -102,46 +208,11 @@ export default function SignatureProcessor({
       let noteParts: string[] = [];
 
       if (trimWhitespace) {
-        const bounds = await detectTrimBounds({ file });
-        if (bounds) {
-          const image = new Image();
-          const url = URL.createObjectURL(file);
-          image.src = url;
-          await image.decode();
-
-          const canvas = document.createElement('canvas');
-          canvas.width = bounds.width;
-          canvas.height = bounds.height;
-          const context = canvas.getContext('2d');
-          if (!context) {
-            throw new Error('Canvas is not available in this browser.');
-          }
-
-          context.drawImage(
-            image,
-            bounds.left,
-            bounds.top,
-            bounds.width,
-            bounds.height,
-            0,
-            0,
-            bounds.width,
-            bounds.height,
-          );
-
-          const blob = await new Promise<Blob>((resolve, reject) => {
-            canvas.toBlob((createdBlob) => {
-              if (createdBlob) {
-                resolve(createdBlob);
-                return;
-              }
-              reject(new Error('Failed to trim the signature image.'));
-            }, 'image/png', 1);
-          });
-
-          workingFile = new File([blob], file.name.replace(/\.[^.]+$/, '.png'), { type: 'image/png' });
+        const previewResult = trimPreview ? null : await buildTrimPreview(file);
+        const trimmedBlob = previewResult?.blob ?? trimPreview?.blob ?? null;
+        if (trimmedBlob) {
+          workingFile = new File([trimmedBlob], file.name.replace(/\.[^.]+$/, '.png'), { type: 'image/png' });
           noteParts.push('Trimmed extra whitespace around the signature.');
-          URL.revokeObjectURL(url);
         }
       }
 
@@ -165,12 +236,30 @@ export default function SignatureProcessor({
 
       setProgress(70);
 
-      const compressed = await compressImage({
-        file: resizedFile,
-        targetSizeBytes,
-        format: outputMode === 'jpeg' ? 'image/jpeg' : 'image/png',
-        pngStrategy: outputMode === 'png' ? 'png-scale' : 'auto',
-      });
+      const compressed = outputMode === 'png'
+        ? resizedFile.size <= targetSizeBytes
+          ? {
+            blob: resizedFile,
+            width: resized.width,
+            height: resized.height,
+            originalWidth: resized.originalWidth,
+            originalHeight: resized.originalHeight,
+            note: 'Kept the exact PNG dimensions because the resized signature already fit the requested size budget.',
+          }
+          : {
+            blob: resized.blob,
+            width: resized.width,
+            height: resized.height,
+            originalWidth: resized.originalWidth,
+            originalHeight: resized.originalHeight,
+            note: 'Kept the exact PNG dimensions. Lower the output dimensions or switch to JPG if you need a smaller file.',
+          }
+        : await compressImage({
+          file: resizedFile,
+          targetSizeBytes,
+          format: 'image/jpeg',
+          pngStrategy: 'auto',
+        });
 
       setProgress(100);
 
@@ -197,9 +286,10 @@ export default function SignatureProcessor({
       setError(processingError instanceof Error ? processingError.message : 'Signature processing failed.');
       setStatus('error');
     }
-  }, [file, heightValue, outputMode, sizeValue, trimWhitespace, widthValue]);
+  }, [buildTrimPreview, file, heightValue, outputMode, sizeValue, trimPreview, trimWhitespace, widthValue]);
 
   const handleReset = useCallback(() => {
+    clearTrimPreview();
     if (result) {
       revokeUrls([result]);
     }
@@ -208,7 +298,7 @@ export default function SignatureProcessor({
     setStatus('idle');
     setProgress(0);
     setError('');
-  }, [result]);
+  }, [clearTrimPreview, result]);
 
   const handleDownload = useCallback((processed: ProcessedFile) => {
     const anchor = document.createElement('a');
@@ -228,6 +318,8 @@ export default function SignatureProcessor({
           showConfigPanel
           maxFileSizeLabel={fmtBytes(maxFileSize)}
           processorHint={processorHint}
+          multiple={false}
+          fileCountLabel="1 signature image only"
           onDragStateChange={setDragOver}
           onFilesSelected={handleFiles}
         />
@@ -274,7 +366,26 @@ export default function SignatureProcessor({
               <input
                 type="checkbox"
                 checked={trimWhitespace}
-                onChange={(event) => setTrimWhitespace(event.target.checked)}
+                onChange={async (event) => {
+                  const nextValue = event.target.checked;
+                  setTrimWhitespace(nextValue);
+
+                  if (!nextValue) {
+                    clearTrimPreview();
+                    return;
+                  }
+
+                  if (!file) {
+                    return;
+                  }
+
+                  try {
+                    await refreshTrimPreview();
+                    setError('');
+                  } catch (previewError) {
+                    setError(previewError instanceof Error ? previewError.message : 'Failed to refresh trim preview.');
+                  }
+                }}
               />
               Automatically trim extra whitespace
             </label>
@@ -293,6 +404,73 @@ export default function SignatureProcessor({
           </div>
 
           <p className="text-xs text-stone-500">{processorHint}</p>
+        </div>
+      )}
+
+      {file && status !== 'done' && trimWhitespace && (
+        <div className="mt-4 bg-white rounded-2xl border border-stone-200 shadow-soft p-5 animate-fade-up space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <div>
+              <p className="text-sm font-semibold text-stone-800">Trim preview</p>
+              <p className="text-xs text-stone-500 mt-1">Review the automatic whitespace crop before export, or turn trimming off.</p>
+            </div>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={async () => {
+                  try {
+                    await refreshTrimPreview();
+                    setError('');
+                  } catch (previewError) {
+                    setError(previewError instanceof Error ? previewError.message : 'Failed to refresh trim preview.');
+                  }
+                }}
+                className="px-3 py-2 border border-stone-200 text-stone-600 rounded-lg text-sm"
+              >
+                Refresh Preview
+              </button>
+              {trimPreview && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setTrimWhitespace(false);
+                    clearTrimPreview();
+                  }}
+                  className="px-3 py-2 border border-stone-200 text-stone-600 rounded-lg text-sm"
+                >
+                  Disable Trim
+                </button>
+              )}
+            </div>
+          </div>
+
+          {trimPreview ? (
+            <>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <figure className="space-y-2">
+                  <div className="rounded-xl border border-stone-200 bg-stone-50 p-4 min-h-[180px] flex items-center justify-center overflow-hidden">
+                    <img src={trimPreview.originalUrl} alt="Original signature preview" className="max-h-56 w-auto object-contain" />
+                  </div>
+                  <figcaption className="text-xs text-stone-500">Original upload</figcaption>
+                </figure>
+                <figure className="space-y-2">
+                  <div className="rounded-xl border border-stone-200 bg-[linear-gradient(45deg,#f5f5f4_25%,transparent_25%,transparent_75%,#f5f5f4_75%),linear-gradient(45deg,#f5f5f4_25%,transparent_25%,transparent_75%,#f5f5f4_75%)] [background-size:16px_16px] [background-position:0_0,8px_8px] p-4 min-h-[180px] flex items-center justify-center overflow-hidden">
+                    <img src={trimPreview.trimmedUrl} alt="Trimmed signature preview" className="max-h-56 w-auto object-contain" />
+                  </div>
+                  <figcaption className="text-xs text-stone-500">
+                    Trimmed area: {trimPreview.width} x {trimPreview.height}px from ({trimPreview.left}, {trimPreview.top})
+                  </figcaption>
+                </figure>
+              </div>
+              <p className="text-xs text-stone-500">
+                Final export will still resize to {widthValue} x {heightValue}px and then apply the selected output format.
+              </p>
+            </>
+          ) : (
+            <p className="text-sm text-stone-600 rounded-xl border border-dashed border-stone-200 bg-stone-50 px-4 py-3">
+              No extra outer whitespace was detected yet. You can still export without trimming or refresh the preview after changing the image.
+            </p>
+          )}
         </div>
       )}
 

@@ -2,7 +2,8 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ProgressPanel } from './image-processor/ProgressPanel';
 import { UploadDropzone } from './image-processor/UploadDropzone';
 import type { ProcessedFile, Status } from './image-processor/types';
-import { fmtBytes, revokeUrls } from './image-processor/utils';
+import { fmtBytes, readImageDimensions, revokeUrls } from './image-processor/utils';
+import { getSplitRects, splitImage } from '../lib/split';
 
 interface ImageSplitterProcessorProps {
   acceptFormats: string[];
@@ -21,13 +22,19 @@ export default function ImageSplitterProcessor({
   const [dragOver, setDragOver] = useState(false);
   const [rows, setRows] = useState('3');
   const [columns, setColumns] = useState('3');
+  const [previewUrl, setPreviewUrl] = useState('');
+  const [previewWidth, setPreviewWidth] = useState(0);
+  const [previewHeight, setPreviewHeight] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     return () => {
       revokeUrls(results);
+      if (previewUrl) {
+        URL.revokeObjectURL(previewUrl);
+      }
     };
-  }, [results]);
+  }, [previewUrl, results]);
 
   const processorHint = useMemo(() => {
     return `Split one static image into a ${rows} x ${columns} grid locally and download each tile separately.`;
@@ -50,20 +57,34 @@ export default function ImageSplitterProcessor({
     }
 
     revokeUrls(results);
+    if (previewUrl) {
+      URL.revokeObjectURL(previewUrl);
+    }
     setFile(nextFile);
     setResults([]);
     setStatus('idle');
     setError('');
-  }, [acceptFormats, maxFileSize, results]);
+    void readImageDimensions(nextFile).then((dimensions) => {
+      setPreviewWidth(dimensions.width);
+      setPreviewHeight(dimensions.height);
+    });
+    setPreviewUrl(URL.createObjectURL(nextFile));
+  }, [acceptFormats, maxFileSize, previewUrl, results]);
 
   const handleReset = useCallback(() => {
     revokeUrls(results);
+    if (previewUrl) {
+      URL.revokeObjectURL(previewUrl);
+    }
     setFile(null);
     setResults([]);
     setStatus('idle');
     setProgress(0);
     setError('');
-  }, [results]);
+    setPreviewUrl('');
+    setPreviewWidth(0);
+    setPreviewHeight(0);
+  }, [previewUrl, results]);
 
   const handleProcess = useCallback(async () => {
     if (!file) {
@@ -83,7 +104,6 @@ export default function ImageSplitterProcessor({
     setError('');
 
     try {
-      const { splitImage } = await import('../lib/split');
       const pieces = await splitImage({ file, rows: parsedRows, columns: parsedColumns });
 
       const processed = pieces.map((piece) => ({
@@ -127,6 +147,8 @@ export default function ImageSplitterProcessor({
           showConfigPanel
           maxFileSizeLabel={fmtBytes(maxFileSize)}
           processorHint={processorHint}
+          multiple={false}
+          fileCountLabel="1 image only"
           onDragStateChange={setDragOver}
           onFilesSelected={handleFiles}
         />
@@ -157,6 +179,53 @@ export default function ImageSplitterProcessor({
             </label>
           </div>
           <p className="text-xs text-stone-500">{processorHint}</p>
+        </div>
+      )}
+
+      {file && status !== 'done' && previewUrl && (
+        <div className="mt-4 bg-white rounded-2xl border border-stone-200 shadow-soft p-5 animate-fade-up space-y-4">
+          <div>
+            <p className="text-sm font-semibold text-stone-800">Split preview</p>
+            <p className="text-xs text-stone-500 mt-1">
+              The grid below shows how the current {rows} x {columns} split will cut the uploaded image.
+            </p>
+          </div>
+          <div className="rounded-2xl border border-stone-200 bg-stone-50 p-4">
+            <div
+              className="relative mx-auto overflow-hidden rounded-xl border border-stone-200 bg-white"
+              style={{
+                width: '100%',
+                maxWidth: '640px',
+                aspectRatio: previewWidth > 0 && previewHeight > 0 ? `${previewWidth} / ${previewHeight}` : '1 / 1',
+              }}
+            >
+              <img src={previewUrl} alt="Image split preview" className="absolute inset-0 h-full w-full object-contain" />
+              {previewWidth > 0 && previewHeight > 0 && getSplitRects(
+                previewWidth,
+                previewHeight,
+                Math.max(1, Number.parseInt(rows, 10) || 1),
+                Math.max(1, Number.parseInt(columns, 10) || 1),
+              ).map((rect) => (
+                <div
+                  key={`${rect.row}-${rect.column}`}
+                  className="absolute border border-white/90 shadow-[0_0_0_1px_rgba(15,23,42,0.12)] bg-teal-500/10"
+                  style={{
+                    left: `${(rect.sourceX / previewWidth) * 100}%`,
+                    top: `${(rect.sourceY / previewHeight) * 100}%`,
+                    width: `${(rect.width / previewWidth) * 100}%`,
+                    height: `${(rect.height / previewHeight) * 100}%`,
+                  }}
+                >
+                  <span className="absolute left-1 top-1 rounded bg-stone-950/70 px-1.5 py-0.5 text-[10px] font-medium text-white">
+                    {rect.row},{rect.column}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+          <p className="text-xs text-stone-500">
+            Source image: {previewWidth} x {previewHeight}px. The tool splits evenly by rounded pixel boundaries and exports each tile separately.
+          </p>
         </div>
       )}
 
