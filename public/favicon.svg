@@ -1,4 +1,10 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none">
-  <rect width="32" height="32" rx="6" fill="#2563eb"/>
+  <defs>
+    <linearGradient id="localresizer-favicon-bg" x1="4" y1="3" x2="28" y2="29" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#14b8a6"/>
+      <stop offset="1" stop-color="#0f766e"/>
+    </linearGradient>
+  </defs>
+  <rect width="32" height="32" rx="7" fill="url(#localresizer-favicon-bg)"/>
   <path d="M8 22V10h3v9h5v3H8zm10 0V10h3v12h-3zm-2-5l4 5h-3.5L13 17.5 16 13h3.5L16 17z" fill="#fff"/>
 </svg>
