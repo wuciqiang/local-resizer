@@ -121,4 +121,14 @@ describe('phase0Routes', () => {
       }
     }
   });
+
+  it('keeps semantic related links for the configurable JPG compressor', () => {
+    expect(getRouteBySlug('compress-jpg-file')?.relatedLinks).toEqual(
+      expect.arrayContaining([
+        'compress-jpeg-to-50kb',
+        'compress-jpeg-to-200kb',
+        'photo-resizer-20kb',
+      ]),
+    );
+  });
 });

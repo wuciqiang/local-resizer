@@ -75,8 +75,36 @@ export function fmtBytes(bytes: number): string {
   return `${formatDecimal(bytes / (1024 * 1024))} MB`;
 }
 
-export function reduction(originalSize: number, processedSize: number): number {
-  return Math.max(0, Math.round((1 - processedSize / originalSize) * 100));
+export function sizeChange(originalSize: number, processedSize: number): {
+  direction: 'saved' | 'increased' | 'same';
+  bytes: number;
+  percent: number;
+} {
+  const delta = processedSize - originalSize;
+  const direction = delta > 0 ? 'increased' : delta < 0 ? 'saved' : 'same';
+  const percent = originalSize > 0 ? Math.round((Math.abs(delta) / originalSize) * 100) : 0;
+
+  return {
+    direction,
+    bytes: Math.abs(delta),
+    percent,
+  };
+}
+
+export function outputFormatLabel(outputFormat?: string): string | undefined {
+  if (outputFormat === 'image/webp') {
+    return 'Converted to WebP';
+  }
+
+  if (outputFormat === 'image/jpeg') {
+    return 'JPEG output';
+  }
+
+  if (outputFormat === 'image/png') {
+    return 'PNG output';
+  }
+
+  return undefined;
 }
 
 export function tabClass(active: boolean): string {

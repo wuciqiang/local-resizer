@@ -377,6 +377,10 @@ export function buildRelatedLinks(routes: RouteConfig[]): void {
       }
     }
 
+    if (route.slug === 'compress-jpg-file') {
+      links.add('photo-resizer-20kb');
+    }
+
     route.relatedLinks = Array.from(links).slice(0, 12);
   }
 }
