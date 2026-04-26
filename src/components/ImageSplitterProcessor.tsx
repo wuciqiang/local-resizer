@@ -2,7 +2,14 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ProgressPanel } from './image-processor/ProgressPanel';
 import { UploadDropzone } from './image-processor/UploadDropzone';
 import type { ProcessedFile, Status } from './image-processor/types';
-import { fmtBytes, readImageDimensions, revokeUrls } from './image-processor/utils';
+import {
+  createZipBlob,
+  downloadBlob,
+  fmtBytes,
+  readImageDimensions,
+  revokeUrls,
+  uniqueZipEntries,
+} from './image-processor/utils';
 import { getSplitRects, splitImage } from '../lib/split';
 
 interface ImageSplitterProcessorProps {
@@ -25,6 +32,7 @@ export default function ImageSplitterProcessor({
   const [previewUrl, setPreviewUrl] = useState('');
   const [previewWidth, setPreviewWidth] = useState(0);
   const [previewHeight, setPreviewHeight] = useState(0);
+  const [isDownloadingAll, setIsDownloadingAll] = useState(false);
   const previewRequestRef = useRef(0);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -136,11 +144,24 @@ export default function ImageSplitterProcessor({
   }, [columns, file, rows]);
 
   const handleDownload = useCallback((result: ProcessedFile) => {
-    const anchor = document.createElement('a');
-    anchor.href = result.url;
-    anchor.download = result.name;
-    anchor.click();
+    downloadBlob(result.blob, result.name);
   }, []);
+
+  const handleDownloadAll = useCallback(async () => {
+    if (results.length === 0 || isDownloadingAll) {
+      return;
+    }
+
+    setIsDownloadingAll(true);
+    try {
+      const zipBlob = await createZipBlob(uniqueZipEntries(results));
+      downloadBlob(zipBlob, 'localresizer-image-pieces.zip');
+    } catch (zipError) {
+      setError(zipError instanceof Error ? zipError.message : 'Preparing the ZIP download failed.');
+    } finally {
+      setIsDownloadingAll(false);
+    }
+  }, [isDownloadingAll, results]);
 
   return (
     <section className="max-w-3xl mx-auto px-5 py-6">
@@ -276,6 +297,17 @@ export default function ImageSplitterProcessor({
             <p className="text-teal-100 text-sm mb-1">Split complete</p>
             <p className="text-2xl font-[var(--font-heading)] font-bold">{results.length} pieces</p>
           </div>
+
+          {results.length > 1 && (
+            <button
+              type="button"
+              onClick={handleDownloadAll}
+              disabled={isDownloadingAll}
+              className="w-full py-3 bg-stone-900 text-white rounded-xl font-medium text-sm hover:bg-stone-800 disabled:cursor-wait disabled:bg-stone-500 transition-colors"
+            >
+              {isDownloadingAll ? 'Preparing ZIP...' : `Download all ${results.length} pieces`}
+            </button>
+          )}
 
           {results.map((result, index) => (
             <div key={`${result.name}-${index}`} className="bg-white rounded-xl border border-stone-200 shadow-soft p-4">

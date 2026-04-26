@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  createZipBlob,
   getBatchProgress,
   getDownloadName,
   getInitialSizeUnit,
@@ -8,7 +9,9 @@ import {
   parseDimensions,
   parseTargetSize,
   sizeChange,
+  uniqueZipEntries,
 } from '../src/components/image-processor/utils';
+import type { ProcessedFile } from '../src/components/image-processor/types';
 
 describe('image processor utils', () => {
   it('derives sensible initial size controls', () => {
@@ -47,5 +50,47 @@ describe('image processor utils', () => {
     expect(outputFormatLabel('image/png')).toBe('PNG output');
     expect(outputFormatLabel('image/jpeg')).toBe('JPEG output');
     expect(outputFormatLabel()).toBeUndefined();
+  });
+
+  it('creates unique ZIP entries for batch downloads', async () => {
+    const results: ProcessedFile[] = [
+      {
+        name: 'hero.png',
+        originalSize: 3,
+        processedSize: 3,
+        url: 'blob:one',
+        blob: new Blob(['one'], { type: 'image/png' }),
+        width: 1,
+        height: 1,
+        originalWidth: 1,
+        originalHeight: 1,
+      },
+      {
+        name: 'hero.png',
+        originalSize: 3,
+        processedSize: 3,
+        url: 'blob:two',
+        blob: new Blob(['two'], { type: 'image/png' }),
+        width: 1,
+        height: 1,
+        originalWidth: 1,
+        originalHeight: 1,
+      },
+    ];
+
+    const entries = uniqueZipEntries(results);
+    expect(entries.map((entry) => entry.name)).toEqual(['hero.png', 'hero-2.png']);
+
+    const zip = await createZipBlob(entries);
+    const bytes = new Uint8Array(await zip.arrayBuffer());
+    expect(zip.type).toBe('application/zip');
+    expect(bytes[0]).toBe(0x50);
+    expect(bytes[1]).toBe(0x4b);
+    expect(bytes[2]).toBe(0x03);
+    expect(bytes[3]).toBe(0x04);
+    expect(bytes.at(-22)).toBe(0x50);
+    expect(bytes.at(-21)).toBe(0x4b);
+    expect(bytes.at(-20)).toBe(0x05);
+    expect(bytes.at(-19)).toBe(0x06);
   });
 });

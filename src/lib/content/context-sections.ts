@@ -49,6 +49,25 @@ export function generateContextSections(route: RouteConfig): PageContextSection[
     ];
   }
 
+  if (route.intent === 'generic-compress' && route.targetSize && !route.format) {
+    const sizeLabel = formatSizeLabel(route.targetSize);
+
+    return [
+      {
+        title: 'Common real-world use cases',
+        body: `A ${sizeLabel} image compressor fits upload forms, CMS media libraries, profile photos, lightweight product images, and other destinations that reject files above a known budget regardless of whether the source is JPEG, PNG, or WebP.`,
+      },
+      {
+        title: 'What changes the final result',
+        body: 'Image complexity and format matter. Photos usually compress differently from screenshots or transparent graphics, so the same target can produce different visible tradeoffs across JPEG, PNG, and WebP inputs.',
+      },
+      {
+        title: 'When to choose a different live page',
+        body: 'If the file must stay JPG and you want to choose the budget manually, use the JPG compressor. If the real constraint is pixel dimensions rather than file size, use a resize page instead.',
+      },
+    ];
+  }
+
   if (route.intent === 'format-resize' && route.format === 'png') {
     return [
       {

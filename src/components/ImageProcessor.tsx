@@ -21,6 +21,9 @@ import {
   parseTargetSize,
   readImageDimensions,
   revokeUrls,
+  createZipBlob,
+  downloadBlob,
+  uniqueZipEntries,
 } from './image-processor/utils';
 
 export default function ImageProcessor({
@@ -281,11 +284,21 @@ export default function ImageProcessor({
   ]);
 
   const downloadFile = useCallback((result: ProcessedFile) => {
-    const anchor = document.createElement('a');
-    anchor.href = result.url;
-    anchor.download = getDownloadName(result);
-    anchor.click();
+    downloadBlob(result.blob, getDownloadName(result));
   }, []);
+
+  const downloadAllFiles = useCallback(async () => {
+    if (results.length === 0) {
+      return;
+    }
+
+    try {
+      const zipBlob = await createZipBlob(uniqueZipEntries(results));
+      downloadBlob(zipBlob, 'localresizer-results.zip');
+    } catch (zipError) {
+      setError(zipError instanceof Error ? zipError.message : 'Preparing the ZIP download failed.');
+    }
+  }, [results]);
 
   const reset = useCallback(() => {
     revokeUrls(results);
@@ -361,6 +374,7 @@ export default function ImageProcessor({
         <ResultsPanel
           results={results}
           onDownload={downloadFile}
+          onDownloadAll={downloadAllFiles}
           onReset={reset}
         />
       )}

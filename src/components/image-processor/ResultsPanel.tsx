@@ -1,18 +1,34 @@
+import { useState } from 'react';
 import type { ProcessedFile } from './types';
 import { fmtBytes, outputFormatLabel, sizeChange } from './utils';
 
 interface ResultsPanelProps {
   results: ProcessedFile[];
   onDownload: (result: ProcessedFile) => void;
+  onDownloadAll?: () => Promise<void> | void;
   onReset: () => void;
 }
 
-export function ResultsPanel({ results, onDownload, onReset }: ResultsPanelProps) {
+export function ResultsPanel({ results, onDownload, onDownloadAll, onReset }: ResultsPanelProps) {
+  const [isDownloadingAll, setIsDownloadingAll] = useState(false);
   const totalOriginalSize = results.reduce((sum, result) => sum + result.originalSize, 0);
   const totalProcessedSize = results.reduce((sum, result) => sum + result.processedSize, 0);
   const totalChange = sizeChange(totalOriginalSize, totalProcessedSize);
   const totalChangeLabel = totalChange.direction === 'increased' ? 'Size increase' : 'Total saved';
   const totalChangePrefix = totalChange.direction === 'increased' ? '+' : '-';
+
+  const handleDownloadAll = async () => {
+    if (!onDownloadAll || isDownloadingAll) {
+      return;
+    }
+
+    setIsDownloadingAll(true);
+    try {
+      await onDownloadAll();
+    } finally {
+      setIsDownloadingAll(false);
+    }
+  };
 
   return (
     <div className="animate-fade-up">
@@ -43,8 +59,19 @@ export function ResultsPanel({ results, onDownload, onReset }: ResultsPanelProps
         ))}
       </div>
 
-      <div className="mt-5 flex gap-3">
+      <div className="mt-5 flex flex-col sm:flex-row gap-3">
+        {results.length > 1 && onDownloadAll && (
+          <button
+            type="button"
+            onClick={handleDownloadAll}
+            disabled={isDownloadingAll}
+            className="flex-1 py-3 bg-stone-900 text-white rounded-xl font-medium text-sm hover:bg-stone-800 disabled:cursor-wait disabled:bg-stone-500 transition-colors"
+          >
+            {isDownloadingAll ? 'Preparing ZIP...' : `Download all ${results.length} files`}
+          </button>
+        )}
         <button
+          type="button"
           onClick={onReset}
           className="flex-1 py-3 border border-stone-200 text-stone-600 rounded-xl font-medium text-sm hover:bg-stone-50 transition-colors"
         >

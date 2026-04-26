@@ -15,6 +15,11 @@ export function generateIntroText(route: RouteConfig): string {
     return 'Compress a JPG or JPEG image locally in your browser by choosing the target size that fits your upload rule. This page is designed for people who know they need a smaller JPEG, but do not want to jump between separate fixed-size pages before deciding whether 50KB, 100KB, or 200KB is the better target. The result stays JPEG, and the current public workflow never uploads image content to a server.';
   }
 
+  if (route.intent === 'generic-compress' && route.targetSize && !route.format) {
+    const sizeLabel = formatSizeLabel(route.targetSize);
+    return `Compress a static image toward ${sizeLabel} locally in your browser. This page is for users who know the upload gate is a file-size budget, but the source image might be JPEG, PNG, or WebP. The workflow keeps processing on your device, uses format-specific reduction strategies, and treats the final file size as best-effort rather than a guaranteed exact byte count.`;
+  }
+
   if (route.intent === 'format-resize' && route.format === 'png') {
     return 'Resize a static PNG by pixel dimensions directly in your browser with no upload. This page is useful when the real requirement is a PNG-specific resize workflow rather than a generic file-size target. It keeps PNG output, supports custom width and height values, and fits the image to the requested dimensions without stretching it out of proportion.';
   }
@@ -60,6 +65,11 @@ export function generateDetailText(route: RouteConfig): string {
 
   if (route.intent === 'generic-compress' && route.format === 'jpeg') {
     return 'Because this is a configurable JPG compressor page, you can choose the size budget that matches the real upload gate instead of relying on a single fixed-size preset. The output remains JPEG, and the tool uses a quality-search pass to move as close as practical to the requested target size. If the original JPG is already below the target, the page keeps the original file. The result is still best-effort, so exact byte-for-byte guarantees are outside the current public promise.';
+  }
+
+  if (route.intent === 'generic-compress' && route.targetSize && !route.format) {
+    const sizeLabel = formatSizeLabel(route.targetSize);
+    return `This page accepts static JPEG, PNG, and WebP files and moves them toward ${sizeLabel} without uploading image content to a server. JPEG and WebP can use quality adjustment, while PNG may need a PNG-specific strategy because it does not compress like a lossy photo format. If the original image is already under ${sizeLabel}, the original file is kept. The page does not support GIF, PDF, video, audio, or document compression.`;
   }
 
   if (route.intent === 'format-resize' && route.format === 'png') {

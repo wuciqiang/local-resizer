@@ -67,6 +67,16 @@ describe('generatePageHighlights', () => {
     expect(highlights[1]?.body).toContain('JPEG output');
   });
 
+  it('returns generic target-compression guidance', () => {
+    const route = getRouteBySlug('compress-image-to-100kb');
+    expect(route).toBeDefined();
+
+    const highlights = generatePageHighlights(route!);
+    expect(highlights[0]?.body).toContain('100KB');
+    expect(highlights[1]?.body).toContain('format-specific');
+    expect(highlights[2]?.body).toContain('PDF');
+  });
+
   it('returns semantic PNG-route guidance', () => {
     const route = getRouteBySlug('resize-png');
     expect(route).toBeDefined();
@@ -122,6 +132,14 @@ describe('generateIntroText', () => {
     expect(generateDetailText(jpgRoute!)).toContain('best-effort');
     expect(generateIntroText(pngRoute!)).toContain('PNG');
     expect(generateDetailText(pngRoute!)).toContain('transparency');
+  });
+
+  it('keeps generic target-compression copy aligned with static-image scope', () => {
+    const route = getRouteBySlug('compress-image-to-50kb');
+    expect(route).toBeDefined();
+
+    expect(generateIntroText(route!)).toContain('JPEG, PNG, or WebP');
+    expect(generateDetailText(route!)).toContain('does not support GIF, PDF, video, audio, or document compression');
   });
 });
 
@@ -182,5 +200,12 @@ describe('generateContextSections', () => {
     expect(photoSections[0]?.body).toContain('strict photo-upload');
     expect(jpgSections[0]?.body).toContain('JPG');
     expect(pngSections[0]?.body).toContain('PNG');
+  });
+
+  it('returns generic compression context for target-size image pages', () => {
+    const sections = generateContextSections(getRouteBySlug('compress-image-to-200kb')!);
+
+    expect(sections[0]?.body).toContain('200KB');
+    expect(sections[1]?.body).toContain('JPEG, PNG, and WebP');
   });
 });

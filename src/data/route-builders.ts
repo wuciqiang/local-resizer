@@ -114,6 +114,55 @@ function buildCompressJpgFileRoute(): RouteConfig {
   };
 }
 
+function buildCompressImageToSizeRoute(size: string): RouteConfig {
+  const sizeLabel = formatSizeLabel(size);
+
+  return {
+    slug: `compress-image-to-${size}`,
+    action: 'compress',
+    intent: 'generic-compress',
+    targetSize: size,
+    targetSizeBytes: parseSize(size),
+    tier: 4,
+    seo: {
+      title: `Compress Image to ${sizeLabel} Online - Private Browser Tool | LocalResizer`,
+      description: `Compress static JPEG, PNG, or WebP images toward ${sizeLabel} in your browser. No upload, no signup, and best-effort local processing.`,
+      h1: `Compress Image to ${sizeLabel}`,
+      subtitle: `Target a ${sizeLabel} image file-size budget locally while keeping processing in your browser.`,
+    },
+    faq: [
+      {
+        question: `Which image formats can I compress toward ${sizeLabel}?`,
+        answer: 'This page accepts static JPEG, PNG, and WebP images. Animated GIF, PDF, video, and document compression are outside the current public workflow.',
+      },
+      {
+        question: `Can every image become exactly ${sizeLabel}?`,
+        answer: `No. The page uses a best-effort workflow, so it aims to get close to ${sizeLabel} but cannot guarantee an exact byte-for-byte final size on every source image.`,
+      },
+      {
+        question: `What happens if my image is already under ${sizeLabel}?`,
+        answer: 'The original file is kept when it is already within the requested size budget instead of forcing another round of compression.',
+      },
+      {
+        question: 'How are PNG files handled on this page?',
+        answer: 'PNG files can keep PNG output, but because PNG does not use a JPEG-style quality slider, the page may ask for or apply a PNG-specific reduction strategy when a much smaller file is needed.',
+      },
+      {
+        question: 'Are my images uploaded anywhere?',
+        answer: 'No. The current public workflow processes static images locally in your browser with no server upload.',
+      },
+    ],
+    howToSteps: [
+      'Upload a static JPEG, PNG, or WebP image',
+      `Compress the image toward the ${sizeLabel} target locally`,
+      'Download the processed result',
+    ],
+    relatedLinks: [],
+    acceptFormats: STATIC_IMAGE_ACCEPT_FORMATS,
+    maxFileSize: 50 * 1024 * 1024,
+  };
+}
+
 function buildResizePngRoute(): RouteConfig {
   return {
     slug: 'resize-png',
@@ -257,7 +306,10 @@ function buildExplicitRoutes(): RouteConfig[] {
     maxFileSize: 50 * 1024 * 1024,
   };
 
+  const targetCompressRoutes = ['50kb', '100kb', '200kb'].map(buildCompressImageToSizeRoute);
+
   return [
+    ...targetCompressRoutes,
     buildPhotoResizer20kbRoute(),
     buildCompressJpgFileRoute(),
     buildResizePngRoute(),
@@ -378,6 +430,8 @@ export function buildRelatedLinks(routes: RouteConfig[]): void {
     }
 
     if (route.slug === 'compress-jpg-file') {
+      links.add('compress-jpeg-to-50kb');
+      links.add('compress-jpeg-to-200kb');
       links.add('photo-resizer-20kb');
     }
 

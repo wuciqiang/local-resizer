@@ -1,26 +1,40 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Breadcrumbs from '../components/Breadcrumbs.astro';
-import { phase0Routes } from '../data/routes';
+import ImageProcessor from '../components/ImageProcessor.tsx';
+import { parseSize, phase0Routes, STATIC_IMAGE_ACCEPT_FORMATS } from '../data/routes';
 import { generateBreadcrumbSchema } from '../lib/seo';
 import { getHubBreadcrumbs } from '../lib/site-structure';
 
-const title = 'Compress Image Guide - Current JPEG and PNG Workflows | LocalResizer';
-const description = 'Compare the current live JPEG and PNG compression pages on LocalResizer, see what each page is best for, and choose the right target-size workflow.';
+const title = 'Compress Image Online - Private Browser Compressor | LocalResizer';
+const description = 'Compress static JPEG, PNG, and WebP images in your browser. Choose a target size, compare focused compression pages, and keep image processing local.';
 const breadcrumbItems = getHubBreadcrumbs('compress-image');
 const breadcrumbSchema = generateBreadcrumbSchema(breadcrumbItems);
-const compressRoutes = phase0Routes.filter((route) => route.action === 'compress');
+const targetCompressRoutes = phase0Routes.filter((route) => route.slug.startsWith('compress-image-to-'));
+const formatCompressRoutes = phase0Routes.filter((route) => route.action === 'compress' && route.format);
 ---
 <BaseLayout title={title} description={description} schemas={[breadcrumbSchema]}>
   <Breadcrumbs items={breadcrumbItems} />
 
   <article class="max-w-4xl mx-auto px-4 sm:px-5 py-10 sm:py-14">
-    <div class="text-center mb-10">
-      <span class="inline-block px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 text-xs font-semibold tracking-wide uppercase mb-3">Guide</span>
-      <h1 class="font-[var(--font-heading)] text-3xl md:text-4xl font-bold text-stone-900 tracking-tight mb-4">Compress image guide for the current live pages</h1>
+    <div class="text-center mb-8">
+      <span class="inline-block px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 text-xs font-semibold tracking-wide uppercase mb-3">Tool Hub</span>
+      <h1 class="font-[var(--font-heading)] text-3xl md:text-4xl font-bold text-stone-900 tracking-tight mb-4">Compress image online</h1>
       <p class="text-stone-500 max-w-2xl mx-auto leading-relaxed">
-        This guide explains the compression workflows that are live right now. Use it when you know you need a smaller upload, but you are not yet sure whether to choose a JPEG size page or the current PNG compression page.
+        Use this hub when the upload limit is the main constraint. Compress static JPEG, PNG, and WebP images locally, then jump to a focused target-size page when you already know the exact budget.
       </p>
+    </div>
+
+    <div class="mb-10">
+      <ImageProcessor
+        client:visible
+        action="compress"
+        acceptFormats={STATIC_IMAGE_ACCEPT_FORMATS}
+        maxFileSize={50 * 1024 * 1024}
+        lockedAction="compress"
+        hideActionTabs={true}
+        defaultTargetSizeBytes={parseSize('200kb')}
+      />
     </div>
 
     <section class="bg-white rounded-2xl p-7 shadow-soft border border-stone-100 mb-8 space-y-4">
@@ -52,10 +66,24 @@ const compressRoutes = phase0Routes.filter((route) => route.action === 'compress
       </div>
     </section>
 
+    {targetCompressRoutes.length > 0 && (
+      <section class="bg-white rounded-2xl p-7 shadow-soft border border-stone-100 mb-10">
+        <h2 class="font-[var(--font-heading)] text-xl font-semibold text-stone-900 mb-4">Target-size image compressors</h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+          {targetCompressRoutes.map((route) => (
+            <a href={`/${route.slug}`} class="no-underline rounded-xl border border-stone-100 p-5 hover:border-teal-200 hover:bg-teal-50/40 transition-all">
+              <h3 class="font-[var(--font-heading)] font-semibold text-stone-900 mb-2">{route.seo.h1}</h3>
+              <p class="text-sm text-stone-500 leading-relaxed">{route.seo.subtitle}</p>
+            </a>
+          ))}
+        </div>
+      </section>
+    )}
+
     <section class="bg-white rounded-2xl p-7 shadow-soft border border-stone-100 mb-10">
-      <h2 class="font-[var(--font-heading)] text-xl font-semibold text-stone-900 mb-4">Current live compression pages</h2>
+      <h2 class="font-[var(--font-heading)] text-xl font-semibold text-stone-900 mb-4">Format-specific compression pages</h2>
       <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
-        {compressRoutes.map((route) => (
+        {formatCompressRoutes.map((route) => (
           <a href={`/${route.slug}`} class="no-underline rounded-xl border border-stone-100 p-5 hover:border-teal-200 hover:bg-teal-50/40 transition-all">
             <h3 class="font-[var(--font-heading)] font-semibold text-stone-900 mb-2">{route.seo.h1}</h3>
             <p class="text-sm text-stone-500 leading-relaxed">{route.seo.subtitle}</p>

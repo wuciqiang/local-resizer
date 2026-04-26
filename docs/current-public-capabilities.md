@@ -13,7 +13,7 @@ This document defines what the live public site can claim today.
   - compress by file size
   - resize by dimensions
 
-## Current supporting guide pages
+## Current supporting guide and hub pages
 
 The live public site also includes a small set of guide pages that explain the current scope and link to the published tools:
 
@@ -26,15 +26,22 @@ The live public site also includes a small set of guide pages that explain the c
 
 These guide pages help users navigate the current release. They do not expand the live processing scope beyond the homepage tool and the current published tool pages.
 
+`/compress-image` and `/resize-image` now include working tool controls in the page body. They remain within the same static JPEG/PNG/WebP, browser-local scope.
+
 ## Live tool-page claim set
 
-The current public release includes 13 focused tool pages:
+The current public release includes 18 focused tool pages:
 
 - `compress-jpeg-to-50kb`
 - `compress-jpeg-to-200kb`
 - `compress-png-to-200kb`
+- `compress-image-to-50kb`
+- `compress-image-to-100kb`
+- `compress-image-to-200kb`
 - `resize-image-to-20kb`
+- `resize-image-to-50kb`
 - `resize-image-to-100kb`
+- `resize-image-to-200kb`
 - `resize-image-to-2mb`
 - `resize-youtube-banner`
 - `resize-youtube-thumbnail`
@@ -69,6 +76,21 @@ Do not claim:
 
 - PNG quality slider behavior like JPEG
 - exact target size on every image
+
+### Compress image target-size pages
+
+Allowed claims:
+
+- Works with static JPEG, PNG, and WebP images
+- Targets a file-size budget locally
+- Uses format-specific strategies to move toward the requested size
+- Keeps the original file if it is already below the target
+
+Do not claim:
+
+- exact target size on every image
+- PDF, video, audio, Office, ZIP, or animated GIF compression
+- AI enhancement or quality recovery
 
 ### Resize-to-size pages
 

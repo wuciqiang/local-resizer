@@ -44,7 +44,7 @@ describe('activeRoutes', () => {
 
   it('includes resize-image routes for active slugs', () => {
     const resizeRoutes = activeRoutes.filter((route) => route.slug.startsWith('resize-image-to-'));
-    expect(resizeRoutes.length).toBe(3);
+    expect(resizeRoutes.length).toBe(5);
   });
 
   it('includes platform routes for active slugs', () => {
@@ -54,6 +54,9 @@ describe('activeRoutes', () => {
   });
 
   it('includes explicit semantic routes for active slugs', () => {
+    expect(getRouteBySlug('compress-image-to-50kb')?.intent).toBe('generic-compress');
+    expect(getRouteBySlug('compress-image-to-100kb')?.intent).toBe('generic-compress');
+    expect(getRouteBySlug('compress-image-to-200kb')?.intent).toBe('generic-compress');
     expect(getRouteBySlug('photo-resizer-20kb')?.intent).toBe('document-photo');
     expect(getRouteBySlug('compress-jpg-file')?.intent).toBe('generic-compress');
     expect(getRouteBySlug('resize-png')?.intent).toBe('format-resize');
@@ -94,6 +97,10 @@ describe('getRouteBySlug', () => {
   });
 
   it('returns explicit semantic routes with expected processor defaults', () => {
+    expect(getRouteBySlug('compress-image-to-50kb')?.targetSizeBytes).toBe(50 * 1024);
+    expect(getRouteBySlug('compress-image-to-50kb')?.acceptFormats).toEqual(
+      expect.arrayContaining(['image/jpeg', 'image/png', 'image/webp']),
+    );
     expect(getRouteBySlug('compress-jpg-file')?.lockedAction).toBe('compress');
     expect(getRouteBySlug('compress-jpg-file')?.defaultTargetSizeBytes).toBe(200 * 1024);
     expect(getRouteBySlug('resize-png')?.lockedAction).toBe('resize');

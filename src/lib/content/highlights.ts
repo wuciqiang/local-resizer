@@ -42,6 +42,25 @@ export function generatePageHighlights(route: RouteConfig): PageHighlight[] {
     ];
   }
 
+  if (route.intent === 'generic-compress' && route.targetSize && !route.format) {
+    const sizeLabel = formatSizeLabel(route.targetSize);
+
+    return [
+      {
+        title: 'Best for',
+        body: `Use this page when the destination has a ${sizeLabel} upload budget and your source image may be JPEG, PNG, or WebP.`,
+      },
+      {
+        title: 'Output behavior',
+        body: 'The page uses format-specific local compression, keeps already-small files as-is, and processes up to the current batch limit in the browser.',
+      },
+      {
+        title: 'Current limits',
+        body: 'Compression is best-effort. This page does not support GIF, PDF, video, audio, Office, ZIP, or AI enhancement workflows.',
+      },
+    ];
+  }
+
   if (route.intent === 'format-resize' && route.format === 'png') {
     return [
       {
