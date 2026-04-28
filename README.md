@@ -205,6 +205,8 @@ npm run test
 - 匿名数据
 - GDPR 合规
 
+同时在全站布局中加载 Google Analytics 4，当前衡量 ID 为 `G-82F7Y6LT7D`。
+
 ## 🤝 贡献指南
 
 欢迎提交 Issue 和 Pull Request！
