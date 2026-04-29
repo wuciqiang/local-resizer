@@ -1,35 +1,24 @@
-<<<<<<< Updated upstream
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none">
-  <defs>
-    <linearGradient id="localresizer-favicon-bg" x1="4" y1="3" x2="28" y2="29" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#14b8a6"/>
-      <stop offset="1" stop-color="#0f766e"/>
-    </linearGradient>
-  </defs>
-  <rect width="32" height="32" rx="7" fill="url(#localresizer-favicon-bg)"/>
-  <path d="M8 22V10h3v9h5v3H8zm10 0V10h3v12h-3zm-2-5l4 5h-3.5L13 17.5 16 13h3.5L16 17z" fill="#fff"/>
-=======
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
   <defs>
-    <linearGradient id="bg" x1="10" y1="6" x2="56" y2="58" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#0D9488"/>
-      <stop offset="1" stop-color="#10B981"/>
+    <linearGradient id="arrowA" x1="12" y1="11" x2="54" y2="53" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#34D399"/>
+      <stop offset="0.52" stop-color="#0D9488"/>
+      <stop offset="1" stop-color="#064E3B"/>
     </linearGradient>
-    <linearGradient id="mountain" x1="13" y1="38" x2="45" y2="38" gradientUnits="userSpaceOnUse">
+    <linearGradient id="arrowB" x1="52" y1="7" x2="10" y2="57" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#10B981"/>
+      <stop offset="0.55" stop-color="#0F766E"/>
+      <stop offset="1" stop-color="#34D399"/>
+    </linearGradient>
+    <linearGradient id="imageFill" x1="21" y1="25" x2="43" y2="43" gradientUnits="userSpaceOnUse">
       <stop stop-color="#F8FAFC"/>
       <stop offset="1" stop-color="#CCFBF1"/>
     </linearGradient>
   </defs>
-  <rect x="4" y="4" width="56" height="56" rx="14" fill="url(#bg)"/>
-  <rect x="14" y="15" width="36" height="28" rx="5" stroke="white" stroke-width="4"/>
-  <path d="M16 39L27 29L36 37L42 32L50 39V43H16V39Z" fill="url(#mountain)"/>
-  <circle cx="40" cy="24" r="4" fill="#D1FAE5"/>
-  <path d="M23 23H17V17" stroke="white" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
-  <path d="M17 17L25 25" stroke="white" stroke-width="3.5" stroke-linecap="round"/>
-  <path d="M41 41H47V47" stroke="white" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
-  <path d="M47 47L39 39" stroke="white" stroke-width="3.5" stroke-linecap="round"/>
-  <path d="M43 39L52 35L57 38V47C57 53 52.8 56.5 50 57.8C47.2 56.5 43 53 43 47V39Z" fill="#064E3B" stroke="#ECFDF5" stroke-width="2"/>
-  <rect x="47" y="46" width="6" height="5" rx="1" fill="#ECFDF5"/>
-  <path d="M48 46V44.8C48 43.7 48.9 43 50 43C51.1 43 52 43.7 52 44.8V46" stroke="#ECFDF5" stroke-width="1.8" stroke-linecap="round"/>
->>>>>>> Stashed changes
+  <rect x="3" y="3" width="58" height="58" rx="14" fill="#F8FAFC"/>
+  <path d="M50.2 13.6C42.3 5.9 29.9 4.3 20.2 10.6C12 15.9 7.7 25.3 8.7 34.4C9 37.3 10 40.3 11.6 43.1L15.9 36.7C13.7 28.7 16.9 20.1 24 15.5C30.8 11.1 39.6 11.5 46.1 16.6L39.1 23.6H59V3.8L50.2 13.6Z" fill="url(#arrowA)"/>
+  <path d="M13.8 50.4C21.8 58.2 34.1 59.7 43.9 53.4C52.1 48.1 56.3 38.7 55.3 29.6C55 26.7 54 23.7 52.4 20.9L48.1 27.3C50.3 35.3 47.1 43.9 40 48.5C33.2 52.9 24.4 52.5 17.9 47.4L24.9 40.4H5V60.2L13.8 50.4Z" fill="url(#arrowB)"/>
+  <rect x="18" y="20" width="28" height="24" rx="4.5" fill="#ECFDF5" stroke="#065F46" stroke-width="3.5"/>
+  <circle cx="26.5" cy="28" r="3.1" fill="#065F46"/>
+  <path d="M21.8 39.4L29.5 31.7L35.3 38L40.1 32.9L44.2 37.5V40.6H21.8V39.4Z" fill="url(#imageFill)"/>
 </svg>
