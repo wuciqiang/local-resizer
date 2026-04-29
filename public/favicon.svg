@@ -1,3 +1,4 @@
+<<<<<<< Updated upstream
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none">
   <defs>
     <linearGradient id="localresizer-favicon-bg" x1="4" y1="3" x2="28" y2="29" gradientUnits="userSpaceOnUse">
@@ -7,4 +8,28 @@
   </defs>
   <rect width="32" height="32" rx="7" fill="url(#localresizer-favicon-bg)"/>
   <path d="M8 22V10h3v9h5v3H8zm10 0V10h3v12h-3zm-2-5l4 5h-3.5L13 17.5 16 13h3.5L16 17z" fill="#fff"/>
+=======
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <defs>
+    <linearGradient id="bg" x1="10" y1="6" x2="56" y2="58" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#0D9488"/>
+      <stop offset="1" stop-color="#10B981"/>
+    </linearGradient>
+    <linearGradient id="mountain" x1="13" y1="38" x2="45" y2="38" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#F8FAFC"/>
+      <stop offset="1" stop-color="#CCFBF1"/>
+    </linearGradient>
+  </defs>
+  <rect x="4" y="4" width="56" height="56" rx="14" fill="url(#bg)"/>
+  <rect x="14" y="15" width="36" height="28" rx="5" stroke="white" stroke-width="4"/>
+  <path d="M16 39L27 29L36 37L42 32L50 39V43H16V39Z" fill="url(#mountain)"/>
+  <circle cx="40" cy="24" r="4" fill="#D1FAE5"/>
+  <path d="M23 23H17V17" stroke="white" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M17 17L25 25" stroke="white" stroke-width="3.5" stroke-linecap="round"/>
+  <path d="M41 41H47V47" stroke="white" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M47 47L39 39" stroke="white" stroke-width="3.5" stroke-linecap="round"/>
+  <path d="M43 39L52 35L57 38V47C57 53 52.8 56.5 50 57.8C47.2 56.5 43 53 43 47V39Z" fill="#064E3B" stroke="#ECFDF5" stroke-width="2"/>
+  <rect x="47" y="46" width="6" height="5" rx="1" fill="#ECFDF5"/>
+  <path d="M48 46V44.8C48 43.7 48.9 43 50 43C51.1 43 52 43.7 52 44.8V46" stroke="#ECFDF5" stroke-width="1.8" stroke-linecap="round"/>
+>>>>>>> Stashed changes
 </svg>
