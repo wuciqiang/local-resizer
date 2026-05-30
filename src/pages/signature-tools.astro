@@ -18,6 +18,9 @@ const signatureRoute = phase0Routes.find((route) => route.slug === 'signature-re
     <div class="text-center mb-10">
       <span class="inline-block px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 text-xs font-semibold tracking-wide uppercase mb-3">Guide</span>
       <h1 class="font-[var(--font-heading)] text-3xl md:text-4xl font-bold text-stone-900 tracking-tight mb-4">Signature tools guide for the current live workflow</h1>
+      <p class="text-xs text-stone-400 uppercase tracking-wide mb-4">
+        Updated <time datetime="2026-04-29">Apr 29, 2026</time>
+      </p>
       <p class="text-stone-500 max-w-2xl mx-auto leading-relaxed">
         This guide explains what the current signature page actually does today, where it helps most, and what boundaries still apply before you use the result in an upload form.
       </p>
@@ -61,6 +64,13 @@ const signatureRoute = phase0Routes.find((route) => route.slug === 'signature-re
         </a>
       </section>
     )}
+
+    <section class="bg-white rounded-2xl p-7 shadow-soft border border-stone-100 mb-10 space-y-3">
+      <h2 class="font-[var(--font-heading)] text-xl font-semibold text-stone-900">When the signature page is not the right fit</h2>
+      <p class="text-stone-500 leading-relaxed">
+        If you need a general width and height change rather than trimming a signature, open the <a href="/resize-image" class="text-teal-700 underline hover:text-teal-900">resize image tool</a>. It is the better starting point for regular photos, screenshots, and other static image files.
+      </p>
+    </section>
 
     <section class="grid grid-cols-1 md:grid-cols-3 gap-5">
       <a href="/photo-resizer-20kb" class="no-underline bg-white rounded-2xl p-6 shadow-soft border border-stone-100 hover:border-teal-200 hover:bg-teal-50/40 transition-all">

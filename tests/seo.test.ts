@@ -1,5 +1,13 @@
 import { describe, it, expect } from 'vitest';
-import { generateHowToSchema, generateFAQSchema, generateBreadcrumbSchema, generateCanonicalUrl } from '../src/lib/seo';
+import {
+  generateHowToSchema,
+  generateFAQSchema,
+  generateBreadcrumbSchema,
+  generateCanonicalUrl,
+  generateOrganizationSchema,
+  generateWebApplicationSchema,
+  generateWebSiteSchema,
+} from '../src/lib/seo';
 import { getRouteBySlug } from '../src/data/routes';
 import { getRouteBreadcrumbs } from '../src/lib/site-structure';
 
@@ -37,5 +45,13 @@ describe('generateBreadcrumbSchema', () => {
 describe('generateCanonicalUrl', () => {
   it('generates correct canonical URL', () => {
     expect(generateCanonicalUrl('compress-jpeg-to-50kb')).toBe('https://localresizer.com/compress-jpeg-to-50kb');
+  });
+});
+
+describe('homepage schema helpers', () => {
+  it('generates WebSite, Organization, and WebApplication schemas', () => {
+    expect((generateWebSiteSchema() as any)['@type']).toBe('WebSite');
+    expect((generateOrganizationSchema() as any).logo).toBe('https://localresizer.com/logo-social.png');
+    expect((generateWebApplicationSchema() as any).offers.price).toBe('0');
   });
 });

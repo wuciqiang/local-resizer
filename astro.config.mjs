@@ -6,7 +6,42 @@ import sitemap from '@astrojs/sitemap';
 export default defineConfig({
   site: 'https://localresizer.com',
   output: 'static',
-  integrations: [react(), sitemap()],
+  trailingSlash: 'never',
+  integrations: [
+    react(),
+    sitemap({
+      serialize(item) {
+        const pathname = new URL(item.url).pathname.replace(/\/+$/, '') || '/';
+
+        const guidePaths = new Set([
+          '/youtube-image-sizes',
+          '/signature-tools',
+          '/image-tools',
+          '/supported-formats',
+          '/why-image-size-is-best-effort',
+          '/jpeg-vs-png-vs-webp-for-upload-limits',
+        ]);
+        const utilityPaths = new Set([
+          '/about',
+          '/contact',
+          '/privacy',
+          '/terms',
+        ]);
+
+        if (pathname === '/') {
+          item.priority = 1.0;
+        } else if (guidePaths.has(pathname)) {
+          item.priority = 0.6;
+        } else if (utilityPaths.has(pathname)) {
+          item.priority = 0.4;
+        } else {
+          item.priority = 0.8;
+        }
+
+        return item;
+      },
+    }),
+  ],
   vite: {
     plugins: [tailwindcss()],
   },

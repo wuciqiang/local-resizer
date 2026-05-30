@@ -3,12 +3,18 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import ImageProcessor from '../components/ImageProcessor.tsx';
 import { STATIC_IMAGE_ACCEPT_FORMATS, phase0Routes } from '../data/routes';
 import { listHubInfos } from '../lib/site-structure';
+import { generateOrganizationSchema, generateWebApplicationSchema, generateWebSiteSchema } from '../lib/seo';
 
-const title = 'Free Local Image Resizer and Compressor for Static Images | LocalResizer';
-const description = 'Resize or compress static JPEG, PNG, and WebP images directly in your browser. No uploads, no server processing, and no account required.';
+const title = 'Resize Image Online - Free Local Image Resizer | LocalResizer';
+const description = 'Resize image files online in your browser, then compress JPEG, PNG, and WebP images locally with no uploads, no server processing, and no account required.';
 const hubGuides = listHubInfos();
+const schemas = [
+  generateWebSiteSchema(),
+  generateOrganizationSchema(),
+  generateWebApplicationSchema(),
+];
 ---
-<BaseLayout title={title} description={description}>
+<BaseLayout title={title} description={description} schemas={schemas}>
   <div class="pt-4 sm:pt-6 animate-fade-up">
     <ImageProcessor
       client:visible
@@ -32,12 +38,12 @@ const hubGuides = listHubInfos();
       </div>
 
       <h1 class="font-[var(--font-heading)] text-3xl sm:text-4xl md:text-[3.25rem] font-extrabold leading-[1.1] tracking-tight text-stone-900 mb-5 animate-fade-up" style="animation-delay: 0.1s">
-        Resize and Compress Static Images,<br class="hidden sm:inline" />
+        Resize Image Online,<br class="hidden sm:inline" />
         <span class="bg-gradient-to-r from-teal-600 to-emerald-500 bg-clip-text text-transparent">Right in Your Browser</span>
       </h1>
 
       <p class="text-lg text-stone-500 max-w-xl mx-auto mb-3 animate-fade-up" style="animation-delay: 0.15s">
-        Use the homepage tool for quick image work, then jump into the focused pages when you need a specific target such as 50 KB, 200 KB, or YouTube artwork sizes.
+        Use the homepage resize image tool for quick width, height, and file-size work, then jump into focused pages when you need a target such as 50 KB, 200 KB, or YouTube artwork sizes.
       </p>
 
       <p class="text-sm text-stone-500 animate-fade-up" style="animation-delay: 0.2s">
@@ -49,7 +55,7 @@ const hubGuides = listHubInfos();
   <section class="max-w-4xl mx-auto px-4 sm:px-5 py-14 sm:py-20">
     <div class="text-center mb-12">
       <span class="inline-block px-3 py-1 rounded-full bg-teal-50 text-teal-700 text-xs font-semibold tracking-wide uppercase mb-3">Why LocalResizer</span>
-      <h2 class="font-[var(--font-heading)] text-2xl md:text-3xl font-bold text-stone-900 tracking-tight">A focused static-image toolset</h2>
+      <h2 class="font-[var(--font-heading)] text-2xl md:text-3xl font-bold text-stone-900 tracking-tight">A focused resize image toolset</h2>
     </div>
     <div class="grid grid-cols-1 md:grid-cols-3 gap-5 stagger-children">
       <div class="bg-white rounded-2xl p-7 shadow-soft border border-stone-100 hover:shadow-soft-lg hover:-translate-y-0.5 transition-all duration-300">
@@ -59,7 +65,7 @@ const hubGuides = listHubInfos();
           </svg>
         </div>
         <h3 class="font-[var(--font-heading)] font-semibold text-stone-900 mb-2">100% private</h3>
-        <p class="text-sm text-stone-500 leading-relaxed">Your image files stay in your browser for the current workflow. We use privacy-friendly site analytics for page usage, but we do not upload or store image content.</p>
+        <p class="text-sm text-stone-500 leading-relaxed">When you resize image files here, they stay in your browser for the current workflow. We use privacy-friendly site analytics for page usage, but we do not upload or store image content.</p>
       </div>
       <div class="bg-white rounded-2xl p-7 shadow-soft border border-stone-100 hover:shadow-soft-lg hover:-translate-y-0.5 transition-all duration-300">
         <div class="w-11 h-11 rounded-xl bg-amber-50 flex items-center justify-center mb-4">
@@ -106,7 +112,7 @@ const hubGuides = listHubInfos();
       <span class="inline-block px-3 py-1 rounded-full bg-sky-50 text-sky-700 text-xs font-semibold tracking-wide uppercase mb-3">Guides</span>
       <h2 class="font-[var(--font-heading)] text-2xl md:text-3xl font-bold text-stone-900 tracking-tight">Start with the right guide</h2>
       <p class="text-stone-500 max-w-2xl mx-auto leading-relaxed">
-        These guide pages connect the live tools into clearer task groups, which makes the site easier to navigate for both users and search engines.
+        These resize image guide pages connect the live tools into clearer task groups, which makes the site easier to navigate for both users and search engines.
       </p>
     </div>
     <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
@@ -159,7 +165,7 @@ const hubGuides = listHubInfos();
         <ul class="space-y-3 text-sm text-stone-500 leading-relaxed list-disc pl-5">
           <li>Compress JPEG pages target a file-size budget locally and keep the original file if it is already under the limit.</li>
           <li>PNG compression pages keep PNG output and may reduce pixel dimensions when needed to move toward the target size.</li>
-          <li>Resize-to-size pages work with static JPEG, PNG, and WebP files while preserving the original aspect ratio.</li>
+          <li>Resize image target pages work with static JPEG, PNG, and WebP files while preserving the original aspect ratio.</li>
           <li>YouTube pages export an exact output canvas and keep the whole image visible, with padding added when ratios do not match.</li>
           <li><a href="/signature-resizer" class="text-teal-700 underline hover:text-teal-900">Signature resizer</a> and <a href="/image-splitter" class="text-teal-700 underline hover:text-teal-900">image splitter</a> pages handle signature cleanup and grid splitting locally in the browser.</li>
         </ul>

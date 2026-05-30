@@ -11,6 +11,7 @@ interface Props {
 const { title, description, canonical, schemas = [] } = Astro.props;
 const canonicalUrl = canonical || new URL(Astro.url.pathname, Astro.site).href;
 const currentPath = Astro.url.pathname;
+const ogImageUrl = new URL('/og-default.png', Astro.site).href;
 ---
 <!DOCTYPE html>
 <html lang="en">
@@ -22,6 +23,9 @@ const currentPath = Astro.url.pathname;
   <link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180" />
   <meta name="theme-color" content="#0f766e" />
   <link rel="alternate" type="application/rss+xml" title="LocalResizer RSS Feed" href="https://localresizer.com/feed.xml" />
+  <link rel="preconnect" href="https://www.googletagmanager.com" />
+  <link rel="preconnect" href="https://www.google-analytics.com" />
+  <link rel="preconnect" href="https://umami-blue-zeta.vercel.app" />
   <title>{title}</title>
   <meta name="description" content={description} />
   <link rel="canonical" href={canonicalUrl} />
@@ -30,27 +34,24 @@ const currentPath = Astro.url.pathname;
   <meta property="og:url" content={canonicalUrl} />
   <meta property="og:type" content="website" />
   <meta property="og:site_name" content="LocalResizer" />
+  <meta property="og:image" content={ogImageUrl} />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt" content="LocalResizer browser-based image resizing and compression tool" />
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content={title} />
   <meta name="twitter:description" content={description} />
+  <meta name="twitter:image" content={ogImageUrl} />
   {schemas.map(schema => (
     <script is:inline type="application/ld+json" set:html={JSON.stringify(schema)} />
   ))}
-  <script is:inline async src="https://www.googletagmanager.com/gtag/js?id=G-4FZK267R1E"></script>
-  <script is:inline>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-    gtag('config', 'G-4FZK267R1E');
-  </script>
-  <script is:inline defer src="https://umami-blue-zeta.vercel.app/script.js" data-website-id="a4db5007-1ce3-438f-b139-1e0e873b46c6"></script>
 </head>
 <body class="min-h-screen flex flex-col bg-[var(--color-surface)] text-[var(--color-text-primary)]">
   <!-- Header -->
   <header class="sticky top-0 z-50 bg-white/80 backdrop-blur-xl border-b border-[var(--color-border-light)]">
     <nav class="max-w-5xl mx-auto px-4 sm:px-5 h-14 sm:h-16 flex items-center justify-between">
       <a href="/" class="flex items-center gap-2 sm:gap-2.5 no-underline group shrink-0">
-        <img src="/logo2.png" alt="LocalResizer" width="1805" height="478" decoding="async" class="block w-[128px] sm:w-[190px] h-auto transition-transform group-hover:scale-[1.02]" />
+        <img src="/logo-header.png" alt="LocalResizer" width="380" height="101" decoding="async" class="block w-[128px] sm:w-[190px] h-auto transition-transform group-hover:scale-[1.02]" />
       </a>
       <div class="flex items-center gap-0.5 sm:gap-1 overflow-x-auto">
         {[
@@ -84,7 +85,7 @@ const currentPath = Astro.url.pathname;
   <footer class="border-t border-[var(--color-border)] bg-white">
     <div class="max-w-5xl mx-auto px-4 sm:px-5 py-8 sm:py-10">
       <div class="flex flex-col md:flex-row items-center justify-between gap-4">
-        <img src="/logo2.png" alt="LocalResizer" width="1805" height="478" loading="lazy" decoding="async" class="block w-[150px] sm:w-[170px] h-auto" />
+        <img src="/logo-header.png" alt="LocalResizer" width="380" height="101" loading="lazy" decoding="async" class="block w-[150px] sm:w-[170px] h-auto" />
         <div class="flex flex-wrap items-center justify-center gap-3 sm:gap-4 text-sm">
           <a href="/supported-formats" class="text-[var(--color-text-tertiary)] hover:text-teal-700 transition-colors no-underline">Supported</a>
           <a href="/about" class="text-[var(--color-text-tertiary)] hover:text-teal-700 transition-colors no-underline">About</a>
@@ -105,5 +106,13 @@ const currentPath = Astro.url.pathname;
       </div>
     </div>
   </footer>
+  <script is:inline defer src="https://www.googletagmanager.com/gtag/js?id=G-4FZK267R1E"></script>
+  <script is:inline>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-4FZK267R1E');
+  </script>
+  <script is:inline defer src="https://umami-blue-zeta.vercel.app/script.js" data-website-id="a4db5007-1ce3-438f-b139-1e0e873b46c6"></script>
 </body>
 </html>

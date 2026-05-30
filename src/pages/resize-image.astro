@@ -7,7 +7,7 @@ import { generateBreadcrumbSchema } from '../lib/seo';
 import { getHubBreadcrumbs } from '../lib/site-structure';
 
 const title = 'Resize Image Online - Private Browser Resizer | LocalResizer';
-const description = 'Resize static JPEG, PNG, and WebP images in your browser. Adjust pixel dimensions locally or choose a focused target-size page.';
+const description = 'Resize image files online in your browser. Adjust static JPEG, PNG, and WebP dimensions locally or choose a focused target-size page.';
 const breadcrumbItems = getHubBreadcrumbs('resize-image');
 const breadcrumbSchema = generateBreadcrumbSchema(breadcrumbItems);
 const resizeRoutes = phase0Routes.filter((route) => route.slug.startsWith('resize-image-to-'));
@@ -33,15 +33,18 @@ const resizeRoutes = phase0Routes.filter((route) => route.slug.startsWith('resiz
     <div class="text-center mb-8">
       <span class="inline-block px-3 py-1 rounded-full bg-sky-50 text-sky-700 text-xs font-semibold tracking-wide uppercase mb-3">Tool Hub</span>
       <h1 class="font-[var(--font-heading)] text-3xl md:text-4xl font-bold text-stone-900 tracking-tight mb-4">Resize image online</h1>
+      <p class="text-xs text-stone-400 uppercase tracking-wide mb-4">
+        Updated <time datetime="2026-04-29">Apr 29, 2026</time>
+      </p>
       <p class="text-stone-500 max-w-2xl mx-auto leading-relaxed">
-        Resize static JPEG, PNG, and WebP images by pixel dimensions directly in your browser. If the destination cares about file-size instead, use one of the focused target-size pages below.
+        Resize image files by pixel dimensions directly in your browser. Static JPEG, PNG, and WebP files stay local, and if the destination cares about file size instead, use one of the focused target-size pages below.
       </p>
     </div>
 
     <section class="bg-white rounded-2xl p-7 shadow-soft border border-stone-100 mb-8 space-y-4">
       <h2 class="font-[var(--font-heading)] text-xl font-semibold text-stone-900">What makes these pages different from the homepage tool</h2>
       <p class="text-stone-500 leading-relaxed">
-        The homepage lets you choose your own dimensions or file-size target. These route pages are more focused. Each one is tuned around a specific upload budget, such as 20KB, 100KB, or 2MB, so the copy, FAQ, and internal links all match one concrete need instead of a generic workflow.
+        The homepage resize image tool lets you choose your own dimensions or file-size target. These route pages are more focused. Each one is tuned around a specific upload budget, such as 20KB, 100KB, or 2MB, so the copy, FAQ, and internal links all match one concrete resize image need instead of a generic workflow.
       </p>
       <p class="text-stone-500 leading-relaxed">
         The result is still best-effort because file size depends on the source image. A flat graphic, a noisy photo, and a transparent PNG all behave differently. The live pages are designed to make that tradeoff clearer before you start, which is why they are useful as standalone landing pages and not just thin variants of the homepage.
@@ -51,7 +54,7 @@ const resizeRoutes = phase0Routes.filter((route) => route.slug.startsWith('resiz
     <section class="grid grid-cols-1 md:grid-cols-3 gap-5 mb-10">
       {resizeRoutes.map((route) => (
         <a href={`/${route.slug}`} class="no-underline bg-white rounded-2xl p-6 shadow-soft border border-stone-100 hover:border-teal-200 hover:bg-teal-50/40 transition-all">
-          <h2 class="font-[var(--font-heading)] text-lg font-semibold text-stone-900 mb-2">{route.seo.h1}</h2>
+          <h2 class="font-[var(--font-heading)] text-lg font-semibold text-stone-900 mb-2">{route.seo.h1.replace('Resize Image', 'Resize')}</h2>
           <p class="text-sm text-stone-500 leading-relaxed">{route.seo.subtitle}</p>
         </a>
       ))}
@@ -62,7 +65,7 @@ const resizeRoutes = phase0Routes.filter((route) => route.slug.startsWith('resiz
         <h2 class="font-[var(--font-heading)] text-lg font-semibold text-stone-900 mb-3">Choose a smaller target when</h2>
         <ul class="space-y-3 text-sm text-stone-500 leading-relaxed list-disc pl-5">
           <li>You are submitting to a strict form with a hard cap.</li>
-          <li>You can accept a noticeable size reduction to get under the limit.</li>
+          <li>You can accept a noticeable resize image reduction to get under the limit.</li>
           <li>The image is mainly for compliance, not maximum fidelity.</li>
         </ul>
       </div>

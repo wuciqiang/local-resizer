@@ -45,3 +45,38 @@ export function generateBreadcrumbSchema(items: BreadcrumbItem[]): object {
 export function generateCanonicalUrl(slug: string): string {
   return `https://localresizer.com/${slug}`;
 }
+
+export function generateWebSiteSchema(): object {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'WebSite',
+    name: 'LocalResizer',
+    url: 'https://localresizer.com/',
+  };
+}
+
+export function generateOrganizationSchema(): object {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'Organization',
+    name: 'LocalResizer',
+    url: 'https://localresizer.com/',
+    logo: 'https://localresizer.com/logo-social.png',
+  };
+}
+
+export function generateWebApplicationSchema(): object {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'WebApplication',
+    name: 'LocalResizer',
+    url: 'https://localresizer.com/',
+    applicationCategory: 'MultimediaApplication',
+    operatingSystem: 'Any',
+    offers: {
+      '@type': 'Offer',
+      price: '0',
+      priceCurrency: 'USD',
+    },
+  };
+}

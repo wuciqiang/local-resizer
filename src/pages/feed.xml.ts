@@ -4,6 +4,7 @@ import { activeRoutes } from '../data/routes';
 export const GET: APIRoute = () => {
   const siteUrl = 'https://localresizer.com';
   const buildDate = new Date().toUTCString();
+  const contentPubDate = new Date('2026-04-29T00:00:00.000Z').toUTCString();
 
   const items = activeRoutes
     .map((route) => {
@@ -12,6 +13,7 @@ export const GET: APIRoute = () => {
       <title>${escapeXml(route.seo.h1)}</title>
       <link>${url}</link>
       <guid>${url}</guid>
+      <pubDate>${contentPubDate}</pubDate>
       <description>${escapeXml(route.seo.description)}</description>
     </item>`;
     })
