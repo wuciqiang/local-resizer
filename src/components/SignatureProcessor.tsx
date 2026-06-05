@@ -4,6 +4,7 @@ import { ResultsPanel } from './image-processor/ResultsPanel';
 import { UploadDropzone } from './image-processor/UploadDropzone';
 import type { ProcessedFile, Status } from './image-processor/types';
 import { fmtBytes, getDownloadName, parseDimensions, parseTargetSize, revokeUrls } from './image-processor/utils';
+import { fileCountBucket, mimeFormat, resultFormatSummary, sizeBucket, trackToolEvent } from '../lib/analytics';
 
 interface SignatureProcessorProps {
   acceptFormats: string[];
@@ -177,6 +178,14 @@ export default function SignatureProcessor({
     setResult(null);
     setStatus('idle');
     setError('');
+    trackToolEvent('upload_completed', {
+      tool_action: 'select_files',
+      tool_mode: 'signature',
+      file_count: 1,
+      file_count_bucket: fileCountBucket(1),
+      input_format: mimeFormat(nextFile.type),
+      input_size_bucket: sizeBucket(nextFile.size),
+    });
     if (trimWhitespace) {
       void buildTrimPreview(nextFile).catch((previewError) => {
         setError(previewError instanceof Error ? previewError.message : 'Failed to prepare trim preview.');
@@ -217,6 +226,16 @@ export default function SignatureProcessor({
     setStatus('processing');
     setProgress(10);
     setError('');
+    trackToolEvent('process_started', {
+      tool_action: 'signature',
+      tool_mode: 'signature',
+      file_count: 1,
+      file_count_bucket: fileCountBucket(1),
+      input_format: mimeFormat(file.type),
+      output_format: outputMode,
+      result_type: trimWhitespace ? 'trim_resize_compress' : 'resize_compress',
+      target_size_bucket: sizeBucket(targetSizeBytes),
+    });
 
     try {
       const { resizeImage } = await import('../lib/resize');
@@ -300,9 +319,33 @@ export default function SignatureProcessor({
 
       setResult(processed);
       setStatus('done');
+      trackToolEvent('tool_result_view', {
+        tool_action: 'signature',
+        tool_mode: 'signature',
+        result_type: 'processed',
+        file_count: 1,
+        file_count_bucket: fileCountBucket(1),
+        input_format: mimeFormat(file.type),
+        output_format: resultFormatSummary([processed]),
+      });
+      trackToolEvent('process_completed', {
+        tool_action: 'signature',
+        tool_mode: 'signature',
+        result_type: 'processed',
+        file_count: 1,
+        file_count_bucket: fileCountBucket(1),
+        input_format: mimeFormat(file.type),
+        output_format: resultFormatSummary([processed]),
+      });
     } catch (processingError) {
       setError(processingError instanceof Error ? processingError.message : 'Signature processing failed.');
       setStatus('error');
+      trackToolEvent('process_failed', {
+        tool_action: 'signature',
+        tool_mode: 'signature',
+        result_type: 'error',
+        error_type: 'signature_processing_failed',
+      });
     }
   }, [buildTrimPreview, file, heightValue, outputMode, sizeValue, trimPreview, trimWhitespace, widthValue]);
 
@@ -319,6 +362,12 @@ export default function SignatureProcessor({
   }, [clearTrimPreview, result]);
 
   const handleDownload = useCallback((processed: ProcessedFile) => {
+    trackToolEvent('download_result', {
+      tool_action: 'signature',
+      tool_mode: 'signature',
+      result_type: 'single',
+      output_format: resultFormatSummary([processed]),
+    });
     const anchor = document.createElement('a');
     anchor.href = processed.url;
     anchor.download = getDownloadName(processed);
@@ -386,6 +435,12 @@ export default function SignatureProcessor({
                 checked={trimWhitespace}
                 onChange={async (event) => {
                   const nextValue = event.target.checked;
+                  trackToolEvent('tool_option_select', {
+                    tool_action: 'trim_toggle',
+                    tool_mode: 'signature',
+                    option_group: 'trim_whitespace',
+                    option_value: nextValue ? 'enabled' : 'disabled',
+                  });
                   setTrimWhitespace(nextValue);
 
                   if (!nextValue) {
@@ -412,7 +467,16 @@ export default function SignatureProcessor({
               <span className="block font-medium mb-2">Output format</span>
               <select
                 value={outputMode}
-                onChange={(event) => setOutputMode(event.target.value as OutputMode)}
+                onChange={(event) => {
+                  const nextMode = event.target.value as OutputMode;
+                  trackToolEvent('tool_option_select', {
+                    tool_action: 'output_format_select',
+                    tool_mode: 'signature',
+                    option_group: 'output_format',
+                    option_value: nextMode,
+                  });
+                  setOutputMode(nextMode);
+                }}
                 className="w-full px-3 py-2 border border-stone-200 rounded-lg text-sm bg-white"
               >
                 <option value="png">Transparent PNG</option>
@@ -451,6 +515,12 @@ export default function SignatureProcessor({
                 <button
                   type="button"
                   onClick={() => {
+                    trackToolEvent('tool_option_select', {
+                      tool_action: 'trim_toggle',
+                      tool_mode: 'signature',
+                      option_group: 'trim_whitespace',
+                      option_value: 'disabled',
+                    });
                     setTrimWhitespace(false);
                     clearTrimPreview();
                   }}

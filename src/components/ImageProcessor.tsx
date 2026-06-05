@@ -25,6 +25,13 @@ import {
   downloadBlob,
   uniqueZipEntries,
 } from './image-processor/utils';
+import {
+  fileCountBucket,
+  fileFormatSummary,
+  resultFormatSummary,
+  sizeBucket,
+  trackToolEvent,
+} from '../lib/analytics';
 
 export default function ImageProcessor({
   action,
@@ -165,7 +172,15 @@ export default function ImageProcessor({
     setStatus('idle');
     setError('');
     setPngChoice(valid.some((file) => file.type === 'image/png') ? 'pending' : 'none');
-  }, [acceptFormats, maxFileSize, results]);
+    trackToolEvent('upload_completed', {
+      tool_action: 'select_files',
+      tool_mode: effectiveAction,
+      file_count: valid.length,
+      file_count_bucket: fileCountBucket(valid.length),
+      input_format: fileFormatSummary(valid),
+      input_size_bucket: sizeBucket(valid.reduce((sum, file) => sum + file.size, 0)),
+    });
+  }, [acceptFormats, effectiveAction, maxFileSize, results]);
 
   const processFiles = useCallback(async () => {
     if (files.length === 0) {
@@ -190,6 +205,16 @@ export default function ImageProcessor({
     setStatus('processing');
     setProgress(0);
     setError('');
+    trackToolEvent('process_started', {
+      tool_action: effectiveAction,
+      tool_mode: effectiveAction,
+      file_count: files.length,
+      file_count_bucket: fileCountBucket(files.length),
+      input_format: fileFormatSummary(files),
+      output_format: format ?? (effectiveAction === 'compress' ? 'auto' : 'original'),
+      result_type: effectiveTargetSizeBytes ? 'target_size' : effectiveDimensions ? 'dimensions' : 'original',
+      target_size_bucket: effectiveTargetSizeBytes ? sizeBucket(effectiveTargetSizeBytes) : undefined,
+    });
     const processed: ProcessedFile[] = [];
 
     try {
@@ -267,10 +292,34 @@ export default function ImageProcessor({
 
       setResults(processed);
       setStatus('done');
+      trackToolEvent('tool_result_view', {
+        tool_action: effectiveAction,
+        tool_mode: effectiveAction,
+        result_type: 'processed',
+        file_count: processed.length,
+        file_count_bucket: fileCountBucket(processed.length),
+        input_format: fileFormatSummary(files),
+        output_format: resultFormatSummary(processed),
+      });
+      trackToolEvent('process_completed', {
+        tool_action: effectiveAction,
+        tool_mode: effectiveAction,
+        result_type: 'processed',
+        file_count: processed.length,
+        file_count_bucket: fileCountBucket(processed.length),
+        input_format: fileFormatSummary(files),
+        output_format: resultFormatSummary(processed),
+      });
     } catch (processingError) {
       revokeUrls(processed);
       setError(processingError instanceof Error ? processingError.message : 'Processing failed.');
       setStatus('error');
+      trackToolEvent('process_failed', {
+        tool_action: effectiveAction,
+        tool_mode: effectiveAction,
+        result_type: 'error',
+        error_type: 'processing_failed',
+      });
     }
   }, [
     effectiveAction,
@@ -284,8 +333,14 @@ export default function ImageProcessor({
   ]);
 
   const downloadFile = useCallback((result: ProcessedFile) => {
+    trackToolEvent('download_result', {
+      tool_action: effectiveAction,
+      tool_mode: effectiveAction,
+      result_type: 'single',
+      output_format: resultFormatSummary([result]),
+    });
     downloadBlob(result.blob, getDownloadName(result));
-  }, []);
+  }, [effectiveAction]);
 
   const downloadAllFiles = useCallback(async () => {
     if (results.length === 0) {
@@ -294,11 +349,19 @@ export default function ImageProcessor({
 
     try {
       const zipBlob = await createZipBlob(uniqueZipEntries(results));
+      trackToolEvent('download_result', {
+        tool_action: effectiveAction,
+        tool_mode: effectiveAction,
+        result_type: 'batch_zip',
+        file_count: results.length,
+        file_count_bucket: fileCountBucket(results.length),
+        output_format: resultFormatSummary(results),
+      });
       downloadBlob(zipBlob, 'localresizer-results.zip');
     } catch (zipError) {
       setError(zipError instanceof Error ? zipError.message : 'Preparing the ZIP download failed.');
     }
-  }, [results]);
+  }, [effectiveAction, results]);
 
   const reset = useCallback(() => {
     revokeUrls(results);
@@ -340,7 +403,14 @@ export default function ImageProcessor({
           onHeightChange={setHeightValue}
           onSizeUnitChange={setSizeUnit}
           onSizeValueChange={setSizeValue}
-          onToolActionChange={setToolAction}
+          onToolActionChange={(nextAction) => {
+            trackToolEvent('tool_option_select', {
+              tool_action: 'mode_select',
+              option_group: 'tool_mode',
+              option_value: nextAction,
+            });
+            setToolAction(nextAction);
+          }}
           onWidthChange={setWidthValue}
         />
       )}
@@ -351,7 +421,15 @@ export default function ImageProcessor({
           effectiveTargetSizeBytes={effectiveTargetSizeBytes}
           files={files}
           pngChoice={pngChoice}
-          onPngChoiceChange={setPngChoice}
+          onPngChoiceChange={(nextChoice) => {
+            trackToolEvent('tool_option_select', {
+              tool_action: 'png_strategy_select',
+              tool_mode: effectiveAction,
+              option_group: 'png_strategy',
+              option_value: nextChoice,
+            });
+            setPngChoice(nextChoice);
+          }}
           onProcess={processFiles}
           onReset={reset}
         />

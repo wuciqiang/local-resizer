@@ -109,9 +109,57 @@ const ogImageUrl = new URL('/og-default.png', Astro.site).href;
   <script is:inline defer src="https://www.googletagmanager.com/gtag/js?id=G-4FZK267R1E"></script>
   <script is:inline>
     window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-    gtag('config', 'G-4FZK267R1E');
+    window.gtag = function gtag(){dataLayer.push(arguments);}
+    window.gtag('js', new Date());
+    window.gtag('config', 'G-4FZK267R1E', {
+      page_path: window.location.pathname,
+      page_title: document.title
+    });
+
+    const blockedAnalyticsParams = new Set(['email', 'name', 'file_name', 'fileName', 'url', 'image_url', 'result_url', 'user_agent']);
+    const normalizeAnalyticsParam = (value) => value.trim().toLowerCase().replace(/\s+/g, '_').slice(0, 80);
+    const analyticsPageId = (pathname = window.location.pathname) => pathname.split('/').filter(Boolean).join('_') || 'home';
+    const cleanAnalyticsParams = (params) => Object.fromEntries(
+      Object.entries(params)
+        .filter(([key, value]) => !blockedAnalyticsParams.has(key) && value !== undefined && value !== null)
+        .map(([key, value]) => [key, typeof value === 'string' ? normalizeAnalyticsParam(value) : value])
+    );
+    window.lrTrackEvent = function lrTrackEvent(eventName, params = {}) {
+      if (typeof window.gtag !== 'function') return;
+      window.gtag('event', eventName, cleanAnalyticsParams({
+        page_id: analyticsPageId(),
+        ...params
+      }));
+    };
+
+    document.addEventListener('click', (event) => {
+      const link = event.target instanceof Element ? event.target.closest('a[href]') : null;
+      if (!link) return;
+      const href = link.getAttribute('href') || '';
+      if (href.startsWith('mailto:')) {
+        window.lrTrackEvent('contact_click', {
+          category: 'engagement',
+          tool_action: 'email',
+          from_page: analyticsPageId()
+        });
+        return;
+      }
+      const targetUrl = new URL(href, window.location.origin);
+      if (targetUrl.origin !== window.location.origin) {
+        window.lrTrackEvent('outbound_link_click', {
+          category: 'navigation',
+          tool_action: 'outbound',
+          from_page: analyticsPageId()
+        });
+        return;
+      }
+      window.lrTrackEvent('related_page_click', {
+        category: 'navigation',
+        tool_action: 'internal_link',
+        from_page: analyticsPageId(),
+        result_type: analyticsPageId(targetUrl.pathname)
+      });
+    });
   </script>
   <script is:inline defer src="https://umami-blue-zeta.vercel.app/script.js" data-website-id="a4db5007-1ce3-438f-b139-1e0e873b46c6"></script>
 </body>

@@ -11,6 +11,7 @@ import {
   uniqueZipEntries,
 } from './image-processor/utils';
 import { getSplitRects, splitImage } from '../lib/split';
+import { fileCountBucket, gridCountBucket, mimeFormat, resultFormatSummary, sizeBucket, trackToolEvent } from '../lib/analytics';
 
 interface ImageSplitterProcessorProps {
   acceptFormats: string[];
@@ -75,6 +76,14 @@ export default function ImageSplitterProcessor({
     setResults([]);
     setStatus('idle');
     setError('');
+    trackToolEvent('upload_completed', {
+      tool_action: 'select_files',
+      tool_mode: 'image_splitter',
+      file_count: 1,
+      file_count_bucket: fileCountBucket(1),
+      input_format: mimeFormat(nextFile.type),
+      input_size_bucket: sizeBucket(nextFile.size),
+    });
     void readImageDimensions(nextFile).then((dimensions) => {
       if (requestId !== previewRequestRef.current) {
         return;
@@ -116,6 +125,16 @@ export default function ImageSplitterProcessor({
     setStatus('processing');
     setProgress(10);
     setError('');
+    trackToolEvent('process_started', {
+      tool_action: 'split',
+      tool_mode: 'image_splitter',
+      file_count: 1,
+      file_count_bucket: fileCountBucket(1),
+      input_format: mimeFormat(file.type),
+      result_type: 'grid_split',
+      grid_rows: gridCountBucket(parsedRows),
+      grid_columns: gridCountBucket(parsedColumns),
+    });
 
     try {
       const pieces = await splitImage({ file, rows: parsedRows, columns: parsedColumns });
@@ -137,13 +156,47 @@ export default function ImageSplitterProcessor({
       setProgress(100);
       setResults(processed);
       setStatus('done');
+      trackToolEvent('tool_result_view', {
+        tool_action: 'split',
+        tool_mode: 'image_splitter',
+        result_type: 'processed',
+        file_count: processed.length,
+        file_count_bucket: fileCountBucket(processed.length),
+        input_format: mimeFormat(file.type),
+        output_format: resultFormatSummary(processed),
+        grid_rows: gridCountBucket(parsedRows),
+        grid_columns: gridCountBucket(parsedColumns),
+      });
+      trackToolEvent('process_completed', {
+        tool_action: 'split',
+        tool_mode: 'image_splitter',
+        result_type: 'processed',
+        file_count: processed.length,
+        file_count_bucket: fileCountBucket(processed.length),
+        input_format: mimeFormat(file.type),
+        output_format: resultFormatSummary(processed),
+        grid_rows: gridCountBucket(parsedRows),
+        grid_columns: gridCountBucket(parsedColumns),
+      });
     } catch (processingError) {
       setError(processingError instanceof Error ? processingError.message : 'Image splitting failed.');
       setStatus('error');
+      trackToolEvent('process_failed', {
+        tool_action: 'split',
+        tool_mode: 'image_splitter',
+        result_type: 'error',
+        error_type: 'image_splitting_failed',
+      });
     }
   }, [columns, file, rows]);
 
   const handleDownload = useCallback((result: ProcessedFile) => {
+    trackToolEvent('download_result', {
+      tool_action: 'split',
+      tool_mode: 'image_splitter',
+      result_type: 'single',
+      output_format: resultFormatSummary([result]),
+    });
     downloadBlob(result.blob, result.name);
   }, []);
 
@@ -155,6 +208,14 @@ export default function ImageSplitterProcessor({
     setIsDownloadingAll(true);
     try {
       const zipBlob = await createZipBlob(uniqueZipEntries(results));
+      trackToolEvent('download_result', {
+        tool_action: 'split',
+        tool_mode: 'image_splitter',
+        result_type: 'batch_zip',
+        file_count: results.length,
+        file_count_bucket: fileCountBucket(results.length),
+        output_format: resultFormatSummary(results),
+      });
       downloadBlob(zipBlob, 'localresizer-image-pieces.zip');
     } catch (zipError) {
       setError(zipError instanceof Error ? zipError.message : 'Preparing the ZIP download failed.');
@@ -190,7 +251,15 @@ export default function ImageSplitterProcessor({
                 type="number"
                 min="1"
                 value={rows}
-                onChange={(event) => setRows(event.target.value)}
+                onChange={(event) => {
+                  trackToolEvent('tool_option_select', {
+                    tool_action: 'grid_rows_select',
+                    tool_mode: 'image_splitter',
+                    option_group: 'grid_rows',
+                    option_value: gridCountBucket(Number.parseInt(event.target.value, 10)),
+                  });
+                  setRows(event.target.value);
+                }}
                 className="w-full px-3 py-2 border border-stone-200 rounded-lg text-sm"
               />
             </label>
@@ -200,7 +269,15 @@ export default function ImageSplitterProcessor({
                 type="number"
                 min="1"
                 value={columns}
-                onChange={(event) => setColumns(event.target.value)}
+                onChange={(event) => {
+                  trackToolEvent('tool_option_select', {
+                    tool_action: 'grid_columns_select',
+                    tool_mode: 'image_splitter',
+                    option_group: 'grid_columns',
+                    option_value: gridCountBucket(Number.parseInt(event.target.value, 10)),
+                  });
+                  setColumns(event.target.value);
+                }}
                 className="w-full px-3 py-2 border border-stone-200 rounded-lg text-sm"
               />
             </label>
