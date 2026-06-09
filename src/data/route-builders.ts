@@ -306,7 +306,8 @@ function buildExplicitRoutes(): RouteConfig[] {
     maxFileSize: 50 * 1024 * 1024,
   };
 
-  const targetCompressRoutes = ['50kb', '100kb', '200kb'].map(buildCompressImageToSizeRoute);
+  const targetCompressRoutes = ['20kb', '50kb', '100kb', '200kb', '500kb', '1mb', '2mb']
+    .map(buildCompressImageToSizeRoute);
 
   return [
     ...targetCompressRoutes,
@@ -505,7 +506,7 @@ export function generateActiveRoutes(): RouteConfig[] {
         tier: 4,
         seo: {
           title: `${platformName} ${assetName} Size: ${asset.width}x${asset.height} Resizer - Free Tool | LocalResizer`,
-          description: `Create perfect ${asset.width}x${asset.height} ${platformName} ${assetName} images in your browser. No upload, no signup. Privacy-first resizer for social media assets.`,
+          description: `Create an exact ${asset.width}x${asset.height} ${platformName} ${assetName} canvas in your browser. No upload, no signup. Privacy-first resizer for social media assets.`,
           h1: `Resize ${platformName} ${assetName} to ${asset.width} x ${asset.height}`,
           subtitle: `Export an exact ${asset.width} x ${asset.height} canvas locally with no server upload.`,
         },

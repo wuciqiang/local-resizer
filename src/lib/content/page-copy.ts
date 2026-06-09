@@ -27,7 +27,7 @@ export function generateIntroText(route: RouteConfig): string {
   if (route.platform && route.asset && route.dimensions) {
     const platformName = platformLabel(route.platform);
     const assetName = assetLabel(route.asset);
-    return `Create an exact ${route.dimensions.width} x ${route.dimensions.height} ${platformName} ${assetName} image locally in your browser. This free online tool processes your images using the Canvas API, which means your files never leave your device. Perfect for content creators, social media managers, and designers who need pixel-perfect dimensions for ${platformName} without compromising privacy. The tool automatically handles aspect ratio adjustments and ensures your final image matches the platform's official specifications.`;
+    return `Create an exact ${route.dimensions.width} x ${route.dimensions.height} ${platformName} ${assetName} canvas locally in your browser. This page is for creators, marketers, and designers who need a predictable platform-sized export without uploading the source image. The current workflow keeps the full image visible inside the target canvas, preserves privacy, and may add padding when the source ratio does not match.`;
   }
 
   if (route.action === 'compress' && route.format && route.targetSize) {
@@ -44,7 +44,7 @@ export function generateIntroText(route: RouteConfig): string {
     }
 
     if (sizeBytes < 500 * 1024) {
-      return `Compress ${formatName} images to ${sizeLabel} for optimal web performance and SEO. This file size range delivers excellent visual quality while significantly improving page load times—a critical factor for Core Web Vitals and search engine rankings. Ideal for blog post featured images, e-commerce product photos, portfolio thumbnails, and CMS uploads. Many platforms like WordPress recommend keeping images under ${sizeLabel} for best performance. This browser-based tool processes images locally, ensuring complete privacy and instant results without server delays.`;
+      return `Compress ${formatName} images to ${sizeLabel} for web pages, CMS uploads, product images, portfolio thumbnails, and other workflows where the original file is heavier than it needs to be. This browser-based tool processes images locally, uses a best-effort quality search, and keeps privacy central by avoiding image-content uploads to a server.`;
     }
 
     return `Compress ${formatName} images to ${sizeLabel} while preserving high visual quality for professional use. This tool is designed for photographers preparing client galleries, designers creating high-resolution portfolio pieces, and content creators who need to balance file size with image fidelity. The compression algorithm uses intelligent quality optimization to achieve the target size without introducing visible artifacts. All processing happens locally in your browser—your images never touch our servers, ensuring complete privacy and security.`;
@@ -52,7 +52,7 @@ export function generateIntroText(route: RouteConfig): string {
 
   if (route.targetSize) {
     const sizeLabel = formatSizeLabel(route.targetSize);
-    return `Resize images to ${sizeLabel} by intelligently scaling dimensions and optimizing compression. This free browser-based tool supports JPEG, PNG, and WebP formats, making it perfect for web developers, bloggers, and content creators who need to meet specific file size requirements. The tool preserves aspect ratios to prevent distortion and uses format-specific optimization strategies—quality adjustment for JPEG/WebP, dimension scaling for PNG. Ideal for CMS uploads, email attachments, and mobile app assets where file size directly impacts performance and user experience.`;
+    return `Resize images to ${sizeLabel} by intelligently scaling dimensions and optimizing compression. This free browser-based tool supports JPEG, PNG, and WebP formats, and it works locally with no server upload required. The tool preserves aspect ratios to prevent distortion and uses format-specific optimization strategies—quality adjustment for JPEG/WebP, dimension scaling for PNG. Ideal for CMS uploads, email attachments, and mobile app assets where file size directly impacts performance and user experience.`;
   }
 
   return 'Resize and compress static images directly in your browser with no server upload.';
@@ -77,7 +77,7 @@ export function generateDetailText(route: RouteConfig): string {
   }
 
   if (route.platform && route.asset && route.dimensions) {
-    return `If your source image uses a different aspect ratio, the page fits it inside the exact output size without distortion. That means the final file always matches the requested canvas dimensions, while some padding may appear around the image when needed. This approach ensures your ${route.platform} ${route.asset} meets platform specifications without cropping important content. The tool uses the Canvas API's "contain" mode to preserve the entire image, making it ideal for logos, graphics, and photos where every pixel matters. For best results, prepare your source image with an aspect ratio close to the target dimensions to minimize padding.`;
+    return `If your source image uses a different aspect ratio, the page fits it inside the exact output size without distortion. That means the final file always matches the requested canvas dimensions, while some padding may appear around the image when needed. The tool uses the Canvas API's contain mode to preserve the entire image, making it useful for logos, graphics, and photos where cropping important content would be risky. For best results, prepare your source image with an aspect ratio close to the target dimensions to minimize padding.`;
   }
 
   if (route.action === 'compress' && route.format && route.targetSize) {
@@ -92,7 +92,7 @@ export function generateDetailText(route: RouteConfig): string {
     }
 
     if (sizeBytes < 500 * 1024) {
-      return `If the original image is already under the requested size, the page keeps the original file instead of forcing extra compression. For larger images, it uses a quality search to move the result as close to the target as practical. This file size range is optimal for web performance—Google's Core Web Vitals recommend keeping images under 500KB for good Largest Contentful Paint (LCP) scores. The compression algorithm balances visual quality with file size, making it perfect for blog featured images, product photos, and portfolio pieces where both aesthetics and performance matter. Most users won't notice quality differences at this compression level, especially for photos and complex images.`;
+      return `If the original image is already under the requested size, the page keeps the original file instead of forcing extra compression. For larger images, it uses a quality search to move the result as close to the target as practical. This file-size range is useful for blog featured images, product photos, and portfolio pieces where both visual quality and page weight matter. The exact result still depends on the source image, format, and how much detail the file contains.`;
     }
 
     return `If the original image is already under the requested size, the page keeps the original file instead of forcing extra compression. For larger images, it uses a quality search to move the result as close to the target as practical. At this file size range, the tool prioritizes visual quality while still achieving meaningful size reduction. This makes it ideal for professional photography, high-resolution portfolio pieces, and print-ready images where detail preservation is critical. The compression algorithm uses format-specific optimizations—JPEG's DCT quantization and WebP's advanced prediction modes—to maximize quality at the target file size.`;

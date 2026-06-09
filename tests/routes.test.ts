@@ -39,18 +39,45 @@ describe('activeRoutes', () => {
 
   it('includes compress routes for active slugs', () => {
     const compressRoutes = activeRoutes.filter((route) => route.action === 'compress' && route.format);
-    expect(compressRoutes.length).toBe(4);
+    expect(compressRoutes.length).toBe(9);
   });
 
   it('includes resize-image routes for active slugs', () => {
     const resizeRoutes = activeRoutes.filter((route) => route.slug.startsWith('resize-image-to-'));
-    expect(resizeRoutes.length).toBe(5);
+    expect(resizeRoutes.length).toBe(8);
   });
 
   it('includes platform routes for active slugs', () => {
     const platformRoutes = activeRoutes.filter((route) => route.platform);
-    expect(platformRoutes.length).toBe(2);
+    expect(platformRoutes.length).toBe(8);
     expect(platformRoutes.some((route) => route.slug.includes('gif'))).toBe(false);
+  });
+
+  it('includes phase 1 long-tail pages for size, format, and social canvases', () => {
+    const phase1Slugs = [
+      'compress-image-to-20kb',
+      'compress-image-to-500kb',
+      'compress-image-to-1mb',
+      'compress-image-to-2mb',
+      'compress-jpeg-to-20kb',
+      'compress-jpeg-to-100kb',
+      'compress-jpeg-to-500kb',
+      'compress-png-to-50kb',
+      'compress-png-to-100kb',
+      'resize-image-to-30kb',
+      'resize-image-to-150kb',
+      'resize-image-to-1mb',
+      'resize-instagram-post',
+      'resize-instagram-story',
+      'resize-facebook-cover',
+      'resize-facebook-profile',
+      'resize-linkedin-banner',
+      'resize-linkedin-profile-photo',
+    ];
+
+    for (const slug of phase1Slugs) {
+      expect(getRouteBySlug(slug)).toBeDefined();
+    }
   });
 
   it('includes explicit semantic routes for active slugs', () => {
@@ -62,6 +89,15 @@ describe('activeRoutes', () => {
     expect(getRouteBySlug('resize-png')?.intent).toBe('format-resize');
     expect(getRouteBySlug('signature-resizer')?.intent).toBe('signature');
     expect(getRouteBySlug('image-splitter')?.intent).toBe('image-splitter');
+  });
+
+  it('uses current exact-canvas dimensions for new social platform pages', () => {
+    expect(getRouteBySlug('resize-instagram-post')?.dimensions).toEqual({ width: 1080, height: 1080 });
+    expect(getRouteBySlug('resize-instagram-story')?.dimensions).toEqual({ width: 1080, height: 1920 });
+    expect(getRouteBySlug('resize-facebook-cover')?.dimensions).toEqual({ width: 851, height: 315 });
+    expect(getRouteBySlug('resize-facebook-profile')?.dimensions).toEqual({ width: 320, height: 320 });
+    expect(getRouteBySlug('resize-linkedin-banner')?.dimensions).toEqual({ width: 1584, height: 396 });
+    expect(getRouteBySlug('resize-linkedin-profile-photo')?.dimensions).toEqual({ width: 400, height: 400 });
   });
 
   it('has unique slugs', () => {

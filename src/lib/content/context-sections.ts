@@ -4,14 +4,14 @@ import type { PageContextSection } from './types';
 
 function resizeComparisonText(size: string): string {
   if (size === '20kb') {
-    return 'If this limit is too aggressive for your image, try the 100KB page first. If you only need an exact YouTube canvas instead of a file-size target, use one of the live YouTube size pages instead.';
+    return 'If this limit is too aggressive for your image, try the 100KB page first. If you only need an exact social artwork canvas instead of a file-size target, use one of the live platform size pages instead.';
   }
 
   if (size === '100kb') {
     return 'If you are failing a hard form submission, move down to the 20KB page. If you are preserving visual quality for a looser upload limit, move up to the 2MB page before trying a stronger reduction.';
   }
 
-  return 'If this budget is still too large for the final destination, compare the 100KB or 20KB pages. If the destination cares about fixed dimensions more than file size, switch to one of the exact YouTube canvas pages instead.';
+  return 'If this budget is still too large for the final destination, compare the 100KB or 20KB pages. If the destination cares about fixed dimensions more than file size, switch to one of the exact platform canvas pages instead.';
 }
 
 export function generateContextSections(route: RouteConfig): PageContextSection[] {
@@ -27,7 +27,7 @@ export function generateContextSections(route: RouteConfig): PageContextSection[
       },
       {
         title: 'When to choose a different live page',
-        body: 'If 20KB is too aggressive for acceptable quality, move to the 100KB resize page first. If your real need is a fixed social-media canvas instead of a file-size budget, use one of the exact YouTube size pages instead.',
+        body: 'If 20KB is too aggressive for acceptable quality, move to the 100KB resize page first. If your real need is a fixed social-media canvas instead of a file-size budget, use one of the exact platform size pages instead.',
       },
     ];
   }
@@ -89,11 +89,30 @@ export function generateContextSections(route: RouteConfig): PageContextSection[
     const platformName = platformLabel(route.platform);
     const assetName = assetLabel(route.asset);
     const sizeLabel = `${route.dimensions.width} x ${route.dimensions.height}`;
+    let alternatePageText = 'If the real problem is file-size compliance rather than canvas dimensions, compare the live resize-by-size pages instead of forcing the image through a fixed canvas.';
+
+    if (route.platform === 'youtube') {
+      alternatePageText = route.asset === 'banner'
+        ? 'Choose the thumbnail page when the destination is the smaller video-cover format instead of wide channel art. If the real constraint is upload size rather than a fixed canvas, move to the resize-by-size pages and target a file-size budget first.'
+        : 'Choose the banner page when you need wide channel art instead of a compact video-cover image. If the real problem is file-size compliance rather than canvas dimensions, compare the live resize-by-size pages instead of forcing everything through a thumbnail canvas.';
+    } else if (route.platform === 'instagram') {
+      alternatePageText = route.asset === 'story'
+        ? 'Choose the Instagram post page when you need a square feed canvas instead of a vertical story canvas. If the destination only rejects the file because it is too large, use a target-size resize or compression page instead.'
+        : 'Choose the Instagram story page when you need a vertical 9:16 canvas instead of a square feed canvas. If the destination only rejects the file because it is too large, use a target-size resize or compression page instead.';
+    } else if (route.platform === 'facebook') {
+      alternatePageText = route.asset === 'cover'
+        ? 'Choose the Facebook profile photo page when you need a square profile image instead of a wide cover image. If the upload gate is file size, use a compression or resize-by-size page first.'
+        : 'Choose the Facebook cover page when you need a wide header image instead of a square profile photo. If the upload gate is file size, use a compression or resize-by-size page first.';
+    } else if (route.platform === 'linkedin') {
+      alternatePageText = route.asset === 'banner'
+        ? 'Choose the LinkedIn profile photo page when you need a square profile image instead of a wide background banner. If the upload gate is file size, use a compression or resize-by-size page first.'
+        : 'Choose the LinkedIn banner page when you need a wide profile background image instead of a square profile photo. If the upload gate is file size, use a compression or resize-by-size page first.';
+    }
 
     return [
       {
         title: 'Common real-world use cases',
-        body: `Use this ${platformName} ${assetName} page when you already know the destination needs an exact ${sizeLabel} canvas. It is a good fit for creators refreshing channel art, marketers preparing campaign thumbnails, and designers who need a predictable export size before handing the file to another tool or stakeholder.`,
+        body: `Use this ${platformName} ${assetName} page when you already know the destination needs an exact ${sizeLabel} canvas. It is a good fit for creators, marketers, and designers who need a predictable export size before posting the image or handing the file to another tool or stakeholder.`,
       },
       {
         title: 'What changes the final look',
@@ -101,9 +120,7 @@ export function generateContextSections(route: RouteConfig): PageContextSection[
       },
       {
         title: 'When to choose a different live page',
-        body: route.asset === 'banner'
-          ? 'Choose the thumbnail page when the destination is the smaller video-cover format instead of wide channel art. If the real constraint is upload size rather than a fixed canvas, move to the resize-by-size pages and target a file-size budget first.'
-          : 'Choose the banner page when you need wide channel art instead of a compact video-cover image. If the real problem is file-size compliance rather than canvas dimensions, compare the live resize-by-size pages instead of forcing everything through a thumbnail canvas.',
+        body: alternatePageText,
       },
     ];
   }

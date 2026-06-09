@@ -63,6 +63,7 @@ export function ConfigPanel({
           <div className="flex gap-2">
             <input
               id="target-size-input"
+              name="target-size"
               type="number"
               min="1"
               value={sizeValue}
@@ -105,7 +106,10 @@ export function ConfigPanel({
         <div>
           <label className="block text-sm font-medium text-stone-700 mb-2">Output dimensions (px)</label>
           <div className="flex gap-2 items-center">
+            <label htmlFor="resize-width-input" className="sr-only">Width in pixels</label>
             <input
+              id="resize-width-input"
+              name="resize-width"
               type="number"
               min="1"
               value={widthValue}
@@ -114,7 +118,10 @@ export function ConfigPanel({
               placeholder="Width"
             />
             <span className="text-stone-500 text-sm">x</span>
+            <label htmlFor="resize-height-input" className="sr-only">Height in pixels</label>
             <input
+              id="resize-height-input"
+              name="resize-height"
               type="number"
               min="1"
               value={heightValue}

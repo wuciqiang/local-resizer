@@ -38,5 +38,9 @@ export function platformLabel(value: string): string {
 }
 
 export function assetLabel(value: string): string {
+  if (value === 'profile') {
+    return 'Profile Photo';
+  }
+
   return value.split('-').map(capitalize).join(' ');
 }

@@ -67,15 +67,20 @@ export function UploadDropzone({
         dragOver
           ? 'border-teal-400 bg-teal-50/50 scale-[1.01]'
           : 'border-stone-200 hover:border-transparent'
-      }`}
+        }`}
       >
+        <label htmlFor="image-upload-input" className="sr-only">
+          {uploadLabel}
+        </label>
         <input
           ref={inputRef}
+          id="image-upload-input"
+          name="image-upload"
           type="file"
           accept={accept}
           multiple={multiple}
           aria-label={`${uploadLabel} (${acceptLabels.join(', ')})`}
-          className="hidden"
+          className="sr-only"
           onChange={(event) => {
             if (event.target.files) {
               onFilesSelected(event.target.files);

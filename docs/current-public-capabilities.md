@@ -1,6 +1,6 @@
 # Current Public Capabilities
 
-Last updated: April 20, 2026
+Last updated: June 9, 2026
 
 This document defines what the live public site can claim today.
 
@@ -30,21 +30,39 @@ These guide pages help users navigate the current release. They do not expand th
 
 ## Live tool-page claim set
 
-The current public release includes 18 focused tool pages:
+The current public release includes 36 focused tool pages:
 
+- `compress-image-to-20kb`
 - `compress-jpeg-to-50kb`
+- `compress-jpeg-to-20kb`
+- `compress-jpeg-to-100kb`
 - `compress-jpeg-to-200kb`
+- `compress-jpeg-to-500kb`
+- `compress-png-to-50kb`
+- `compress-png-to-100kb`
 - `compress-png-to-200kb`
 - `compress-image-to-50kb`
 - `compress-image-to-100kb`
 - `compress-image-to-200kb`
+- `compress-image-to-500kb`
+- `compress-image-to-1mb`
+- `compress-image-to-2mb`
 - `resize-image-to-20kb`
+- `resize-image-to-30kb`
 - `resize-image-to-50kb`
 - `resize-image-to-100kb`
+- `resize-image-to-150kb`
 - `resize-image-to-200kb`
+- `resize-image-to-1mb`
 - `resize-image-to-2mb`
 - `resize-youtube-banner`
 - `resize-youtube-thumbnail`
+- `resize-instagram-post`
+- `resize-instagram-story`
+- `resize-facebook-cover`
+- `resize-facebook-profile`
+- `resize-linkedin-banner`
+- `resize-linkedin-profile-photo`
 - `photo-resizer-20kb`
 - `compress-jpg-file`
 - `resize-png`
@@ -142,7 +160,7 @@ These points must stay out of public promises for now:
 
 - animated GIF workflows
 - video workflows
-- generic social-media page coverage beyond the currently live pages
+- generic social-media page coverage beyond the currently live exact-canvas pages
 - server-side processing
 - account features
 - cloud storage
@@ -152,11 +170,11 @@ These points must stay out of public promises for now:
 
 Use this when a short description is needed:
 
-"LocalResizer is a browser-based tool for compressing and resizing static JPEG, PNG, and WebP images locally, with live pages for target-size workflows and exact YouTube artwork canvases."
+"LocalResizer is a browser-based tool for compressing and resizing static JPEG, PNG, and WebP images locally, with live pages for target-size workflows and exact social artwork canvases."
 
 ## Future-scope items to keep private for now
 
 - GIF tools after real processing support is ready
 - video tools after a separate workflow is built
-- more platform-specific exact-size pages after they are actually published
+- more platform-specific exact-size pages after the dimensions and behavior are actually published
 - crop workflows after UX and behavior are finalized

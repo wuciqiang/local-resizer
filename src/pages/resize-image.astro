@@ -11,6 +11,7 @@ const description = 'Resize image files online in your browser. Adjust static JP
 const breadcrumbItems = getHubBreadcrumbs('resize-image');
 const breadcrumbSchema = generateBreadcrumbSchema(breadcrumbItems);
 const resizeRoutes = phase0Routes.filter((route) => route.slug.startsWith('resize-image-to-'));
+const platformRoutes = phase0Routes.filter((route) => route.platform);
 ---
 <BaseLayout title={title} description={description} schemas={[breadcrumbSchema]}>
   <div class="pt-4 sm:pt-6">
@@ -59,6 +60,23 @@ const resizeRoutes = phase0Routes.filter((route) => route.slug.startsWith('resiz
         </a>
       ))}
     </section>
+
+    {platformRoutes.length > 0 && (
+      <section class="bg-white rounded-2xl p-7 shadow-soft border border-stone-100 mb-10">
+        <h2 class="font-[var(--font-heading)] text-xl font-semibold text-stone-900 mb-4">Exact social canvas pages</h2>
+        <p class="text-sm text-stone-500 leading-relaxed mb-5">
+          Use these pages when the destination cares about a fixed pixel canvas instead of a file-size budget. The current workflow keeps the whole image visible and may add padding when the source ratio does not match.
+        </p>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+          {platformRoutes.map((route) => (
+            <a href={`/${route.slug}`} class="no-underline rounded-xl border border-stone-100 p-5 hover:border-teal-200 hover:bg-teal-50/40 transition-all">
+              <h3 class="font-[var(--font-heading)] font-semibold text-stone-900 mb-2">{route.seo.h1}</h3>
+              <p class="text-sm text-stone-500 leading-relaxed">{route.seo.subtitle}</p>
+            </a>
+          ))}
+        </div>
+      </section>
+    )}
 
     <section class="grid grid-cols-1 md:grid-cols-2 gap-5">
       <div class="bg-white rounded-2xl p-6 shadow-soft border border-stone-100">

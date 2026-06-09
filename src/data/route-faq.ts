@@ -93,7 +93,7 @@ export function platformFaq(platform: string, asset: string, width: number, heig
       answer: `The tool keeps the whole image visible by fitting it inside the target canvas without distortion. If the ratios differ, padding may be added around the image.`,
     },
     {
-      question: `Which files can I use for a ${platformName} ${assetName}?`,
+      question: `Which files can I use on this ${platformName} ${assetName} page?`,
       answer: 'The page currently supports static JPEG, PNG, and WebP images only.',
     },
     {

@@ -106,16 +106,9 @@ const ogImageUrl = new URL('/og-default.png', Astro.site).href;
       </div>
     </div>
   </footer>
-  <script is:inline defer src="https://www.googletagmanager.com/gtag/js?id=G-4FZK267R1E"></script>
   <script is:inline>
-    window.dataLayer = window.dataLayer || [];
-    window.gtag = function gtag(){dataLayer.push(arguments);}
-    window.gtag('js', new Date());
-    window.gtag('config', 'G-4FZK267R1E', {
-      page_path: window.location.pathname,
-      page_title: document.title
-    });
-
+    const analyticsHostnames = new Set(['localresizer.com', 'www.localresizer.com']);
+    const analyticsEnabled = analyticsHostnames.has(window.location.hostname);
     const blockedAnalyticsParams = new Set(['email', 'name', 'file_name', 'fileName', 'url', 'image_url', 'result_url', 'user_agent']);
     const normalizeAnalyticsParam = (value) => value.trim().toLowerCase().replace(/\s+/g, '_').slice(0, 80);
     const analyticsPageId = (pathname = window.location.pathname) => pathname.split('/').filter(Boolean).join('_') || 'home';
@@ -124,6 +117,22 @@ const ogImageUrl = new URL('/og-default.png', Astro.site).href;
         .filter(([key, value]) => !blockedAnalyticsParams.has(key) && value !== undefined && value !== null)
         .map(([key, value]) => [key, typeof value === 'string' ? normalizeAnalyticsParam(value) : value])
     );
+
+    if (analyticsEnabled) {
+      const gaScript = document.createElement('script');
+      gaScript.async = true;
+      gaScript.src = 'https://www.googletagmanager.com/gtag/js?id=G-4FZK267R1E';
+      document.head.appendChild(gaScript);
+
+      window.dataLayer = window.dataLayer || [];
+      window.gtag = function gtag(){dataLayer.push(arguments);}
+      window.gtag('js', new Date());
+      window.gtag('config', 'G-4FZK267R1E', {
+        page_path: window.location.pathname,
+        page_title: document.title
+      });
+    }
+
     window.lrTrackEvent = function lrTrackEvent(eventName, params = {}) {
       if (typeof window.gtag !== 'function') return;
       window.gtag('event', eventName, cleanAnalyticsParams({
@@ -160,7 +169,15 @@ const ogImageUrl = new URL('/og-default.png', Astro.site).href;
         result_type: analyticsPageId(targetUrl.pathname)
       });
     });
+
+    if (analyticsEnabled) {
+      const umamiScript = document.createElement('script');
+      umamiScript.async = true;
+      umamiScript.defer = true;
+      umamiScript.src = 'https://umami-blue-zeta.vercel.app/script.js';
+      umamiScript.dataset.websiteId = 'a4db5007-1ce3-438f-b139-1e0e873b46c6';
+      document.body.appendChild(umamiScript);
+    }
   </script>
-  <script is:inline defer src="https://umami-blue-zeta.vercel.app/script.js" data-website-id="a4db5007-1ce3-438f-b139-1e0e873b46c6"></script>
 </body>
 </html>
