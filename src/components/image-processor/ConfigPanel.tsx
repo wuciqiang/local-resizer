@@ -40,17 +40,17 @@ export function ConfigPanel({
         <div className="flex gap-2 mb-4">
           <button
             type="button"
-            className={tabClass(toolAction === 'compress')}
-            onClick={() => onToolActionChange('compress')}
-          >
-            Compress
-          </button>
-          <button
-            type="button"
             className={tabClass(toolAction === 'resize')}
             onClick={() => onToolActionChange('resize')}
           >
             Resize
+          </button>
+          <button
+            type="button"
+            className={tabClass(toolAction === 'compress')}
+            onClick={() => onToolActionChange('compress')}
+          >
+            Compress
           </button>
         </div>
       )}
