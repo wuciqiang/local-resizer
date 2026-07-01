@@ -4,6 +4,7 @@ import ImageProcessor from '../components/ImageProcessor.tsx';
 import { STATIC_IMAGE_ACCEPT_FORMATS, phase0Routes } from '../data/routes';
 import { listHubInfos } from '../lib/site-structure';
 import { generateOrganizationSchema, generateWebApplicationSchema, generateWebSiteSchema } from '../lib/seo';
+import { formatPagePath } from '../lib/urls';
 
 const title = 'Resize Image Online - Free Local Image Resizer';
 const description = 'Resize image files online in your browser, then compress JPEG, PNG, and WebP images locally with no uploads, no server processing, and no account required.';
@@ -138,14 +139,14 @@ const schemas = [
     </div>
     <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
       <a
-        href="/signature-tools"
+        href={formatPagePath('signature-tools')}
         class="bg-white rounded-2xl p-6 shadow-soft border border-stone-100 no-underline hover:shadow-soft-lg hover:border-teal-200 hover:-translate-y-0.5 transition-all duration-300"
       >
         <h3 class="font-[var(--font-heading)] font-semibold text-stone-900 mb-3">Signature Tools Guide</h3>
         <p class="text-sm text-stone-500 leading-relaxed">Understand the live signature cleanup workflow, trimming behavior, and PNG vs JPG export tradeoffs before you process a form upload.</p>
       </a>
       <a
-        href="/image-tools"
+        href={formatPagePath('image-tools')}
         class="bg-white rounded-2xl p-6 shadow-soft border border-stone-100 no-underline hover:shadow-soft-lg hover:border-teal-200 hover:-translate-y-0.5 transition-all duration-300"
       >
         <h3 class="font-[var(--font-heading)] font-semibold text-stone-900 mb-3">Image Tools Guide</h3>
@@ -167,7 +168,7 @@ const schemas = [
           <li>PNG compression pages keep PNG output and may reduce pixel dimensions when needed to move toward the target size.</li>
           <li>Resize image target pages work with static JPEG, PNG, and WebP files while preserving the original aspect ratio.</li>
           <li>Platform pages export an exact output canvas and keep the whole image visible, with padding added when ratios do not match.</li>
-          <li><a href="/signature-resizer" class="text-teal-700 underline hover:text-teal-900">Signature resizer</a> and <a href="/image-splitter" class="text-teal-700 underline hover:text-teal-900">image splitter</a> pages handle signature cleanup and grid splitting locally in the browser.</li>
+          <li><a href={formatPagePath('signature-resizer')} class="text-teal-700 underline hover:text-teal-900">Signature resizer</a> and <a href={formatPagePath('image-splitter')} class="text-teal-700 underline hover:text-teal-900">image splitter</a> pages handle signature cleanup and grid splitting locally in the browser.</li>
         </ul>
       </div>
       <div class="bg-white rounded-2xl p-5 sm:p-7 shadow-soft border border-stone-100">
@@ -182,7 +183,7 @@ const schemas = [
     </div>
     <div class="mt-8 text-center">
       <a
-        href="/supported-formats"
+        href={formatPagePath('supported-formats')}
         class="inline-flex items-center gap-2 px-4 py-2.5 bg-white border border-stone-200 text-stone-600 text-sm font-medium rounded-xl no-underline hover:border-teal-300 hover:text-teal-700 hover:bg-teal-50 transition-all duration-200"
       >
         Review supported formats and current limits
@@ -201,7 +202,7 @@ const schemas = [
     <div class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-2 sm:gap-3 stagger-children">
       {phase0Routes.map((route) => (
         <a
-          href={`/${route.slug}`}
+          href={formatPagePath(route.slug)}
           class="group bg-white rounded-xl p-3 sm:p-4 border border-stone-100 shadow-soft no-underline hover:shadow-soft-lg hover:border-teal-200 hover:-translate-y-0.5 transition-all duration-300"
         >
           <p class="text-xs sm:text-sm font-medium text-stone-700 group-hover:text-teal-700 transition-colors leading-snug">{route.seo.h1}</p>

@@ -65,6 +65,12 @@ function toPathname(url) {
   return new URL(url).pathname.replace(/\/+$/, '') || '/';
 }
 
+function assertPageUrlHasTrailingSlash(url) {
+  const pathname = new URL(url).pathname;
+
+  assert(pathname === '/' || pathname.endsWith('/'), `Page URL is missing trailing slash: ${url}`);
+}
+
 function getTitle(html) {
   return html.match(/<title>(.*?)<\/title>/i)?.[1] ?? '';
 }
@@ -99,6 +105,10 @@ function extractJsonLd(html) {
     .map((payload) => JSON.parse(payload));
 }
 
+function extractCanonical(html) {
+  return html.match(/<link[^>]+rel="canonical"[^>]+href="([^"]+)"/i)?.[1] ?? '';
+}
+
 function assertRouteHtml(slug, htmlFile) {
   const html = readUtf8(htmlFile);
   const title = getTitle(html);
@@ -107,8 +117,10 @@ function assertRouteHtml(slug, htmlFile) {
   const faqSchema = jsonLd.find((item) => item?.['@type'] === 'FAQPage');
   const howToSchema = jsonLd.find((item) => item?.['@type'] === 'HowTo');
   const breadcrumbSchema = jsonLd.find((item) => item?.['@type'] === 'BreadcrumbList');
+  const canonical = extractCanonical(html);
 
   assert(title.includes('LocalResizer'), `Built route page is missing LocalResizer in <title>: ${slug}`);
+  assert(canonical === `https://localresizer.com/${slug}/`, `Built route page canonical URL is not normalized: ${slug}`);
   assert(h1.length > 0, `Built route page is missing a visible <h1>: ${slug}`);
   assert(
     html.includes('Static images only - Processed locally'),
@@ -136,6 +148,13 @@ function assertRouteHtml(slug, htmlFile) {
   assert(howToSchema, `Built route page is missing HowTo schema: ${slug}`);
   assert(breadcrumbSchema, `Built route page is missing BreadcrumbList schema: ${slug}`);
   assert(
+    breadcrumbSchema.itemListElement.every((item) => {
+      const pathname = new URL(item.item).pathname;
+      return pathname === '/' || pathname.endsWith('/');
+    }),
+    `Built route page breadcrumb schema has non-normalized URLs: ${slug}`,
+  );
+  assert(
     Array.isArray(faqSchema.mainEntity) && faqSchema.mainEntity.length >= 5,
     `Built route page FAQ schema is incomplete: ${slug}`,
   );
@@ -154,6 +173,7 @@ function main() {
   assert(liveSlugs.length > 0, 'No live tool slugs found in docs/current-public-capabilities.md.');
 
   const urls = parseSitemapUrls(readUtf8(SITEMAP_FILE));
+  urls.forEach(assertPageUrlHasTrailingSlash);
   const pathnames = new Set(urls.map(toPathname));
 
   const staticPages = [

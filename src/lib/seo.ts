@@ -1,5 +1,6 @@
 import type { RouteConfig } from '../data/routes';
 import type { BreadcrumbItem } from './site-structure';
+import { formatPageUrl } from './urls';
 
 export function generateHowToSchema(route: RouteConfig): object {
   return {
@@ -37,13 +38,13 @@ export function generateBreadcrumbSchema(items: BreadcrumbItem[]): object {
       '@type': 'ListItem',
       position: index + 1,
       name: item.label,
-      item: new URL(item.href, 'https://localresizer.com').href,
+      item: formatPageUrl(item.href),
     })),
   };
 }
 
 export function generateCanonicalUrl(slug: string): string {
-  return `https://localresizer.com/${slug}`;
+  return formatPageUrl(slug);
 }
 
 export function generateWebSiteSchema(): object {

@@ -3,15 +3,26 @@ import react from '@astrojs/react';
 import tailwindcss from '@tailwindcss/vite';
 import sitemap from '@astrojs/sitemap';
 
+function formatPagePath(pathname) {
+  const normalizedPath = pathname.startsWith('/') ? pathname : `/${pathname}`;
+
+  if (normalizedPath === '/') {
+    return '/';
+  }
+
+  return `${normalizedPath.replace(/\/+$/, '')}/`;
+}
+
 export default defineConfig({
   site: 'https://localresizer.com',
   output: 'static',
-  trailingSlash: 'never',
+  trailingSlash: 'always',
   integrations: [
     react(),
     sitemap({
       serialize(item) {
         const pathname = new URL(item.url).pathname.replace(/\/+$/, '') || '/';
+        item.url = new URL(formatPagePath(pathname), 'https://localresizer.com').href;
 
         const guidePaths = new Set([
           '/youtube-image-sizes',

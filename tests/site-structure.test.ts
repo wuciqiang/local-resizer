@@ -40,20 +40,20 @@ describe('site structure helpers', () => {
     const route = getRouteBySlug('compress-png-to-200kb')!;
     const items = getRouteBreadcrumbs(route);
     expect(items[0]).toEqual({ href: '/', label: 'Home' });
-    expect(items[2]).toEqual({ href: `/${route.slug}`, label: route.seo.h1 });
+    expect(items[2]).toEqual({ href: `/${route.slug}/`, label: route.seo.h1 });
   });
 
   it('adds guide links for the current workflow', () => {
     const route = getRouteBySlug('resize-image-to-2mb')!;
     const links = getGuideLinksForRoute(route);
-    expect(links.some((item) => item.href === '/resize-image')).toBe(true);
-    expect(links.some((item) => item.href === '/supported-formats')).toBe(true);
+    expect(links.some((item) => item.href === '/resize-image/')).toBe(true);
+    expect(links.some((item) => item.href === '/supported-formats/')).toBe(true);
   });
 
   it('adds guide links for semantic workflow pages', () => {
     const jpgLinks = getGuideLinksForRoute(getRouteBySlug('compress-jpg-file')!);
     const pngLinks = getGuideLinksForRoute(getRouteBySlug('resize-png')!);
-    expect(jpgLinks.some((item) => item.href === '/compress-image')).toBe(true);
-    expect(pngLinks.some((item) => item.href === '/resize-image')).toBe(true);
+    expect(jpgLinks.some((item) => item.href === '/compress-image/')).toBe(true);
+    expect(pngLinks.some((item) => item.href === '/resize-image/')).toBe(true);
   });
 });

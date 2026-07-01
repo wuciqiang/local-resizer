@@ -4,6 +4,7 @@ import Breadcrumbs from '../components/Breadcrumbs.astro';
 import { phase0Routes } from '../data/routes';
 import { generateBreadcrumbSchema } from '../lib/seo';
 import { getHubBreadcrumbs } from '../lib/site-structure';
+import { formatPagePath } from '../lib/urls';
 
 const title = 'Image Tools Guide - Splitter and Utility Workflows | LocalResizer';
 const description = 'Explore the current utility image workflows on LocalResizer, including grid-based image splitting and related tools for static images.';
@@ -38,7 +39,7 @@ const utilityRoutes = phase0Routes.filter((route) => route.intent === 'image-spl
 
     <section class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-10">
       {utilityRoutes.map((route) => (
-        <a href={`/${route.slug}`} class="no-underline bg-white rounded-2xl p-6 shadow-soft border border-stone-100 hover:border-teal-200 hover:bg-teal-50/40 transition-all">
+        <a href={formatPagePath(route.slug)} class="no-underline bg-white rounded-2xl p-6 shadow-soft border border-stone-100 hover:border-teal-200 hover:bg-teal-50/40 transition-all">
           <h3 class="font-[var(--font-heading)] text-lg font-semibold text-stone-900 mb-2">{route.seo.h1}</h3>
           <p class="text-sm text-stone-500 leading-relaxed">{route.seo.subtitle}</p>
         </a>
@@ -67,20 +68,20 @@ const utilityRoutes = phase0Routes.filter((route) => route.intent === 'image-spl
     <section class="bg-white rounded-2xl p-7 shadow-soft border border-stone-100 mb-8 space-y-3">
       <h2 class="font-[var(--font-heading)] text-xl font-semibold text-stone-900">Need one resized output instead?</h2>
       <p class="text-stone-500 leading-relaxed">
-        If you do not need a split grid or signature cleanup, open the <a href="/resize-image" class="text-teal-700 underline hover:text-teal-900">resize image tool</a> for the main dimension and target-size workflow.
+        If you do not need a split grid or signature cleanup, open the <a href={formatPagePath('resize-image')} class="text-teal-700 underline hover:text-teal-900">resize image tool</a> for the main dimension and target-size workflow.
       </p>
     </section>
 
     <section class="grid grid-cols-1 md:grid-cols-3 gap-5">
-      <a href="/image-splitter" class="no-underline bg-white rounded-2xl p-6 shadow-soft border border-stone-100 hover:border-teal-200 hover:bg-teal-50/40 transition-all">
+      <a href={formatPagePath('image-splitter')} class="no-underline bg-white rounded-2xl p-6 shadow-soft border border-stone-100 hover:border-teal-200 hover:bg-teal-50/40 transition-all">
         <h3 class="font-[var(--font-heading)] text-lg font-semibold text-stone-900 mb-2">Image Splitter Online</h3>
         <p class="text-sm text-stone-500 leading-relaxed">Open the live splitter page when you need a rows-by-columns grid with visual split lines before processing.</p>
       </a>
-      <a href="/resize-png" class="no-underline bg-white rounded-2xl p-6 shadow-soft border border-stone-100 hover:border-teal-200 hover:bg-teal-50/40 transition-all">
+      <a href={formatPagePath('resize-png')} class="no-underline bg-white rounded-2xl p-6 shadow-soft border border-stone-100 hover:border-teal-200 hover:bg-teal-50/40 transition-all">
         <h3 class="font-[var(--font-heading)] text-lg font-semibold text-stone-900 mb-2">Resize PNG</h3>
         <p class="text-sm text-stone-500 leading-relaxed">Use the PNG resize page when you need one adjusted image instead of multiple split pieces.</p>
       </a>
-      <a href="/supported-formats" class="no-underline bg-white rounded-2xl p-6 shadow-soft border border-stone-100 hover:border-teal-200 hover:bg-teal-50/40 transition-all">
+      <a href={formatPagePath('supported-formats')} class="no-underline bg-white rounded-2xl p-6 shadow-soft border border-stone-100 hover:border-teal-200 hover:bg-teal-50/40 transition-all">
         <h3 class="font-[var(--font-heading)] text-lg font-semibold text-stone-900 mb-2">Supported Formats</h3>
         <p class="text-sm text-stone-500 leading-relaxed">Review the live scope before you expect PDF, video, or animated GIF workflows from these utility pages.</p>
       </a>

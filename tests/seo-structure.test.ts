@@ -19,7 +19,7 @@ describe('SEO structure for specialized workflows', () => {
   it('links the homepage to the new specialized guide hubs', () => {
     const homepage = read('src/pages/index.astro');
 
-    expect(homepage.includes('href="/signature-tools"')).toBe(true);
-    expect(homepage.includes('href="/image-tools"')).toBe(true);
+    expect(homepage.includes("formatPagePath('signature-tools')")).toBe(true);
+    expect(homepage.includes("formatPagePath('image-tools')")).toBe(true);
   });
 });

@@ -2,6 +2,7 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import { phase0Routes } from '../data/routes';
 import type { RouteConfig } from '../data/routes';
+import { formatPagePath } from '../lib/urls';
 
 const title = 'Page Not Found - LocalResizer';
 const description = 'The page could not be found. Return to LocalResizer or open one of the popular browser-based image tools.';
@@ -29,13 +30,13 @@ const popularRoutes = popularSlugs
 
     <div class="flex flex-wrap items-center justify-center gap-3 mb-10">
       <a href="/" class="inline-flex items-center px-4 py-2.5 bg-teal-600 text-white text-sm font-medium rounded-xl no-underline hover:bg-teal-700 transition-colors">Go to homepage</a>
-      <a href="/resize-image" class="inline-flex items-center px-4 py-2.5 bg-white border border-stone-200 text-stone-600 text-sm font-medium rounded-xl no-underline hover:border-teal-300 hover:text-teal-700 hover:bg-teal-50 transition-all">Resize image guide</a>
-      <a href="/compress-image" class="inline-flex items-center px-4 py-2.5 bg-white border border-stone-200 text-stone-600 text-sm font-medium rounded-xl no-underline hover:border-teal-300 hover:text-teal-700 hover:bg-teal-50 transition-all">Compress image guide</a>
+      <a href={formatPagePath('resize-image')} class="inline-flex items-center px-4 py-2.5 bg-white border border-stone-200 text-stone-600 text-sm font-medium rounded-xl no-underline hover:border-teal-300 hover:text-teal-700 hover:bg-teal-50 transition-all">Resize image guide</a>
+      <a href={formatPagePath('compress-image')} class="inline-flex items-center px-4 py-2.5 bg-white border border-stone-200 text-stone-600 text-sm font-medium rounded-xl no-underline hover:border-teal-300 hover:text-teal-700 hover:bg-teal-50 transition-all">Compress image guide</a>
     </div>
 
     <section class="grid grid-cols-1 md:grid-cols-3 gap-5">
       {popularRoutes.map((route) => (
-        <a href={`/${route.slug}`} class="no-underline bg-white rounded-2xl p-6 shadow-soft border border-stone-100 hover:border-teal-200 hover:bg-teal-50/40 transition-all">
+        <a href={formatPagePath(route.slug)} class="no-underline bg-white rounded-2xl p-6 shadow-soft border border-stone-100 hover:border-teal-200 hover:bg-teal-50/40 transition-all">
           <h2 class="font-[var(--font-heading)] text-lg font-semibold text-stone-900 mb-2">{route.seo.h1}</h2>
           <p class="text-sm text-stone-500 leading-relaxed">{route.seo.subtitle}</p>
         </a>

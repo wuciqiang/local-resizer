@@ -1,5 +1,6 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+import { formatPagePath } from '../lib/urls';
 ---
 <BaseLayout title="Terms of Service - LocalResizer" description="Terms of service for LocalResizer, a browser-based static image processing tool.">
   <article class="max-w-3xl mx-auto px-4 py-16 prose prose-slate">
@@ -30,6 +31,6 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     <h2>Changes to These Terms</h2>
     <p>We may update these terms as the site evolves. The latest version published on this page applies to the current public release.</p>
     <h2>Contact</h2>
-    <p>Questions about these terms? Visit the <a href="/contact">contact page</a> or email <a href="mailto:support@localresizer.com">support@localresizer.com</a>.</p>
+    <p>Questions about these terms? Visit the <a href={formatPagePath('contact')}>contact page</a> or email <a href="mailto:support@localresizer.com">support@localresizer.com</a>.</p>
   </article>
 </BaseLayout>

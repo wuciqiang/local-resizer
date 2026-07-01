@@ -1,5 +1,6 @@
 ---
 import { getRouteBySlug } from '../data/routes';
+import { formatPagePath } from '../lib/urls';
 
 interface Props {
   links: string[];
@@ -17,7 +18,7 @@ function getLabel(slug: string): string {
       <div class="flex flex-wrap gap-2">
         {links.map((slug) => (
           <a
-            href={`/${slug}`}
+            href={formatPagePath(slug)}
             class="inline-flex items-center px-3.5 py-2 bg-white border border-stone-200 text-stone-600 text-sm rounded-xl no-underline hover:border-teal-300 hover:text-teal-700 hover:bg-teal-50/50 hover:shadow-soft transition-all duration-200"
           >
             {getLabel(slug)}

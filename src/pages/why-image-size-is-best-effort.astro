@@ -2,12 +2,13 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Breadcrumbs from '../components/Breadcrumbs.astro';
 import { generateBreadcrumbSchema } from '../lib/seo';
+import { formatPagePath } from '../lib/urls';
 
 const title = 'Why Image Size Targets Are Best-Effort | LocalResizer';
 const description = 'Understand why image size targets such as 20KB, 100KB, or 2MB are best-effort, what affects the result, and how the current LocalResizer tools handle that tradeoff.';
 const breadcrumbItems = [
   { href: '/', label: 'Home' },
-  { href: '/why-image-size-is-best-effort', label: 'Why target size is best-effort' },
+  { href: formatPagePath('why-image-size-is-best-effort'), label: 'Why target size is best-effort' },
 ];
 const breadcrumbSchema = generateBreadcrumbSchema(breadcrumbItems);
 ---
@@ -79,11 +80,11 @@ const breadcrumbSchema = generateBreadcrumbSchema(breadcrumbItems);
     </section>
 
     <section class="grid grid-cols-1 md:grid-cols-2 gap-5">
-      <a href="/compress-image" class="no-underline bg-white rounded-2xl p-6 shadow-soft border border-stone-100 hover:border-teal-200 hover:bg-teal-50/40 transition-all">
+      <a href={formatPagePath('compress-image')} class="no-underline bg-white rounded-2xl p-6 shadow-soft border border-stone-100 hover:border-teal-200 hover:bg-teal-50/40 transition-all">
         <h2 class="font-[var(--font-heading)] text-lg font-semibold text-stone-900 mb-2">Compare compression pages</h2>
         <p class="text-sm text-stone-500 leading-relaxed">See how the current JPEG and PNG workflows differ before you choose a target-size page.</p>
       </a>
-      <a href="/resize-image" class="no-underline bg-white rounded-2xl p-6 shadow-soft border border-stone-100 hover:border-teal-200 hover:bg-teal-50/40 transition-all">
+      <a href={formatPagePath('resize-image')} class="no-underline bg-white rounded-2xl p-6 shadow-soft border border-stone-100 hover:border-teal-200 hover:bg-teal-50/40 transition-all">
         <h2 class="font-[var(--font-heading)] text-lg font-semibold text-stone-900 mb-2">Compare resize-by-size pages</h2>
         <p class="text-sm text-stone-500 leading-relaxed">Open the resize image tool and review the current 20KB, 100KB, and 2MB pages when the real constraint is upload size rather than a fixed canvas.</p>
       </a>

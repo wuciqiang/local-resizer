@@ -2,12 +2,13 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Breadcrumbs from '../components/Breadcrumbs.astro';
 import { generateBreadcrumbSchema } from '../lib/seo';
+import { formatPagePath } from '../lib/urls';
 
 const title = 'JPEG vs PNG vs WebP for Upload Limits | LocalResizer';
 const description = 'Compare JPEG, PNG, and WebP for upload-size limits, transparency, and visual quality so you can choose the right current LocalResizer workflow.';
 const breadcrumbItems = [
   { href: '/', label: 'Home' },
-  { href: '/jpeg-vs-png-vs-webp-for-upload-limits', label: 'JPEG vs PNG vs WebP guide' },
+  { href: formatPagePath('jpeg-vs-png-vs-webp-for-upload-limits'), label: 'JPEG vs PNG vs WebP guide' },
 ];
 const breadcrumbSchema = generateBreadcrumbSchema(breadcrumbItems);
 ---
@@ -79,15 +80,15 @@ const breadcrumbSchema = generateBreadcrumbSchema(breadcrumbItems);
     </section>
 
     <section class="grid grid-cols-1 md:grid-cols-3 gap-5">
-      <a href="/compress-image" class="no-underline bg-white rounded-2xl p-6 shadow-soft border border-stone-100 hover:border-teal-200 hover:bg-teal-50/40 transition-all">
+      <a href={formatPagePath('compress-image')} class="no-underline bg-white rounded-2xl p-6 shadow-soft border border-stone-100 hover:border-teal-200 hover:bg-teal-50/40 transition-all">
         <h2 class="font-[var(--font-heading)] text-lg font-semibold text-stone-900 mb-2">Compare compression pages</h2>
         <p class="text-sm text-stone-500 leading-relaxed">Use the compression guide when your constraint is mainly file size and you need to choose between the current live JPEG and PNG pages.</p>
       </a>
-      <a href="/resize-image" class="no-underline bg-white rounded-2xl p-6 shadow-soft border border-stone-100 hover:border-teal-200 hover:bg-teal-50/40 transition-all">
+      <a href={formatPagePath('resize-image')} class="no-underline bg-white rounded-2xl p-6 shadow-soft border border-stone-100 hover:border-teal-200 hover:bg-teal-50/40 transition-all">
         <h2 class="font-[var(--font-heading)] text-lg font-semibold text-stone-900 mb-2">Compare resize-by-size pages</h2>
         <p class="text-sm text-stone-500 leading-relaxed">Open the resize image tool when the destination cares about getting under a budget more than preserving one specific format workflow.</p>
       </a>
-      <a href="/supported-formats" class="no-underline bg-white rounded-2xl p-6 shadow-soft border border-stone-100 hover:border-teal-200 hover:bg-teal-50/40 transition-all">
+      <a href={formatPagePath('supported-formats')} class="no-underline bg-white rounded-2xl p-6 shadow-soft border border-stone-100 hover:border-teal-200 hover:bg-teal-50/40 transition-all">
         <h2 class="font-[var(--font-heading)] text-lg font-semibold text-stone-900 mb-2">Review supported formats</h2>
         <p class="text-sm text-stone-500 leading-relaxed">Double-check the current public scope and make sure the live release matches the format you plan to use.</p>
       </a>

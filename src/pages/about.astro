@@ -1,5 +1,6 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+import { formatPagePath } from '../lib/urls';
 ---
 <BaseLayout title="About - LocalResizer" description="Learn about LocalResizer, a browser-based static image tool focused on privacy and practical image tasks.">
   <article class="max-w-3xl mx-auto px-4 py-16 prose prose-slate">
@@ -45,6 +46,6 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       <li><a href="https://aikitchenpreview.com/" target="_blank" rel="nofollow noopener noreferrer">AI Kitchen Preview</a> - a separate AI product for kitchen remodel previews from photos.</li>
     </ul>
     <h2>Contact</h2>
-    <p>Questions or feedback? Reach us at <a href="/contact">the contact page</a>.</p>
+    <p>Questions or feedback? Reach us at <a href={formatPagePath('contact')}>the contact page</a>.</p>
   </article>
 </BaseLayout>

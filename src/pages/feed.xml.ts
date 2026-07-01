@@ -1,14 +1,14 @@
 import type { APIRoute } from 'astro';
 import { activeRoutes } from '../data/routes';
+import { formatPageUrl, SITE_ORIGIN } from '../lib/urls';
 
 export const GET: APIRoute = () => {
-  const siteUrl = 'https://localresizer.com';
   const buildDate = new Date().toUTCString();
   const contentPubDate = new Date('2026-04-29T00:00:00.000Z').toUTCString();
 
   const items = activeRoutes
     .map((route) => {
-      const url = `${siteUrl}/${route.slug}`;
+      const url = formatPageUrl(route.slug);
       return `    <item>
       <title>${escapeXml(route.seo.h1)}</title>
       <link>${url}</link>
@@ -23,7 +23,7 @@ export const GET: APIRoute = () => {
 <rss version="2.0">
   <channel>
     <title>LocalResizer - Free Online Image Compressor &amp; Resizer</title>
-    <link>${siteUrl}</link>
+    <link>${SITE_ORIGIN}/</link>
     <description>Free browser-based image compression and resizing tool</description>
     <lastBuildDate>${buildDate}</lastBuildDate>
 ${items}

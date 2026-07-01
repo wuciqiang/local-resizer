@@ -44,7 +44,7 @@ describe('generateBreadcrumbSchema', () => {
 
 describe('generateCanonicalUrl', () => {
   it('generates correct canonical URL', () => {
-    expect(generateCanonicalUrl('compress-jpeg-to-50kb')).toBe('https://localresizer.com/compress-jpeg-to-50kb');
+    expect(generateCanonicalUrl('compress-jpeg-to-50kb')).toBe('https://localresizer.com/compress-jpeg-to-50kb/');
   });
 });
 

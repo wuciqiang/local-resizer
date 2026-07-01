@@ -1,5 +1,6 @@
 ---
 import '../styles/global.css';
+import { formatPagePath, formatPageUrl } from '../lib/urls';
 
 interface Props {
   title: string;
@@ -9,8 +10,8 @@ interface Props {
 }
 
 const { title, description, canonical, schemas = [] } = Astro.props;
-const canonicalUrl = canonical || new URL(Astro.url.pathname, Astro.site).href;
-const currentPath = Astro.url.pathname;
+const canonicalUrl = canonical || formatPageUrl(Astro.url.pathname);
+const currentPath = formatPagePath(Astro.url.pathname);
 const ogImageUrl = new URL('/og-default.png', Astro.site).href;
 ---
 <!DOCTYPE html>
@@ -56,9 +57,9 @@ const ogImageUrl = new URL('/og-default.png', Astro.site).href;
       <div class="flex items-center gap-0.5 sm:gap-1 overflow-x-auto">
         {[
           { href: '/', label: 'Home' },
-          { href: '/supported-formats', label: 'Supported' },
-          { href: '/about', label: 'About' },
-          { href: '/privacy', label: 'Privacy' },
+          { href: formatPagePath('supported-formats'), label: 'Supported' },
+          { href: formatPagePath('about'), label: 'About' },
+          { href: formatPagePath('privacy'), label: 'Privacy' },
         ].map(link => (
           <a
             href={link.href}
@@ -87,11 +88,11 @@ const ogImageUrl = new URL('/og-default.png', Astro.site).href;
       <div class="flex flex-col md:flex-row items-center justify-between gap-4">
         <img src="/logo-header.png" alt="LocalResizer" width="380" height="101" loading="lazy" decoding="async" class="block w-[150px] sm:w-[170px] h-auto" />
         <div class="flex flex-wrap items-center justify-center gap-3 sm:gap-4 text-sm">
-          <a href="/supported-formats" class="text-[var(--color-text-tertiary)] hover:text-teal-700 transition-colors no-underline">Supported</a>
-          <a href="/about" class="text-[var(--color-text-tertiary)] hover:text-teal-700 transition-colors no-underline">About</a>
-          <a href="/privacy" class="text-[var(--color-text-tertiary)] hover:text-teal-700 transition-colors no-underline">Privacy</a>
-          <a href="/terms" class="text-[var(--color-text-tertiary)] hover:text-teal-700 transition-colors no-underline">Terms</a>
-          <a href="/contact" class="text-[var(--color-text-tertiary)] hover:text-teal-700 transition-colors no-underline">Contact</a>
+          <a href={formatPagePath('supported-formats')} class="text-[var(--color-text-tertiary)] hover:text-teal-700 transition-colors no-underline">Supported</a>
+          <a href={formatPagePath('about')} class="text-[var(--color-text-tertiary)] hover:text-teal-700 transition-colors no-underline">About</a>
+          <a href={formatPagePath('privacy')} class="text-[var(--color-text-tertiary)] hover:text-teal-700 transition-colors no-underline">Privacy</a>
+          <a href={formatPagePath('terms')} class="text-[var(--color-text-tertiary)] hover:text-teal-700 transition-colors no-underline">Terms</a>
+          <a href={formatPagePath('contact')} class="text-[var(--color-text-tertiary)] hover:text-teal-700 transition-colors no-underline">Contact</a>
           <a href="/feed.xml" class="text-[var(--color-text-tertiary)] hover:text-teal-700 transition-colors no-underline">RSS Feed</a>
         </div>
       </div>

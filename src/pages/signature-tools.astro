@@ -4,6 +4,7 @@ import Breadcrumbs from '../components/Breadcrumbs.astro';
 import { phase0Routes } from '../data/routes';
 import { generateBreadcrumbSchema } from '../lib/seo';
 import { getHubBreadcrumbs } from '../lib/site-structure';
+import { formatPagePath } from '../lib/urls';
 
 const title = 'Signature Tools Guide - Trim and Resize Signature Images | LocalResizer';
 const description = 'Review the current signature image workflow on LocalResizer, understand trimming and output-format tradeoffs, and choose the right related page before export.';
@@ -58,7 +59,7 @@ const signatureRoute = phase0Routes.find((route) => route.slug === 'signature-re
     {signatureRoute && (
       <section class="bg-white rounded-2xl p-7 shadow-soft border border-stone-100 mb-10">
         <h2 class="font-[var(--font-heading)] text-xl font-semibold text-stone-900 mb-4">Current live signature page</h2>
-        <a href={`/${signatureRoute.slug}`} class="no-underline rounded-xl border border-stone-100 p-5 block hover:border-teal-200 hover:bg-teal-50/40 transition-all">
+        <a href={formatPagePath(signatureRoute.slug)} class="no-underline rounded-xl border border-stone-100 p-5 block hover:border-teal-200 hover:bg-teal-50/40 transition-all">
           <h3 class="font-[var(--font-heading)] font-semibold text-stone-900 mb-2">{signatureRoute.seo.h1}</h3>
           <p class="text-sm text-stone-500 leading-relaxed">{signatureRoute.seo.subtitle}</p>
         </a>
@@ -68,20 +69,20 @@ const signatureRoute = phase0Routes.find((route) => route.slug === 'signature-re
     <section class="bg-white rounded-2xl p-7 shadow-soft border border-stone-100 mb-10 space-y-3">
       <h2 class="font-[var(--font-heading)] text-xl font-semibold text-stone-900">When the signature page is not the right fit</h2>
       <p class="text-stone-500 leading-relaxed">
-        If you need a general width and height change rather than trimming a signature, open the <a href="/resize-image" class="text-teal-700 underline hover:text-teal-900">resize image tool</a>. It is the better starting point for regular photos, screenshots, and other static image files.
+        If you need a general width and height change rather than trimming a signature, open the <a href={formatPagePath('resize-image')} class="text-teal-700 underline hover:text-teal-900">resize image tool</a>. It is the better starting point for regular photos, screenshots, and other static image files.
       </p>
     </section>
 
     <section class="grid grid-cols-1 md:grid-cols-3 gap-5">
-      <a href="/photo-resizer-20kb" class="no-underline bg-white rounded-2xl p-6 shadow-soft border border-stone-100 hover:border-teal-200 hover:bg-teal-50/40 transition-all">
+      <a href={formatPagePath('photo-resizer-20kb')} class="no-underline bg-white rounded-2xl p-6 shadow-soft border border-stone-100 hover:border-teal-200 hover:bg-teal-50/40 transition-all">
         <h3 class="font-[var(--font-heading)] text-lg font-semibold text-stone-900 mb-2">Photo Resizer 20KB</h3>
         <p class="text-sm text-stone-500 leading-relaxed">Use this when the real problem is a strict document-photo size cap rather than a signature crop.</p>
       </a>
-      <a href="/compress-jpg-file" class="no-underline bg-white rounded-2xl p-6 shadow-soft border border-stone-100 hover:border-teal-200 hover:bg-teal-50/40 transition-all">
+      <a href={formatPagePath('compress-jpg-file')} class="no-underline bg-white rounded-2xl p-6 shadow-soft border border-stone-100 hover:border-teal-200 hover:bg-teal-50/40 transition-all">
         <h3 class="font-[var(--font-heading)] text-lg font-semibold text-stone-900 mb-2">Compress JPG File</h3>
         <p class="text-sm text-stone-500 leading-relaxed">Use the JPEG compressor when the upload rule is mainly about KB and transparency is irrelevant.</p>
       </a>
-      <a href="/supported-formats" class="no-underline bg-white rounded-2xl p-6 shadow-soft border border-stone-100 hover:border-teal-200 hover:bg-teal-50/40 transition-all">
+      <a href={formatPagePath('supported-formats')} class="no-underline bg-white rounded-2xl p-6 shadow-soft border border-stone-100 hover:border-teal-200 hover:bg-teal-50/40 transition-all">
         <h3 class="font-[var(--font-heading)] text-lg font-semibold text-stone-900 mb-2">Supported Formats</h3>
         <p class="text-sm text-stone-500 leading-relaxed">Double-check the current public boundaries before you assume the page validates official signature rules.</p>
       </a>

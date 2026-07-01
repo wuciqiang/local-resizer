@@ -5,6 +5,7 @@ import ImageProcessor from '../components/ImageProcessor.tsx';
 import { phase0Routes, STATIC_IMAGE_ACCEPT_FORMATS } from '../data/routes';
 import { generateBreadcrumbSchema } from '../lib/seo';
 import { getHubBreadcrumbs } from '../lib/site-structure';
+import { formatPagePath } from '../lib/urls';
 
 const title = 'Resize Image Online - Private Browser Resizer | LocalResizer';
 const description = 'Resize image files online in your browser. Adjust static JPEG, PNG, and WebP dimensions locally or choose a focused target-size page.';
@@ -54,7 +55,7 @@ const platformRoutes = phase0Routes.filter((route) => route.platform);
 
     <section class="grid grid-cols-1 md:grid-cols-3 gap-5 mb-10">
       {resizeRoutes.map((route) => (
-        <a href={`/${route.slug}`} class="no-underline bg-white rounded-2xl p-6 shadow-soft border border-stone-100 hover:border-teal-200 hover:bg-teal-50/40 transition-all">
+        <a href={formatPagePath(route.slug)} class="no-underline bg-white rounded-2xl p-6 shadow-soft border border-stone-100 hover:border-teal-200 hover:bg-teal-50/40 transition-all">
           <h2 class="font-[var(--font-heading)] text-lg font-semibold text-stone-900 mb-2">{route.seo.h1.replace('Resize Image', 'Resize')}</h2>
           <p class="text-sm text-stone-500 leading-relaxed">{route.seo.subtitle}</p>
         </a>
@@ -69,7 +70,7 @@ const platformRoutes = phase0Routes.filter((route) => route.platform);
         </p>
         <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
           {platformRoutes.map((route) => (
-            <a href={`/${route.slug}`} class="no-underline rounded-xl border border-stone-100 p-5 hover:border-teal-200 hover:bg-teal-50/40 transition-all">
+            <a href={formatPagePath(route.slug)} class="no-underline rounded-xl border border-stone-100 p-5 hover:border-teal-200 hover:bg-teal-50/40 transition-all">
               <h3 class="font-[var(--font-heading)] font-semibold text-stone-900 mb-2">{route.seo.h1}</h3>
               <p class="text-sm text-stone-500 leading-relaxed">{route.seo.subtitle}</p>
             </a>

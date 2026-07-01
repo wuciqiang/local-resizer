@@ -1,5 +1,6 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+import { formatPagePath } from '../lib/urls';
 ---
 <BaseLayout title="Privacy Policy - LocalResizer" description="LocalResizer privacy policy. Static images are processed locally in your browser.">
   <article class="max-w-3xl mx-auto px-4 py-16 prose prose-slate">
@@ -27,6 +28,6 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     <h2>Third-Party Services</h2>
     <p>We may use third-party services such as privacy-focused analytics or advertising products in the future. If those services materially change the data flow, this policy will be updated.</p>
     <h2>Contact</h2>
-    <p>Questions about privacy? Visit the <a href="/contact">contact page</a>.</p>
+    <p>Questions about privacy? Visit the <a href={formatPagePath('contact')}>contact page</a>.</p>
   </article>
 </BaseLayout>
