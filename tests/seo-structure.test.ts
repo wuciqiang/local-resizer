@@ -22,4 +22,15 @@ describe('SEO structure for specialized workflows', () => {
     expect(homepage.includes("formatPagePath('signature-tools')")).toBe(true);
     expect(homepage.includes("formatPagePath('image-tools')")).toBe(true);
   });
+
+  it('keeps data-backed target-size links prominent on hubs', () => {
+    const homepage = read('src/pages/index.astro');
+    const resizeHub = read('src/pages/resize-image.astro');
+    const compressHub = read('src/pages/compress-image.astro');
+
+    expect(homepage.includes("'resize-image-to-20kb'")).toBe(true);
+    expect(homepage.includes("'compress-image-to-500kb'")).toBe(true);
+    expect(resizeHub.includes("'resize-image-to-20kb'")).toBe(true);
+    expect(compressHub.includes("'compress-image-to-500kb'")).toBe(true);
+  });
 });

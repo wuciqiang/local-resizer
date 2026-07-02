@@ -80,6 +80,16 @@ describe('activeRoutes', () => {
     }
   });
 
+  it('uses focused SEO copy for data-backed target-size opportunities', () => {
+    const resize20kb = getRouteBySlug('resize-image-to-20kb');
+    const compress500kb = getRouteBySlug('compress-image-to-500kb');
+
+    expect(resize20kb?.seo.title).toContain('Resize Image to 20KB Online Free');
+    expect(resize20kb?.seo.description).toContain('Resize image to 20KB online');
+    expect(compress500kb?.seo.title).toContain('Compress Image to 500KB Online Free');
+    expect(compress500kb?.seo.description).toContain('Compress or convert an image to 500KB');
+  });
+
   it('includes explicit semantic routes for active slugs', () => {
     expect(getRouteBySlug('compress-image-to-50kb')?.intent).toBe('generic-compress');
     expect(getRouteBySlug('compress-image-to-100kb')?.intent).toBe('generic-compress');

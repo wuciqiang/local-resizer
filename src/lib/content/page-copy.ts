@@ -17,6 +17,10 @@ export function generateIntroText(route: RouteConfig): string {
 
   if (route.intent === 'generic-compress' && route.targetSize && !route.format) {
     const sizeLabel = formatSizeLabel(route.targetSize);
+    if (route.targetSize === '500kb') {
+      return 'Compress or convert an image to 500KB directly in your browser. This page is for forms, profile uploads, product photos, and document portals that reject files above a 500KB limit. Upload a static JPEG, PNG, or WebP file, let the local tool move it toward the target, and download the result without sending the image to a server.';
+    }
+
     return `Compress a static image toward ${sizeLabel} locally in your browser. This page is for users who know the upload gate is a file-size budget, but the source image might be JPEG, PNG, or WebP. The workflow keeps processing on your device, uses format-specific reduction strategies, and treats the final file size as best-effort rather than a guaranteed exact byte count.`;
   }
 
@@ -52,6 +56,10 @@ export function generateIntroText(route: RouteConfig): string {
 
   if (route.targetSize) {
     const sizeLabel = formatSizeLabel(route.targetSize);
+    if (route.targetSize === '20kb') {
+      return 'Resize image to 20KB when a form or upload page has a very small file-size limit. The tool runs locally in your browser, supports static JPEG, PNG, and WebP files, and preserves aspect ratios so the result is not stretched. A 20KB target is strict, so the final quality depends heavily on the source image.';
+    }
+
     return `Resize images to ${sizeLabel} by intelligently scaling dimensions and optimizing compression. This free browser-based tool supports JPEG, PNG, and WebP formats, and it works locally with no server upload required. The tool preserves aspect ratios to prevent distortion and uses format-specific optimization strategies—quality adjustment for JPEG/WebP, dimension scaling for PNG. Ideal for CMS uploads, email attachments, and mobile app assets where file size directly impacts performance and user experience.`;
   }
 
@@ -69,6 +77,10 @@ export function generateDetailText(route: RouteConfig): string {
 
   if (route.intent === 'generic-compress' && route.targetSize && !route.format) {
     const sizeLabel = formatSizeLabel(route.targetSize);
+    if (route.targetSize === '500kb') {
+      return 'If the original file is already under 500KB, the page keeps it as-is. If it is larger, the tool uses the current local compression workflow to get as close as practical to the 500KB budget. JPEG and WebP can use quality adjustment; PNG may need dimension changes because PNG does not shrink like a lossy photo format. The result is best-effort, not an exact byte guarantee.';
+    }
+
     return `This page accepts static JPEG, PNG, and WebP files and moves them toward ${sizeLabel} without uploading image content to a server. JPEG and WebP can use quality adjustment, while PNG may need a PNG-specific strategy because it does not compress like a lossy photo format. If the original image is already under ${sizeLabel}, the original file is kept. The page does not support GIF, PDF, video, audio, or document compression.`;
   }
 
@@ -99,6 +111,10 @@ export function generateDetailText(route: RouteConfig): string {
   }
 
   if (route.targetSize) {
+    if (route.targetSize === '20kb') {
+      return 'If the source image is already below 20KB, the original file is kept. If it is larger, the page can scale dimensions and apply format-specific compression to move toward the target. This is useful for strict upload gates, but the page is not an official passport, ID, exam, or government photo validator, and it cannot guarantee that every source image will land at exactly 20KB.';
+    }
+
     return `These size-target pages preserve the original aspect ratio and avoid stretching the image. When the original file is already below the requested size budget, the page keeps it as-is instead of enlarging or needlessly recompressing it. The tool combines dimension scaling with format-specific compression: for JPEG and WebP, it adjusts both dimensions and quality parameters; for PNG, it primarily scales dimensions since PNG doesn't support lossy quality adjustment. This intelligent approach ensures optimal results for each format while maintaining visual integrity. Perfect for responsive web design where you need multiple image sizes, or for meeting CMS upload requirements without manual trial-and-error.`;
   }
 

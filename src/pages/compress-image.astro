@@ -13,6 +13,9 @@ const breadcrumbItems = getHubBreadcrumbs('compress-image');
 const breadcrumbSchema = generateBreadcrumbSchema(breadcrumbItems);
 const targetCompressRoutes = phase0Routes.filter((route) => route.slug.startsWith('compress-image-to-'));
 const formatCompressRoutes = phase0Routes.filter((route) => route.action === 'compress' && route.format);
+const priorityCompressRoutes = ['compress-image-to-500kb', 'compress-image-to-20kb', 'compress-image-to-1mb']
+  .map((slug) => phase0Routes.find((route) => route.slug === slug))
+  .filter(Boolean);
 ---
 <BaseLayout title={title} description={description} schemas={[breadcrumbSchema]}>
   <div class="pt-4 sm:pt-6">
@@ -67,6 +70,21 @@ const formatCompressRoutes = phase0Routes.filter((route) => route.action === 'co
           <li>You care about transparency or screenshot clarity.</li>
           <li>You understand that the tool may reduce dimensions to reach a smaller budget.</li>
         </ul>
+      </div>
+    </section>
+
+    <section class="bg-white rounded-2xl p-7 shadow-soft border border-stone-100 mb-8">
+      <h2 class="font-[var(--font-heading)] text-xl font-semibold text-stone-900 mb-3">Popular compression targets</h2>
+      <p class="text-stone-500 leading-relaxed mb-5">
+        Start with one of these fixed-size pages when the upload form already tells you the limit.
+      </p>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {priorityCompressRoutes.map((route) => route && (
+          <a href={formatPagePath(route.slug)} class="no-underline rounded-xl border border-stone-100 p-5 hover:border-teal-200 hover:bg-teal-50/40 transition-all">
+            <h3 class="font-[var(--font-heading)] font-semibold text-stone-900 mb-2">{route.seo.h1}</h3>
+            <p class="text-sm text-stone-500 leading-relaxed">{route.seo.subtitle}</p>
+          </a>
+        ))}
       </div>
     </section>
 

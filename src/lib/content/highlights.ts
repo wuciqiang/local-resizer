@@ -45,6 +45,23 @@ export function generatePageHighlights(route: RouteConfig): PageHighlight[] {
   if (route.intent === 'generic-compress' && route.targetSize && !route.format) {
     const sizeLabel = formatSizeLabel(route.targetSize);
 
+    if (route.targetSize === '500kb') {
+      return [
+        {
+          title: 'Best for',
+          body: 'Use this page when an upload form asks for an image under 500KB and the source may be JPEG, PNG, or WebP.',
+        },
+        {
+          title: 'Output behavior',
+          body: 'The page compresses locally, keeps already-small files as-is, and aims for a practical 500KB result without uploading the image.',
+        },
+        {
+          title: 'Current limits',
+          body: 'The final size is best-effort. Very detailed images may need a smaller dimension or a format-specific workflow to get closer to 500KB.',
+        },
+      ];
+    }
+
     return [
       {
         title: 'Best for',
@@ -138,6 +155,23 @@ export function generatePageHighlights(route: RouteConfig): PageHighlight[] {
 
   if (route.targetSize) {
     const sizeLabel = formatSizeLabel(route.targetSize);
+
+    if (route.targetSize === '20kb') {
+      return [
+        {
+          title: 'Best for',
+          body: 'Use this page when you need to resize image files toward a 20KB upload limit and the file can lose some size or quality.',
+        },
+        {
+          title: 'Output behavior',
+          body: 'The page keeps the aspect ratio, avoids stretching, and uses local best-effort processing to move JPEG, PNG, or WebP files toward 20KB.',
+        },
+        {
+          title: 'Current limits',
+          body: 'A 20KB target is strict. The page cannot guarantee an exact final size, and it is not an official compliance checker.',
+        },
+      ];
+    }
 
     return [
       {

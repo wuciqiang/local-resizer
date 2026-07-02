@@ -52,6 +52,23 @@ export function generateContextSections(route: RouteConfig): PageContextSection[
   if (route.intent === 'generic-compress' && route.targetSize && !route.format) {
     const sizeLabel = formatSizeLabel(route.targetSize);
 
+    if (route.targetSize === '500kb') {
+      return [
+        {
+          title: 'Common real-world use cases',
+          body: 'A 500KB image target fits profile uploads, listing photos, CMS media libraries, document portals, and lightweight product images where the file needs to be smaller but still clear enough to use.',
+        },
+        {
+          title: 'What changes the final result',
+          body: 'Photos, screenshots, and transparent graphics do not shrink the same way. JPEG and WebP can use quality changes, while PNG often depends more on reducing dimensions to move toward 500KB.',
+        },
+        {
+          title: 'When to choose a different live page',
+          body: 'If the upload form asks for 20KB or 100KB, use a smaller target page first. If the image must stay JPG, use a JPEG-specific compressor so the output format is predictable.',
+        },
+      ];
+    }
+
     return [
       {
         title: 'Common real-world use cases',
@@ -167,6 +184,23 @@ export function generateContextSections(route: RouteConfig): PageContextSection[
 
   if (route.targetSize) {
     const sizeLabel = formatSizeLabel(route.targetSize);
+
+    if (route.targetSize === '20kb') {
+      return [
+        {
+          title: 'Common real-world use cases',
+          body: 'The 20KB page is for strict upload limits: application forms, identity portals, small avatar uploads, and older systems that reject files immediately when they are over the cap.',
+        },
+        {
+          title: 'What changes the final result',
+          body: 'A clean, tightly cropped image can usually move closer to 20KB than a large photo with noise, text, or a busy background. The page keeps the aspect ratio, so it reduces size without stretching the image.',
+        },
+        {
+          title: 'When to choose a different live page',
+          body: 'If 20KB makes the image too rough, try the 100KB page first. If the destination mainly wants a smaller file but not a resized image, compare the compression pages instead.',
+        },
+      ];
+    }
 
     return [
       {

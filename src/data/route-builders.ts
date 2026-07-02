@@ -116,6 +116,18 @@ function buildCompressJpgFileRoute(): RouteConfig {
 
 function buildCompressImageToSizeRoute(size: string): RouteConfig {
   const sizeLabel = formatSizeLabel(size);
+  const seo = {
+    title: `Compress Image to ${sizeLabel} Online - Private Browser Tool | LocalResizer`,
+    description: `Compress static JPEG, PNG, or WebP images toward ${sizeLabel} in your browser. No upload, no signup, and best-effort local processing.`,
+    h1: `Compress Image to ${sizeLabel}`,
+    subtitle: `Target a ${sizeLabel} image file-size budget locally while keeping processing in your browser.`,
+  };
+
+  if (size === '500kb') {
+    seo.title = 'Compress Image to 500KB Online Free - No Upload | LocalResizer';
+    seo.description = 'Compress or convert an image to 500KB in your browser. Works with JPEG, PNG, and WebP files locally with no upload or signup.';
+    seo.subtitle = 'Reduce an image toward a 500KB upload limit locally, without sending the file to a server.';
+  }
 
   return {
     slug: `compress-image-to-${size}`,
@@ -124,12 +136,7 @@ function buildCompressImageToSizeRoute(size: string): RouteConfig {
     targetSize: size,
     targetSizeBytes: parseSize(size),
     tier: 4,
-    seo: {
-      title: `Compress Image to ${sizeLabel} Online - Private Browser Tool | LocalResizer`,
-      description: `Compress static JPEG, PNG, or WebP images toward ${sizeLabel} in your browser. No upload, no signup, and best-effort local processing.`,
-      h1: `Compress Image to ${sizeLabel}`,
-      subtitle: `Target a ${sizeLabel} image file-size budget locally while keeping processing in your browser.`,
-    },
+    seo,
     faq: [
       {
         question: `Which image formats can I compress toward ${sizeLabel}?`,
@@ -467,18 +474,26 @@ export function generateActiveRoutes(): RouteConfig[] {
     const slug = `resize-image-to-${size}`;
     if (ACTIVE_SLUGS.has(slug)) {
       const sizeLabel = formatSizeLabel(size);
+      const seo = {
+        title: `Resize Image to ${sizeLabel} Online Free - Browser Tool | LocalResizer`,
+        description: `Resize any image to ${sizeLabel} in your browser. Supports JPEG, PNG, WebP. No upload required. Privacy-first local processing with no server upload.`,
+        h1: `Resize Image to ${sizeLabel}`,
+        subtitle: `Target a ${sizeLabel} file-size budget locally while keeping the image usable.`,
+      };
+
+      if (size === '20kb') {
+        seo.title = 'Resize Image to 20KB Online Free - No Upload | LocalResizer';
+        seo.description = 'Resize image to 20KB online in your browser. Reduce JPEG, PNG, or WebP files locally with no upload, signup, or watermark.';
+        seo.subtitle = 'Shrink an image toward a 20KB upload limit locally while keeping the aspect ratio intact.';
+      }
+
       routes.push({
         slug,
         action: 'resize',
         targetSize: size,
         targetSizeBytes: parseSize(size),
         tier: 4,
-        seo: {
-          title: `Resize Image to ${sizeLabel} Online Free - Browser Tool | LocalResizer`,
-          description: `Resize any image to ${sizeLabel} in your browser. Supports JPEG, PNG, WebP. No upload required. Privacy-first local processing with no server upload.`,
-          h1: `Resize Image to ${sizeLabel}`,
-          subtitle: `Target a ${sizeLabel} file-size budget locally while keeping the image usable.`,
-        },
+        seo,
         faq: resizeImageFaq(size),
         howToSteps: [
           'Upload a static JPEG, PNG, or WebP image',
