@@ -2,9 +2,12 @@ import type { ResizeMode } from '../data/routes';
 import { compressImage } from './compress';
 import { canvasToBlob, loadImage, resetCanvas } from './image/canvas';
 import { getContainScale, getCoverScale, getScaledDimensions } from './image/geometry';
+import { assertCanvasDimensions } from './image/limits';
+import { getTargetSizeNote, isWithinTargetTolerance } from './image/target-size';
 
 export interface ResizeOptions {
   file: File;
+  format?: string;
   targetDimensions?: { width: number; height: number };
   targetSizeBytes?: number;
   maintainAspectRatio?: boolean;
@@ -70,6 +73,7 @@ async function renderScaledBlob(
   outputType: string,
   quality: number,
 ): Promise<Blob> {
+  assertCanvasDimensions(width, height);
   const canvas = document.createElement('canvas');
   canvas.width = width;
   canvas.height = height;
@@ -87,6 +91,7 @@ async function renderScaledBlob(
 export async function resizeImage(options: ResizeOptions): Promise<ResizeResult> {
   const {
     file,
+    format,
     targetDimensions,
     targetSizeBytes,
     maintainAspectRatio = true,
@@ -105,12 +110,12 @@ export async function resizeImage(options: ResizeOptions): Promise<ResizeResult>
     if (targetDimensions) {
       return resizeToDimensions({
         backgroundColor,
-        file,
         forceCanvasSize,
         image,
         maintainAspectRatio,
         originalHeight,
         originalWidth,
+        outputType: getOutputType(format ?? file.type),
         resizeMode,
         targetDimensions,
       });
@@ -123,6 +128,7 @@ export async function resizeImage(options: ResizeOptions): Promise<ResizeResult>
         maxIterations,
         originalHeight,
         originalWidth,
+        outputType: getOutputType(format ?? file.type),
         targetSizeBytes,
         tolerance,
       });
@@ -143,27 +149,26 @@ export async function resizeImage(options: ResizeOptions): Promise<ResizeResult>
 
 async function resizeToDimensions(args: {
   backgroundColor?: string;
-  file: File;
   forceCanvasSize: boolean;
   image: HTMLImageElement;
   maintainAspectRatio: boolean;
   originalHeight: number;
   originalWidth: number;
+  outputType: string;
   resizeMode: ResizeMode;
   targetDimensions: { width: number; height: number };
 }): Promise<ResizeResult> {
   const {
     backgroundColor,
-    file,
     forceCanvasSize,
     image,
     maintainAspectRatio,
     originalHeight,
     originalWidth,
+    outputType,
     resizeMode,
     targetDimensions,
   } = args;
-  const outputType = getOutputType(file.type);
   const targetWidth = Math.max(1, Math.round(targetDimensions.width));
   const targetHeight = Math.max(1, Math.round(targetDimensions.height));
   const canvas = document.createElement('canvas');
@@ -178,6 +183,7 @@ async function resizeToDimensions(args: {
   let note: string | undefined;
 
   if (forceCanvasSize) {
+    assertCanvasDimensions(targetWidth, targetHeight);
     canvas.width = targetWidth;
     canvas.height = targetHeight;
     fillCanvasBackground(context, targetWidth, targetHeight, outputType, backgroundColor);
@@ -208,6 +214,7 @@ async function resizeToDimensions(args: {
       finalHeight = Math.max(1, Math.round(originalHeight * scale));
     }
 
+    assertCanvasDimensions(finalWidth, finalHeight);
     canvas.width = finalWidth;
     canvas.height = finalHeight;
     context.drawImage(image, 0, 0, finalWidth, finalHeight);
@@ -232,6 +239,7 @@ async function resizeToTargetFileSize(args: {
   maxIterations: number;
   originalHeight: number;
   originalWidth: number;
+  outputType: string;
   targetSizeBytes: number;
   tolerance: number;
 }): Promise<ResizeResult> {
@@ -241,11 +249,10 @@ async function resizeToTargetFileSize(args: {
     maxIterations,
     originalHeight,
     originalWidth,
+    outputType,
     targetSizeBytes,
     tolerance,
   } = args;
-  const outputType = getOutputType(file.type);
-
   if (file.size <= targetSizeBytes) {
     return {
       blob: file,
@@ -257,27 +264,7 @@ async function resizeToTargetFileSize(args: {
     };
   }
 
-  const allowedDifference = targetSizeBytes * tolerance;
-  const upperBound = targetSizeBytes + allowedDifference;
-
-  if (outputType !== 'image/png') {
-    const compressed = await compressImage({
-      file,
-      targetSizeBytes,
-      format: outputType,
-      tolerance,
-    });
-    if (compressed.compressedSize <= upperBound) {
-      return {
-        blob: compressed.blob,
-        width: compressed.width,
-        height: compressed.height,
-        originalWidth,
-        originalHeight,
-        note: compressed.note,
-      };
-    }
-  }
+  const upperBound = targetSizeBytes;
 
   const baseQuality = getDefaultQuality(outputType);
   let low = 0.05;
@@ -291,13 +278,14 @@ async function resizeToTargetFileSize(args: {
     const blob = await renderScaledBlob(image, width, height, outputType, baseQuality);
     const distance = Math.abs(blob.size - targetSizeBytes);
 
-    if (distance <= allowedDifference) {
+    if (isWithinTargetTolerance(blob.size, targetSizeBytes, tolerance)) {
       return {
         blob,
         width,
         height,
         originalWidth,
         originalHeight,
+        note: `Reduced pixel dimensions from ${originalWidth} x ${originalHeight} to ${width} x ${height} to fit the requested size budget.`,
       };
     }
 
@@ -331,8 +319,12 @@ async function resizeToTargetFileSize(args: {
       distance: Math.abs(compressed.blob.size - targetSizeBytes),
     };
 
-    if (!selected || compressedCandidate.distance < selected.distance) {
+    if (compressedCandidate.blob.size <= targetSizeBytes &&
+        (!selected || compressedCandidate.distance < selected.distance)) {
       selected = compressedCandidate;
+    } else if (compressedCandidate.blob.size > targetSizeBytes &&
+        (!bestOver || compressedCandidate.blob.size < bestOver.blob.size)) {
+      bestOver = compressedCandidate;
     }
   }
 
@@ -350,8 +342,9 @@ async function resizeToTargetFileSize(args: {
     height: selected.height,
     originalWidth,
     originalHeight,
-    note: Math.abs(selected.blob.size - targetSizeBytes) <= allowedDifference
-      ? undefined
-      : 'Returned the closest result the browser could create for this image.',
+    note: [
+      `Reduced pixel dimensions from ${originalWidth} x ${originalHeight} to ${selected.width} x ${selected.height} to fit the requested size budget.`,
+      getTargetSizeNote(selected.blob.size, targetSizeBytes, tolerance),
+    ].filter(Boolean).join(' '),
   };
 }

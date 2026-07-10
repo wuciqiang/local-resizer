@@ -13,7 +13,7 @@ const breadcrumbItems = getHubBreadcrumbs('resize-image');
 const breadcrumbSchema = generateBreadcrumbSchema(breadcrumbItems);
 const resizeRoutes = phase0Routes.filter((route) => route.slug.startsWith('resize-image-to-'));
 const platformRoutes = phase0Routes.filter((route) => route.platform);
-const priorityResizeRoutes = ['resize-image-to-20kb', 'resize-image-to-100kb', 'resize-image-to-2mb']
+const priorityResizeRoutes = ['batch-resize-images', 'resize-png', 'resize-image-to-20kb', 'resize-image-to-100kb', 'resize-image-to-2mb']
   .map((slug) => phase0Routes.find((route) => route.slug === slug))
   .filter(Boolean);
 ---
@@ -49,7 +49,7 @@ const priorityResizeRoutes = ['resize-image-to-20kb', 'resize-image-to-100kb', '
     <section class="bg-white rounded-2xl p-7 shadow-soft border border-stone-100 mb-8 space-y-4">
       <h2 class="font-[var(--font-heading)] text-xl font-semibold text-stone-900">What makes these pages different from the homepage tool</h2>
       <p class="text-stone-500 leading-relaxed">
-        The homepage resize image tool lets you choose your own dimensions or file-size target. These route pages are more focused. Each one is tuned around a specific upload budget, such as 20KB, 100KB, or 2MB, so the copy, FAQ, and internal links all match one concrete resize image need instead of a generic workflow.
+        The homepage is the broad LocalResizer entry point. This Hub owns the dimension-resize family, including one-file controls, the batch resize workflow, PNG dimensions, and focused upload-budget pages such as 20KB, 100KB, or 2MB.
       </p>
       <p class="text-stone-500 leading-relaxed">
         The result is still best-effort because file size depends on the source image. A flat graphic, a noisy photo, and a transparent PNG all behave differently. The live pages are designed to make that tradeoff clearer before you start, which is why they are useful as standalone landing pages and not just thin variants of the homepage.
@@ -57,11 +57,11 @@ const priorityResizeRoutes = ['resize-image-to-20kb', 'resize-image-to-100kb', '
     </section>
 
     <section class="bg-white rounded-2xl p-7 shadow-soft border border-stone-100 mb-8">
-      <h2 class="font-[var(--font-heading)] text-xl font-semibold text-stone-900 mb-3">Popular upload-size shortcuts</h2>
+      <h2 class="font-[var(--font-heading)] text-xl font-semibold text-stone-900 mb-3">Popular resize shortcuts</h2>
       <p class="text-stone-500 leading-relaxed mb-5">
-        If you already know the upload limit, open the matching page instead of guessing settings on the general tool.
+        Use batch resize for multiple files, the PNG resizer for PNG-only pixel dimensions, or a target-size page when you already know the upload limit.
       </p>
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         {priorityResizeRoutes.map((route) => route && (
           <a href={formatPagePath(route.slug)} class="no-underline rounded-xl border border-stone-100 p-5 hover:border-teal-200 hover:bg-teal-50/40 transition-all">
             <h3 class="font-[var(--font-heading)] font-semibold text-stone-900 mb-2">{route.seo.h1}</h3>

@@ -6,10 +6,10 @@ import { listHubInfos } from '../lib/site-structure';
 import { generateOrganizationSchema, generateWebApplicationSchema, generateWebSiteSchema } from '../lib/seo';
 import { formatPagePath } from '../lib/urls';
 
-const title = 'Resize Image Online - Free Local Image Resizer';
-const description = 'Resize image files online in your browser, then compress JPEG, PNG, and WebP images locally with no uploads, no server processing, and no account required.';
+const title = 'LocalResizer - Resize, Compress and Batch Process Images';
+const description = 'Resize, compress, split, and batch process static JPEG, PNG, and WebP images locally in your browser with no image-content upload.';
 const hubGuides = listHubInfos();
-const popularTaskSlugs = ['resize-image-to-20kb', 'compress-image-to-500kb', 'resize-image-to-2mb'];
+const popularTaskSlugs = ['batch-resize-images', 'resize-png', 'resize-image-to-20kb', 'compress-image-to-500kb', 'resize-image-to-2mb'];
 const popularTaskRoutes = popularTaskSlugs
   .map((slug) => phase0Routes.find((route) => route.slug === slug))
   .filter(Boolean);
@@ -43,12 +43,12 @@ const schemas = [
       </div>
 
       <h1 class="font-[var(--font-heading)] text-3xl sm:text-4xl md:text-[3.25rem] font-extrabold leading-[1.1] tracking-tight text-stone-900 mb-5 animate-fade-up" style="animation-delay: 0.1s">
-        Resize Image Online,<br class="hidden sm:inline" />
-        <span class="bg-gradient-to-r from-teal-600 to-emerald-500 bg-clip-text text-transparent">Right in Your Browser</span>
+        LocalResizer Image Tools<br class="hidden sm:inline" />
+        <span class="bg-gradient-to-r from-teal-600 to-emerald-500 bg-clip-text text-transparent">Resize, compress, and batch process</span>
       </h1>
 
       <p class="text-lg text-stone-500 max-w-xl mx-auto mb-3 animate-fade-up" style="animation-delay: 0.15s">
-        Use the homepage resize image tool for quick width, height, and file-size work, then jump into focused pages when you need a target such as 50 KB, 200 KB, or fixed social artwork sizes.
+        Start with the quick resize and compress controls, or open a focused workflow for batch resizing, PNG dimensions, target file sizes, signatures, and image grids.
       </p>
 
       <p class="text-sm text-stone-500 animate-fade-up" style="animation-delay: 0.2s">
@@ -60,7 +60,7 @@ const schemas = [
   <section class="max-w-4xl mx-auto px-4 sm:px-5 py-14 sm:py-20">
     <div class="text-center mb-12">
       <span class="inline-block px-3 py-1 rounded-full bg-teal-50 text-teal-700 text-xs font-semibold tracking-wide uppercase mb-3">Why LocalResizer</span>
-      <h2 class="font-[var(--font-heading)] text-2xl md:text-3xl font-bold text-stone-900 tracking-tight">A focused resize image toolset</h2>
+      <h2 class="font-[var(--font-heading)] text-2xl md:text-3xl font-bold text-stone-900 tracking-tight">Focused local image workflows</h2>
     </div>
     <div class="grid grid-cols-1 md:grid-cols-3 gap-5 stagger-children">
       <div class="bg-white rounded-2xl p-7 shadow-soft border border-stone-100 hover:shadow-soft-lg hover:-translate-y-0.5 transition-all duration-300">
@@ -69,8 +69,8 @@ const schemas = [
             <rect x="3" y="11" width="18" height="11" rx="2" ry="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" />
           </svg>
         </div>
-        <h3 class="font-[var(--font-heading)] font-semibold text-stone-900 mb-2">100% private</h3>
-        <p class="text-sm text-stone-500 leading-relaxed">When you resize image files here, they stay in your browser for the current workflow. We use privacy-friendly site analytics for page usage, but we do not upload or store image content.</p>
+        <h3 class="font-[var(--font-heading)] font-semibold text-stone-900 mb-2">Private file processing</h3>
+        <p class="text-sm text-stone-500 leading-relaxed">When you resize image files here, they stay in your browser for the current workflow. We use site analytics for page usage, but we do not upload or store image content.</p>
       </div>
       <div class="bg-white rounded-2xl p-7 shadow-soft border border-stone-100 hover:shadow-soft-lg hover:-translate-y-0.5 transition-all duration-300">
         <div class="w-11 h-11 rounded-xl bg-amber-50 flex items-center justify-center mb-4">
@@ -79,7 +79,7 @@ const schemas = [
           </svg>
         </div>
         <h3 class="font-[var(--font-heading)] font-semibold text-stone-900 mb-2">Instant processing</h3>
-        <p class="text-sm text-stone-500 leading-relaxed">No upload wait, no download queue. Drop your image and get the result in seconds, with no sign-up or file-count limits.</p>
+        <p class="text-sm text-stone-500 leading-relaxed">No upload wait and no download queue. Process up to 20 static images and 100MB total in one batch without signing up.</p>
       </div>
       <div class="bg-white rounded-2xl p-7 shadow-soft border border-stone-100 hover:shadow-soft-lg hover:-translate-y-0.5 transition-all duration-300">
         <div class="w-11 h-11 rounded-xl bg-sky-50 flex items-center justify-center mb-4">
@@ -88,7 +88,7 @@ const schemas = [
           </svg>
         </div>
         <h3 class="font-[var(--font-heading)] font-semibold text-stone-900 mb-2">Purpose-built pages</h3>
-        <p class="text-sm text-stone-500 leading-relaxed">Need exactly 50 KB, 200 KB, a social artwork canvas, a trimmed signature, or a split image grid? Each page is tuned for one specific task so you get the right output without guessing settings.</p>
+        <p class="text-sm text-stone-500 leading-relaxed">Need a 50 KB or 200 KB budget, a social artwork canvas, a trimmed signature, or a split image grid? Each page is focused on one specific task and shows the current output limits.</p>
       </div>
     </div>
 
@@ -103,7 +103,7 @@ const schemas = [
       </span>
       <span class="inline-flex items-center gap-1.5">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="text-emerald-500"><polyline points="20 6 9 17 4 12" /></svg>
-        Up to 20 files per batch
+        Up to 20 files and 100MB per batch
       </span>
       <span class="inline-flex items-center gap-1.5">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="text-emerald-500"><polyline points="20 6 9 17 4 12" /></svg>
@@ -179,6 +179,7 @@ const schemas = [
         <h3 class="font-[var(--font-heading)] font-semibold text-stone-900 mb-4">Current limits</h3>
         <ul class="space-y-3 text-sm text-stone-500 leading-relaxed list-disc pl-5">
           <li>The public release is limited to static JPEG, PNG, and WebP images.</li>
+          <li>Selections are limited to 20 files and 100MB total, with source-image and output-canvas pixel limits.</li>
           <li>Animated GIF, video, and other media workflows are not part of the current live toolset.</li>
           <li>Target-size pages aim for the requested file size as closely as practical, but the exact result still depends on the source image.</li>
           <li>The current platform pages do not auto-crop; they fit the full image inside the exact output canvas.</li>
@@ -200,13 +201,13 @@ const schemas = [
 
   <section class="max-w-4xl mx-auto px-4 sm:px-5 pb-14 sm:pb-20">
     <div class="text-center mb-10">
-      <span class="inline-block px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 text-xs font-semibold tracking-wide uppercase mb-3">Popular Upload Limits</span>
-      <h2 class="font-[var(--font-heading)] text-2xl md:text-3xl font-bold text-stone-900 tracking-tight">Jump straight to a target-size page</h2>
+      <span class="inline-block px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 text-xs font-semibold tracking-wide uppercase mb-3">Popular Image Tasks</span>
+      <h2 class="font-[var(--font-heading)] text-2xl md:text-3xl font-bold text-stone-900 tracking-tight">Jump straight to a focused image tool</h2>
       <p class="text-stone-500 max-w-2xl mx-auto leading-relaxed">
-        When a form already says 20KB, 500KB, or 2MB, these focused pages are faster than starting from a blank setting.
+        Resize PNG files by pixel dimensions, or open a target-size page when an upload form already says 20KB, 500KB, or 2MB.
       </p>
     </div>
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
       {popularTaskRoutes.map((route) => route && (
         <a
           href={formatPagePath(route.slug)}

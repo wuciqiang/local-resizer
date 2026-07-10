@@ -29,6 +29,7 @@ import { formatPagePath } from '../lib/urls';
         <h2 class="font-[var(--font-heading)] text-xl font-semibold text-stone-900 mb-4">Current public page types</h2>
         <ul class="space-y-3 text-sm text-stone-500 leading-relaxed list-disc pl-5">
           <li><strong>Homepage quick tool</strong> for compressing by file size or resizing by dimensions</li>
+          <li><strong>Batch resize page</strong> for applying one bounding size to as many as 20 static images</li>
           <li><strong>Target-size pages</strong> such as 50 KB, 100 KB, 200 KB, and 2 MB workflows</li>
           <li><strong>Exact canvas pages</strong> for the currently live social artwork workflows</li>
           <li><strong>Specialized utility pages</strong> for signature cleanup and grid-based image splitting</li>
@@ -55,6 +56,10 @@ import { formatPagePath } from '../lib/urls';
           <h3 class="font-[var(--font-heading)] font-semibold text-stone-900 mb-2">Specialized utility pages</h3>
           <p class="text-sm text-stone-500 leading-relaxed">They cover focused workflows such as trimming and resizing signature images or splitting a static image into a simple grid of downloadable tiles.</p>
         </div>
+        <div>
+          <h3 class="font-[var(--font-heading)] font-semibold text-stone-900 mb-2">Batch resize page</h3>
+          <p class="text-sm text-stone-500 leading-relaxed">It applies one width and height bounding box to multiple files, preserves each aspect ratio, keeps the original format, and offers a ZIP download.</p>
+        </div>
       </div>
     </section>
 
@@ -64,6 +69,7 @@ import { formatPagePath } from '../lib/urls';
         <li>Animated GIF workflows are not part of the current public release.</li>
         <li>Video processing is not part of the current public release.</li>
         <li>Target-size workflows are best-effort because exact output depends on the source image.</li>
+        <li>Batch selections are limited to 20 files and 100MB total, with additional source-image and output-canvas pixel limits.</li>
         <li>The live platform pages do not auto-crop and do not generate alternate social-media safe-area variants.</li>
         <li>All current public workflows are browser-based and do not require an account.</li>
       </ul>

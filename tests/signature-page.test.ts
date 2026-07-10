@@ -20,4 +20,21 @@ describe('signature resizer safeguards', () => {
     expect(source.includes('fileCountLabel="1 signature image only"')).toBe(true);
     expect(source.includes('Trim preview')).toBe(true);
   });
+
+  it('ignores rejected trim previews after a newer request takes ownership', () => {
+    const source = readFileSync(signatureProcessorPath, 'utf8');
+
+    expect(source).toMatch(
+      /catch \(error\) \{[\s\S]*?requestId !== previewRequestRef\.current[\s\S]*?return undefined;[\s\S]*?throw error;/,
+    );
+    expect(source.includes('if (previewResult === null)')).toBe(true);
+    expect(source.includes("await refreshTrimPreview();\n                    setError('');")).toBe(false);
+  });
+
+  it('can rebuild the preview immediately after trim is re-enabled', () => {
+    const source = readFileSync(signatureProcessorPath, 'utf8');
+
+    expect(source.includes('if (!file || !trimWhitespace)')).toBe(false);
+    expect(source).toMatch(/const refreshTrimPreview = useCallback\(async \(\) => \{\s+if \(!file\)/);
+  });
 });

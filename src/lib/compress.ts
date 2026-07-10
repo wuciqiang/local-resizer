@@ -1,5 +1,7 @@
 import { canvasToBlob, loadImage, resetCanvas } from './image/canvas';
 import { getScaledDimensions } from './image/geometry';
+import { assertCanvasDimensions } from './image/limits';
+import { getTargetSizeNote, isWithinTargetTolerance } from './image/target-size';
 
 export type PngStrategy = 'auto' | 'webp' | 'png-scale';
 
@@ -35,15 +37,6 @@ interface CompressionCandidate {
   distance: number;
 }
 
-function buildNote(blobSize: number, targetSizeBytes: number): string | undefined {
-  const allowedDifference = targetSizeBytes * 0.05;
-  if (Math.abs(blobSize - targetSizeBytes) <= allowedDifference) {
-    return undefined;
-  }
-
-  return 'Returned the closest result the browser could create for this image.';
-}
-
 export async function compressImage(options: CompressOptions): Promise<CompressResult> {
   const {
     file,
@@ -61,7 +54,10 @@ export async function compressImage(options: CompressOptions): Promise<CompressR
     const originalWidth = image.naturalWidth;
     const originalHeight = image.naturalHeight;
 
-    if (file.size <= targetSizeBytes) {
+    const conversionRequested = format !== file.type ||
+      (file.type === 'image/png' && pngStrategy === 'webp');
+
+    if (file.size <= targetSizeBytes && !conversionRequested) {
       onProgress?.(100);
       return {
         blob: file,
@@ -74,9 +70,11 @@ export async function compressImage(options: CompressOptions): Promise<CompressR
         originalWidth,
         originalHeight,
         note: 'The original file was already within the requested size budget.',
+        outputFormat: file.type,
       };
     }
 
+    assertCanvasDimensions(originalWidth, originalHeight);
     canvas = document.createElement('canvas');
     canvas.width = originalWidth;
     canvas.height = originalHeight;
@@ -93,7 +91,7 @@ export async function compressImage(options: CompressOptions): Promise<CompressR
       if (pngStrategy === 'auto' || pngStrategy === 'png-scale') {
         const pngRedrawn = await canvasToBlob(canvas, 'image/png', 1);
         onProgress?.(20);
-        if (pngRedrawn.size <= targetSizeBytes + targetSizeBytes * tolerance) {
+        if (pngRedrawn.size <= targetSizeBytes) {
           onProgress?.(100);
           return {
             blob: pngRedrawn,
@@ -105,6 +103,7 @@ export async function compressImage(options: CompressOptions): Promise<CompressR
             height: originalHeight,
             originalWidth,
             originalHeight,
+            outputFormat: 'image/png',
           };
         }
       }
@@ -141,7 +140,7 @@ export async function compressImage(options: CompressOptions): Promise<CompressR
         canvas, file, format: 'image/webp', maxIterations,
         originalWidth, originalHeight, targetSizeBytes, tolerance,
       });
-      if (webpResult.compressedSize <= targetSizeBytes + targetSizeBytes * tolerance) {
+      if (webpResult.compressedSize <= targetSizeBytes) {
         onProgress?.(100);
         return { ...webpResult, outputFormat: 'image/webp' };
       }
@@ -206,8 +205,7 @@ async function compressByQuality(args: {
   let iterations = 0;
   let bestUnder: CompressionCandidate | null = null;
   let bestAny: CompressionCandidate | null = null;
-  const allowedDifference = targetSizeBytes * tolerance;
-  const upperBound = targetSizeBytes + allowedDifference;
+  const upperBound = targetSizeBytes;
 
   for (let index = 0; index < maxIterations; index += 1) {
     const quality = (low + high) / 2;
@@ -235,7 +233,7 @@ async function compressByQuality(args: {
       };
     }
 
-    if (distance <= allowedDifference) {
+    if (isWithinTargetTolerance(blob.size, targetSizeBytes, tolerance)) {
       return {
         blob,
         quality,
@@ -246,6 +244,7 @@ async function compressByQuality(args: {
         height: originalHeight,
         originalWidth,
         originalHeight,
+        outputFormat: format,
       };
     }
 
@@ -271,7 +270,8 @@ async function compressByQuality(args: {
     height: candidate.height,
     originalWidth,
     originalHeight,
-    note: buildNote(candidate.blob.size, targetSizeBytes),
+    note: getTargetSizeNote(candidate.blob.size, targetSizeBytes, tolerance),
+    outputFormat: format,
   };
 }
 
@@ -297,8 +297,7 @@ async function compressPngByScaling(args: {
     targetSizeBytes,
     tolerance,
   } = args;
-  const allowedDifference = targetSizeBytes * tolerance;
-  const upperBound = targetSizeBytes + allowedDifference;
+  const upperBound = targetSizeBytes;
   let low = 0.05;
   let high = 1;
   let iterations = 0;
@@ -330,7 +329,7 @@ async function compressPngByScaling(args: {
       bestUnder = { blob, quality: scale, width, height, distance };
     }
 
-    if (distance <= allowedDifference) {
+    if (isWithinTargetTolerance(blob.size, targetSizeBytes, tolerance)) {
       return {
         blob,
         quality: scale,
@@ -341,6 +340,7 @@ async function compressPngByScaling(args: {
         height,
         originalWidth,
         originalHeight,
+        outputFormat: format,
       };
     }
 
@@ -366,6 +366,7 @@ async function compressPngByScaling(args: {
     height: candidate.height,
     originalWidth,
     originalHeight,
-    note: buildNote(candidate.blob.size, targetSizeBytes),
+    note: getTargetSizeNote(candidate.blob.size, targetSizeBytes, tolerance),
+    outputFormat: format,
   };
 }

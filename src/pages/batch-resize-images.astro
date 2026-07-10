@@ -1,0 +1,121 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Breadcrumbs from '../components/Breadcrumbs.astro';
+import FaqSection from '../components/FaqSection.astro';
+import FooterLinks from '../components/FooterLinks.astro';
+import HowToSection from '../components/HowToSection.astro';
+import ImageProcessor from '../components/ImageProcessor.tsx';
+import { getRouteBySlug } from '../data/routes';
+import {
+  MAX_BATCH_OUTPUT_BYTES,
+  MAX_BATCH_OUTPUT_PIXELS,
+  MAX_CANVAS_EDGE,
+  MAX_SOURCE_IMAGE_EDGE,
+  MAX_SOURCE_IMAGE_PIXELS,
+} from '../lib/image/limits';
+import { generateBreadcrumbSchema, generateFAQSchema, generateHowToSchema } from '../lib/seo';
+import { getRouteBreadcrumbs } from '../lib/site-structure';
+import { formatPagePath } from '../lib/urls';
+
+const route = getRouteBySlug('batch-resize-images')!;
+const breadcrumbItems = getRouteBreadcrumbs(route);
+const schemas = [
+  generateHowToSchema(route),
+  generateFAQSchema(route),
+  generateBreadcrumbSchema(breadcrumbItems),
+];
+const batchSizeMb = Math.round((route.maxBatchSize ?? 0) / (1024 * 1024));
+const batchOutputMb = Math.round(MAX_BATCH_OUTPUT_BYTES / (1024 * 1024));
+const batchOutputMegapixels = Math.round(MAX_BATCH_OUTPUT_PIXELS / 1_000_000);
+const sourceMegapixels = Math.round(MAX_SOURCE_IMAGE_PIXELS / 1_000_000);
+---
+<BaseLayout title={route.seo.title} description={route.seo.description} schemas={schemas}>
+  <div class="pt-4 sm:pt-6">
+    <ImageProcessor
+      client:visible
+      action="resize"
+      defaultDimensions={route.defaultDimensions}
+      acceptFormats={route.acceptFormats}
+      maxFileSize={route.maxFileSize}
+      maxFiles={route.maxFiles}
+      maxBatchSize={route.maxBatchSize}
+      lockedAction="resize"
+      hideActionTabs={true}
+      resizeMode="fit"
+      forceCanvasSize={false}
+    />
+  </div>
+
+  <Breadcrumbs items={breadcrumbItems} />
+
+  <section class="max-w-3xl mx-auto px-4 sm:px-5 pt-8 sm:pt-10 pb-8 text-center">
+    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white border border-stone-200 shadow-soft text-xs font-medium text-stone-500 mb-6">
+      <span class="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+      Static images only - Processed locally
+    </div>
+    <p class="text-xs font-semibold uppercase text-teal-700 mb-3">Batch image workflow</p>
+    <h1 class="font-[var(--font-heading)] text-3xl md:text-4xl font-bold text-stone-900 mb-4">{route.seo.h1}</h1>
+    <p class="text-lg text-stone-500 max-w-2xl mx-auto leading-relaxed">{route.seo.subtitle}</p>
+  </section>
+
+  <section class="max-w-4xl mx-auto px-4 sm:px-5 py-8 sm:py-10">
+    <h2 class="font-[var(--font-heading)] text-2xl font-bold text-stone-900 text-center mb-7">What this page is best for</h2>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+      <div class="bg-white rounded-xl p-6 border border-stone-100 shadow-soft">
+        <h3 class="font-[var(--font-heading)] text-lg font-semibold text-stone-900 mb-3">One shared size</h3>
+        <p class="text-sm text-stone-500 leading-relaxed">Enter one width and height, then apply that bounding box to every selected image in the same run.</p>
+      </div>
+      <div class="bg-white rounded-xl p-6 border border-stone-100 shadow-soft">
+        <h3 class="font-[var(--font-heading)] text-lg font-semibold text-stone-900 mb-3">No stretching</h3>
+        <p class="text-sm text-stone-500 leading-relaxed">Each file keeps its original aspect ratio, so final pixel dimensions can differ when the source shapes are different.</p>
+      </div>
+      <div class="bg-white rounded-xl p-6 border border-stone-100 shadow-soft">
+        <h3 class="font-[var(--font-heading)] text-lg font-semibold text-stone-900 mb-3">One ZIP download</h3>
+        <p class="text-sm text-stone-500 leading-relaxed">Download files individually or package the completed batch into one ZIP generated locally in the browser.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="border-y border-stone-200 bg-white/70">
+    <div class="max-w-4xl mx-auto px-4 sm:px-5 py-8 sm:py-10">
+      <h2 class="font-[var(--font-heading)] text-2xl font-bold text-stone-900 mb-3">How this live page differs from nearby workflows</h2>
+      <p class="text-stone-500 leading-relaxed mb-6">This page applies one dimension setting to multiple images. It does not target one shared file size, convert formats, crop to an exact frame, or process every file in parallel.</p>
+      <h3 class="font-[var(--font-heading)] text-lg font-semibold text-stone-900 mb-4">Current batch limits</h3>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-3 text-sm text-stone-600 leading-relaxed">
+        <p><strong class="text-stone-900">Files:</strong> up to {route.maxFiles} images and {batchSizeMb}MB total per selection.</p>
+        <p><strong class="text-stone-900">Formats:</strong> static JPEG, PNG, and WebP; each output keeps its source format.</p>
+        <p><strong class="text-stone-900">Source images:</strong> up to {MAX_SOURCE_IMAGE_EDGE}px per edge and {sourceMegapixels} megapixels.</p>
+        <p><strong class="text-stone-900">Output canvas:</strong> up to {MAX_CANVAS_EDGE}px per edge and 36 megapixels per image.</p>
+        <p><strong class="text-stone-900">Combined outputs:</strong> up to {batchOutputMegapixels} megapixels and {batchOutputMb}MB of retained result files per run.</p>
+      </div>
+      <p class="mt-5 text-sm text-stone-500 leading-relaxed">
+        Processing is sequential to reduce peak memory use. Very large files can still take longer on mobile devices, and the current workflow does not include a cancel button or background Worker.
+      </p>
+    </div>
+  </section>
+
+  <section class="max-w-4xl mx-auto px-4 sm:px-5 py-10 sm:py-14">
+    <div class="mb-7">
+      <h2 class="font-[var(--font-heading)] text-2xl font-bold text-stone-900 mb-3">Choose the nearby workflow that matches the real constraint</h2>
+      <p class="text-stone-500 leading-relaxed">Batch resize changes dimensions across multiple files. Use a different page when file size, PNG-only output, or grid pieces are the actual goal.</p>
+    </div>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+      <a href={formatPagePath('resize-image')} class="no-underline bg-white rounded-xl p-6 border border-stone-100 shadow-soft hover:border-teal-200 transition-colors">
+        <h3 class="font-[var(--font-heading)] font-semibold text-stone-900 mb-2">Resize one image</h3>
+        <p class="text-sm text-stone-500 leading-relaxed">Use the Resize Hub for a single file, target-size pages, and platform canvases.</p>
+      </a>
+      <a href={formatPagePath('compress-image')} class="no-underline bg-white rounded-xl p-6 border border-stone-100 shadow-soft hover:border-teal-200 transition-colors">
+        <h3 class="font-[var(--font-heading)] font-semibold text-stone-900 mb-2">Compress image files</h3>
+        <p class="text-sm text-stone-500 leading-relaxed">Choose compression when the main requirement is a smaller file-size budget.</p>
+      </a>
+      <a href={formatPagePath('image-splitter')} class="no-underline bg-white rounded-xl p-6 border border-stone-100 shadow-soft hover:border-teal-200 transition-colors">
+        <h3 class="font-[var(--font-heading)] font-semibold text-stone-900 mb-2">Split one image</h3>
+        <p class="text-sm text-stone-500 leading-relaxed">Create rows and columns when you need multiple tiles from one source image.</p>
+      </a>
+    </div>
+  </section>
+
+  <HowToSection steps={route.howToSteps} />
+  <FaqSection items={route.faq} />
+  <FooterLinks links={route.relatedLinks} />
+</BaseLayout>

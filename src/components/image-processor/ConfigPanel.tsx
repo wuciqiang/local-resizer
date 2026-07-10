@@ -1,5 +1,6 @@
 import { DIMENSION_PRESETS, SIZE_PRESETS } from './presets';
 import { tabClass } from './utils';
+import { MAX_CANVAS_EDGE } from '../../lib/image/limits';
 
 interface ConfigPanelProps {
   hideActionTabs?: boolean;
@@ -104,7 +105,7 @@ export function ConfigPanel({
 
       {showResizeControls && toolAction === 'resize' && (
         <div>
-          <label className="block text-sm font-medium text-stone-700 mb-2">Output dimensions (px)</label>
+          <p className="block text-sm font-medium text-stone-700 mb-2">Output dimensions (px)</p>
           <div className="flex gap-2 items-center">
             <label htmlFor="resize-width-input" className="sr-only">Width in pixels</label>
             <input
@@ -112,9 +113,10 @@ export function ConfigPanel({
               name="resize-width"
               type="number"
               min="1"
+              max={MAX_CANVAS_EDGE}
               value={widthValue}
               onChange={(event) => onWidthChange(event.target.value)}
-              className="flex-1 px-3 py-2 border border-stone-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+              className="min-w-0 w-full flex-1 px-3 py-2 border border-stone-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
               placeholder="Width"
             />
             <span className="text-stone-500 text-sm">x</span>
@@ -124,9 +126,10 @@ export function ConfigPanel({
               name="resize-height"
               type="number"
               min="1"
+              max={MAX_CANVAS_EDGE}
               value={heightValue}
               onChange={(event) => onHeightChange(event.target.value)}
-              className="flex-1 px-3 py-2 border border-stone-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+              className="min-w-0 w-full flex-1 px-3 py-2 border border-stone-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
               placeholder="Height"
             />
           </div>

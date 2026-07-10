@@ -13,7 +13,7 @@ import { getGuideLinksForRoute, getRouteBreadcrumbs } from '../lib/site-structur
 
 export function getStaticPaths() {
   return phase0Routes
-    .filter((route) => route.slug !== 'signature-resizer' && route.slug !== 'image-splitter')
+    .filter((route) => !['signature-resizer', 'image-splitter', 'batch-resize-images'].includes(route.slug))
     .map((route) => ({
     params: { slug: route.slug },
     props: { route },
@@ -36,7 +36,12 @@ const pageHighlights = generatePageHighlights(route);
 const contextSections = generateContextSections(route);
 const guideLinks = getGuideLinksForRoute(route);
 
-if (route.action === 'split' || route.intent === 'signature' || route.intent === 'image-splitter') {
+if (
+  route.action === 'split' ||
+  route.intent === 'signature' ||
+  route.intent === 'image-splitter' ||
+  route.intent === 'batch-resize'
+) {
   throw new Error(`Route ${route.slug} must use its dedicated page implementation.`);
 }
 ---
@@ -52,6 +57,8 @@ if (route.action === 'split' || route.intent === 'signature' || route.intent ===
       defaultDimensions={route.defaultDimensions}
       acceptFormats={route.acceptFormats}
       maxFileSize={route.maxFileSize}
+      maxFiles={route.maxFiles}
+      maxBatchSize={route.maxBatchSize}
       lockedAction={route.lockedAction}
       hideActionTabs={route.hideActionTabs}
       resizeMode={route.resizeMode}

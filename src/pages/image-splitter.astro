@@ -51,7 +51,7 @@ const guideLinks = getGuideLinksForRoute(route);
       </div>
       <div class="bg-white rounded-2xl p-6 shadow-soft border border-stone-100">
         <h3 class="font-[var(--font-heading)] font-semibold text-stone-900 mb-3">Local downloads</h3>
-        <p class="text-sm text-stone-500 leading-relaxed">Each tile is generated in the browser and downloaded separately, which keeps the first version lightweight and predictable.</p>
+        <p class="text-sm text-stone-500 leading-relaxed">Each tile is generated in the browser and can be downloaded individually or together in one ZIP archive.</p>
       </div>
       <div class="bg-white rounded-2xl p-6 shadow-soft border border-stone-100">
         <h3 class="font-[var(--font-heading)] font-semibold text-stone-900 mb-3">Static images only</h3>
@@ -79,7 +79,7 @@ const guideLinks = getGuideLinksForRoute(route);
       </div>
       <div class="bg-white rounded-2xl p-6 shadow-soft border border-stone-100">
         <h3 class="font-[var(--font-heading)] font-semibold text-stone-900 mb-3">Current limits</h3>
-        <p class="text-sm text-stone-500 leading-relaxed">The splitter does not handle PDF pages, videos, or GIF frames. It only works on static JPEG, PNG, and WebP files.</p>
+        <p class="text-sm text-stone-500 leading-relaxed">The splitter supports static JPEG, PNG, and WebP files, with up to 20 rows or columns and 100 total tiles per image. It does not handle PDF pages, videos, or GIF frames.</p>
       </div>
     </div>
   </section>
@@ -109,5 +109,5 @@ const guideLinks = getGuideLinksForRoute(route);
 
   <HowToSection steps={route.howToSteps} />
   <FaqSection items={route.faq} />
-  <FooterLinks links={['resize-png', 'photo-resizer-20kb', 'compress-jpg-file']} />
+  <FooterLinks links={['batch-resize-images', 'resize-png', 'photo-resizer-20kb', 'compress-jpg-file']} />
 </BaseLayout>

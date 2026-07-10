@@ -51,7 +51,7 @@ export function generateIntroText(route: RouteConfig): string {
       return `Compress ${formatName} images to ${sizeLabel} for web pages, CMS uploads, product images, portfolio thumbnails, and other workflows where the original file is heavier than it needs to be. This browser-based tool processes images locally, uses a best-effort quality search, and keeps privacy central by avoiding image-content uploads to a server.`;
     }
 
-    return `Compress ${formatName} images to ${sizeLabel} while preserving high visual quality for professional use. This tool is designed for photographers preparing client galleries, designers creating high-resolution portfolio pieces, and content creators who need to balance file size with image fidelity. The compression algorithm uses intelligent quality optimization to achieve the target size without introducing visible artifacts. All processing happens locally in your browser—your images never touch our servers, ensuring complete privacy and security.`;
+    return `Compress ${formatName} images toward ${sizeLabel} for workflows that need a smaller static file while retaining as much usable detail as the source and target allow. The tool uses a best-effort quality search, and the visible result still depends on the original image. Processing stays in the browser with no image-content upload to our server.`;
   }
 
   if (route.targetSize) {
@@ -100,7 +100,7 @@ export function generateDetailText(route: RouteConfig): string {
     }
 
     if (sizeBytes < 100 * 1024) {
-      return `If the original image is already under the requested size, the page keeps the original file instead of forcing extra compression. For larger images, it uses a binary-search quality optimization algorithm to find the lightest compression that still reaches the target size. This approach minimizes quality loss while ensuring consistent file sizes—essential for email attachments (where providers often reject messages over 25MB), form uploads with hard limits, and legacy systems that can't handle large files. The tool typically achieves results within 5% of the target size, making it reliable for strict requirements.`;
+      return `If the original image is already under the requested size, the page keeps the original file instead of forcing extra compression. For larger images, it uses a quality search to find a result at or below the target when the source permits. The final quality and distance below the target still depend on the source image, so users should inspect the downloaded result before submitting it to a strict upload form.`;
     }
 
     if (sizeBytes < 500 * 1024) {
@@ -115,7 +115,7 @@ export function generateDetailText(route: RouteConfig): string {
       return 'If the source image is already below 20KB, the original file is kept. If it is larger, the page can scale dimensions and apply format-specific compression to move toward the target. This is useful for strict upload gates, but the page is not an official passport, ID, exam, or government photo validator, and it cannot guarantee that every source image will land at exactly 20KB.';
     }
 
-    return `These size-target pages preserve the original aspect ratio and avoid stretching the image. When the original file is already below the requested size budget, the page keeps it as-is instead of enlarging or needlessly recompressing it. The tool combines dimension scaling with format-specific compression: for JPEG and WebP, it adjusts both dimensions and quality parameters; for PNG, it primarily scales dimensions since PNG doesn't support lossy quality adjustment. This intelligent approach ensures optimal results for each format while maintaining visual integrity. Perfect for responsive web design where you need multiple image sizes, or for meeting CMS upload requirements without manual trial-and-error.`;
+    return `These size-target pages preserve the original aspect ratio and avoid stretching the image. When the original file is already below the requested size budget, the page keeps it as-is instead of enlarging or needlessly recompressing it. The workflow reduces pixel dimensions first and can use format-specific compression for JPEG and WebP, while PNG primarily relies on dimension changes. Results remain source-dependent and should be checked before use.`;
   }
 
   return 'The current tool set is focused on static JPEG, PNG, and WebP workflows only.';

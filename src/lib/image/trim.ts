@@ -1,4 +1,5 @@
 import { loadImage } from './canvas';
+import { assertCanvasDimensions } from './limits';
 
 export interface TrimBounds {
   left: number;
@@ -73,6 +74,7 @@ export async function detectTrimBounds({
   const image = await loadImage(file);
 
   try {
+    assertCanvasDimensions(image.naturalWidth, image.naturalHeight);
     const canvas = document.createElement('canvas');
     canvas.width = image.naturalWidth;
     canvas.height = image.naturalHeight;

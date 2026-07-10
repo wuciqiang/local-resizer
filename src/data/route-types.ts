@@ -7,6 +7,7 @@ export type RouteIntent =
   | 'document-photo'
   | 'generic-compress'
   | 'format-resize'
+  | 'batch-resize'
   | 'signature'
   | 'image-splitter';
 
@@ -46,6 +47,8 @@ export interface RouteConfig {
   relatedLinks: string[];
   acceptFormats: string[];
   maxFileSize: number;
+  maxFiles?: number;
+  maxBatchSize?: number;
   lockedAction?: Exclude<Action, 'split'>;
   hideActionTabs?: boolean;
   resizeMode?: ResizeMode;

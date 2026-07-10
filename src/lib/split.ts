@@ -1,4 +1,8 @@
 import { canvasToBlob, loadImage, resetCanvas } from './image/canvas';
+import { assertCanvasDimensions } from './image/limits';
+
+export const MAX_SPLIT_AXIS = 20;
+export const MAX_SPLIT_PIECES = 100;
 
 export interface SplitOptions {
   file: File;
@@ -32,12 +36,46 @@ function getOutputType(fileType: string): string {
   return 'image/png';
 }
 
+export function getSplitGridError(
+  imageWidth: number,
+  imageHeight: number,
+  rows: number,
+  columns: number,
+): string | undefined {
+  if (!Number.isInteger(rows) || rows < 1 || !Number.isInteger(columns) || columns < 1) {
+    return 'Enter whole-number row and column counts of at least 1.';
+  }
+
+  if (rows > MAX_SPLIT_AXIS || columns > MAX_SPLIT_AXIS) {
+    return `Use no more than ${MAX_SPLIT_AXIS} rows or columns.`;
+  }
+
+  if (rows * columns > MAX_SPLIT_PIECES) {
+    return `Use no more than ${MAX_SPLIT_PIECES} total grid pieces.`;
+  }
+
+  if (rows > imageHeight) {
+    return `Rows cannot exceed the source image height of ${imageHeight}px.`;
+  }
+
+  if (columns > imageWidth) {
+    return `Columns cannot exceed the source image width of ${imageWidth}px.`;
+  }
+
+  return undefined;
+}
+
 export function getSplitRects(
   imageWidth: number,
   imageHeight: number,
   rows: number,
   columns: number,
 ): SplitRect[] {
+  const gridError = getSplitGridError(imageWidth, imageHeight, rows, columns);
+  if (gridError) {
+    throw new Error(gridError);
+  }
+
   const pieceWidth = imageWidth / columns;
   const pieceHeight = imageHeight / rows;
   const rects: SplitRect[] = [];
@@ -75,6 +113,7 @@ export async function splitImage({
     const rects = getSplitRects(image.naturalWidth, image.naturalHeight, rows, columns);
 
     for (const rect of rects) {
+      assertCanvasDimensions(rect.width, rect.height);
       const canvas = document.createElement('canvas');
       canvas.width = rect.width;
       canvas.height = rect.height;

@@ -5,7 +5,12 @@ import {
   getScaledDimensions,
 } from '../src/lib/image/geometry';
 import { getTrimBoundsFromImageData } from '../src/lib/image/trim';
-import { getSplitRects } from '../src/lib/split';
+import {
+  MAX_SPLIT_AXIS,
+  MAX_SPLIT_PIECES,
+  getSplitGridError,
+  getSplitRects,
+} from '../src/lib/split';
 
 describe('image geometry helpers', () => {
   it('returns the smaller ratio for contain scale', () => {
@@ -83,5 +88,13 @@ describe('split rect helper', () => {
       { row: 3, column: 1, sourceX: 0, sourceY: 53, width: 50, height: 27 },
       { row: 3, column: 2, sourceX: 50, sourceY: 53, width: 50, height: 27 },
     ]);
+  });
+
+  it('rejects grids that can freeze the preview or exceed source pixels', () => {
+    expect(getSplitGridError(100, 80, MAX_SPLIT_AXIS + 1, 1)).toContain(String(MAX_SPLIT_AXIS));
+    expect(getSplitGridError(100, 80, 11, 10)).toContain(String(MAX_SPLIT_PIECES));
+    expect(getSplitGridError(4, 3, 4, 2)).toContain('height');
+    expect(getSplitGridError(4, 3, 3, 5)).toContain('width');
+    expect(() => getSplitRects(4, 3, 4, 2)).toThrow('height');
   });
 });

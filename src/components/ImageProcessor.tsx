@@ -21,10 +21,20 @@ import {
   parseTargetSize,
   readImageDimensions,
   revokeUrls,
+  shouldUseResizePipeline,
+  targetSizeResultType,
   createZipBlob,
   downloadBlob,
   uniqueZipEntries,
 } from './image-processor/utils';
+import {
+  MAX_BATCH_BYTES,
+  MAX_BATCH_FILES,
+  getBatchOutputLimitError,
+  getBatchSelectionError,
+  getCanvasDimensionError,
+  getProjectedBatchOutputError,
+} from '../lib/image/limits';
 import {
   fileCountBucket,
   fileFormatSummary,
@@ -42,6 +52,8 @@ export default function ImageProcessor({
   defaultDimensions,
   acceptFormats,
   maxFileSize,
+  maxFiles = MAX_BATCH_FILES,
+  maxBatchSize = MAX_BATCH_BYTES,
   lockedAction,
   hideActionTabs = false,
   resizeMode = 'fit',
@@ -62,11 +74,13 @@ export default function ImageProcessor({
   const [widthValue, setWidthValue] = useState(() => initialDimensions?.width?.toString() ?? '1280');
   const [heightValue, setHeightValue] = useState(() => initialDimensions?.height?.toString() ?? '720');
   const inputRef = useRef<HTMLInputElement>(null);
+  const processingRef = useRef(false);
   const hasFixedTargetSize = typeof targetSizeBytes === 'number';
   const hasFixedDimensions = Boolean(dimensions);
   const canConfigureTargetSize = !hasFixedTargetSize && (lockedAction === 'compress' || (!lockedAction && !hasFixedDimensions));
   const canConfigureDimensions = !hasFixedDimensions && (lockedAction === 'resize' || (!lockedAction && !hasFixedTargetSize));
   const showConfigPanel = canConfigureTargetSize || canConfigureDimensions;
+  const pngOutputLocked = format === 'png';
 
   useEffect(() => {
     setToolAction(lockedAction ?? action);
@@ -141,13 +155,18 @@ export default function ImageProcessor({
   }, [effectiveAction, effectiveDimensions, effectiveTargetSizeBytes, forceCanvasSize]);
 
   const handleFiles = useCallback((incoming: FileList | File[]) => {
+    if (processingRef.current) {
+      return;
+    }
+
     const incomingFiles = Array.from(incoming);
     if (incomingFiles.length === 0) {
       return;
     }
 
-    if (incomingFiles.length > 20) {
-      setError('You can process up to 20 static images at a time.');
+    const batchError = getBatchSelectionError(incomingFiles, maxFiles, maxBatchSize);
+    if (batchError) {
+      setError(batchError);
       return;
     }
 
@@ -171,7 +190,12 @@ export default function ImageProcessor({
     setResults([]);
     setStatus('idle');
     setError('');
-    setPngChoice(valid.some((file) => file.type === 'image/png') ? 'pending' : 'none');
+    const hasPng = valid.some((file) => file.type === 'image/png');
+    setPngChoice(
+      hasPng && effectiveAction === 'compress'
+        ? pngOutputLocked ? 'png-scale' : 'pending'
+        : 'none',
+    );
     trackToolEvent('upload_completed', {
       tool_action: 'select_files',
       tool_mode: effectiveAction,
@@ -180,10 +204,10 @@ export default function ImageProcessor({
       input_format: fileFormatSummary(valid),
       input_size_bucket: sizeBucket(valid.reduce((sum, file) => sum + file.size, 0)),
     });
-  }, [acceptFormats, effectiveAction, maxFileSize, results]);
+  }, [acceptFormats, effectiveAction, maxBatchSize, maxFileSize, maxFiles, pngOutputLocked, results]);
 
   const processFiles = useCallback(async () => {
-    if (files.length === 0) {
+    if (files.length === 0 || processingRef.current) {
       return;
     }
 
@@ -192,7 +216,7 @@ export default function ImageProcessor({
       return;
     }
 
-    if (pngChoice === 'pending' && effectiveTargetSizeBytes) {
+    if (effectiveAction === 'compress' && pngChoice === 'pending' && effectiveTargetSizeBytes) {
       setError('Please choose a PNG compression strategy below before processing.');
       return;
     }
@@ -202,6 +226,28 @@ export default function ImageProcessor({
       return;
     }
 
+    if (effectiveDimensions) {
+      const dimensionError = getCanvasDimensionError(
+        effectiveDimensions.width,
+        effectiveDimensions.height,
+      );
+      if (dimensionError) {
+        setError(dimensionError);
+        return;
+      }
+
+      const projectedOutputError = getProjectedBatchOutputError(
+        files.length,
+        effectiveDimensions.width,
+        effectiveDimensions.height,
+      );
+      if (projectedOutputError) {
+        setError(projectedOutputError);
+        return;
+      }
+    }
+
+    processingRef.current = true;
     setStatus('processing');
     setProgress(0);
     setError('');
@@ -216,6 +262,8 @@ export default function ImageProcessor({
       target_size_bucket: effectiveTargetSizeBytes ? sizeBucket(effectiveTargetSizeBytes) : undefined,
     });
     const processed: ProcessedFile[] = [];
+    let totalOutputPixels = 0;
+    let totalOutputBytes = 0;
 
     try {
       for (let index = 0; index < files.length; index += 1) {
@@ -228,11 +276,12 @@ export default function ImageProcessor({
         let note: string | undefined;
         let outputFormat: string | undefined;
 
-        if (effectiveAction === 'resize' && effectiveDimensions) {
+        if (shouldUseResizePipeline(effectiveAction, effectiveDimensions, effectiveTargetSizeBytes)) {
           const { resizeImage } = await import('../lib/resize');
           const result = await resizeImage({
             file,
             targetDimensions: effectiveDimensions,
+            targetSizeBytes: effectiveDimensions ? undefined : effectiveTargetSizeBytes,
             resizeMode,
             forceCanvasSize,
           });
@@ -242,6 +291,7 @@ export default function ImageProcessor({
           originalWidth = result.originalWidth;
           originalHeight = result.originalHeight;
           note = result.note;
+          outputFormat = result.blob.type || file.type;
         } else if (effectiveTargetSizeBytes) {
           const { compressImage } = await import('../lib/compress');
           const strategy = file.type === 'image/png' && pngChoice !== 'none'
@@ -272,7 +322,20 @@ export default function ImageProcessor({
           originalWidth = fallbackDimensions.width;
           originalHeight = fallbackDimensions.height;
           note = 'No processing settings were applied, so the original file was kept.';
+          outputFormat = file.type;
         }
+
+        const nextOutputPixels = totalOutputPixels + width * height;
+        const nextOutputBytes = totalOutputBytes + blob.size;
+        const outputLimitError = getBatchOutputLimitError(
+          nextOutputPixels,
+          nextOutputBytes,
+        );
+        if (outputLimitError) {
+          throw new Error(outputLimitError);
+        }
+        totalOutputPixels = nextOutputPixels;
+        totalOutputBytes = nextOutputBytes;
 
         processed.push({
           name: file.name,
@@ -292,10 +355,11 @@ export default function ImageProcessor({
 
       setResults(processed);
       setStatus('done');
+      const resultType = targetSizeResultType(processed, effectiveTargetSizeBytes);
       trackToolEvent('tool_result_view', {
         tool_action: effectiveAction,
         tool_mode: effectiveAction,
-        result_type: 'processed',
+        result_type: resultType,
         file_count: processed.length,
         file_count_bucket: fileCountBucket(processed.length),
         input_format: fileFormatSummary(files),
@@ -304,7 +368,7 @@ export default function ImageProcessor({
       trackToolEvent('process_completed', {
         tool_action: effectiveAction,
         tool_mode: effectiveAction,
-        result_type: 'processed',
+        result_type: resultType,
         file_count: processed.length,
         file_count_bucket: fileCountBucket(processed.length),
         input_format: fileFormatSummary(files),
@@ -320,6 +384,8 @@ export default function ImageProcessor({
         result_type: 'error',
         error_type: 'processing_failed',
       });
+    } finally {
+      processingRef.current = false;
     }
   }, [
     effectiveAction,
@@ -373,9 +439,11 @@ export default function ImageProcessor({
     setPngChoice('none');
   }, [results]);
 
+  const canEdit = status !== 'processing' && status !== 'done';
+
   return (
     <section className="max-w-2xl mx-auto px-5 py-6">
-      {status !== 'done' && (
+      {canEdit && (
         <UploadDropzone
           accept={accept}
           acceptLabels={acceptLabels}
@@ -383,13 +451,14 @@ export default function ImageProcessor({
           inputRef={inputRef}
           showConfigPanel={showConfigPanel}
           maxFileSizeLabel={fmtBytes(maxFileSize)}
+          fileCountLabel={`Up to ${maxFiles} files, ${fmtBytes(maxBatchSize)} total`}
           processorHint={processorHint}
           onDragStateChange={setDragOver}
           onFilesSelected={handleFiles}
         />
       )}
 
-      {showConfigPanel && (
+      {showConfigPanel && canEdit && (
         <ConfigPanel
           hideActionTabs={hideActionTabs || Boolean(lockedAction)}
           heightValue={heightValue}
@@ -415,12 +484,13 @@ export default function ImageProcessor({
         />
       )}
 
-      {files.length > 0 && status !== 'done' && (
+      {files.length > 0 && canEdit && (
         <SelectedFilesPanel
           effectiveAction={effectiveAction}
           effectiveTargetSizeBytes={effectiveTargetSizeBytes}
           files={files}
           pngChoice={pngChoice}
+          pngOutputLocked={pngOutputLocked}
           onPngChoiceChange={(nextChoice) => {
             trackToolEvent('tool_option_select', {
               tool_action: 'png_strategy_select',
@@ -438,7 +508,7 @@ export default function ImageProcessor({
       {status === 'processing' && <ProgressPanel progress={progress} />}
 
       {error && (
-        <div className="mt-4 flex items-start gap-3 p-4 bg-red-50 border border-red-100 rounded-xl text-sm text-red-700 animate-fade-up">
+        <div data-clarity-mask="true" className="mt-4 flex items-start gap-3 p-4 bg-red-50 border border-red-100 rounded-xl text-sm text-red-700 animate-fade-up">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="shrink-0 mt-0.5 text-red-400">
             <circle cx="12" cy="12" r="10" />
             <line x1="15" y1="9" x2="9" y2="15" />

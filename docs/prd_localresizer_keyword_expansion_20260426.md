@@ -146,14 +146,14 @@ The current processor accepts up to 20 files. That is enough to absorb batch/bul
 
 | URL | Target keywords | Requirement |
 | --- | --- | --- |
-| `/batch-image-resizer` | `batch image resizer`, `image resizer batch`, `resizer multiple images` | Working resize page with multi-file upload, visible 20-file limit, and dimension controls. |
-| `/bulk-image-resizer` | `bulk image resizer`, `image resizer bulk`, `resizer bulk` | Canonicalize to `/batch-image-resizer` or make it an alias page only if canonical handling is clear. |
-| `/batch-photo-resizer` | `batch photo resizer`, `bulk photo resizer` | Optional semantic variant; should canonicalize to batch image unless photo-specific copy adds real value. |
+| `/batch-resize-images` | `batch resize images`, `batch image resizer`, `image batch resize`, `resize multiple images` | Working resize page with multi-file upload, visible 20-file/100MB limits, dimension controls, aspect-ratio preservation, and ZIP download. |
+| `/bulk-image-resizer` | `bulk image resizer`, `image resizer bulk`, `resizer bulk` | Do not publish as a separate page; fold the wording into `/batch-resize-images`. |
+| `/batch-photo-resizer` | `batch photo resizer`, `bulk photo resizer` | Do not publish as a separate page unless a future photo-specific workflow adds distinct capability. |
 
 Recommendation:
 
-- Build one canonical page first: `/batch-image-resizer`.
-- Treat `/bulk-image-resizer` and `/batch-photo-resizer` as internal-link/FAQ variants unless search data later justifies standalone pages.
+- Use one canonical page: `/batch-resize-images`.
+- Treat bulk, batch image, batch photo, and multiple-image wording as copy/FAQ variants; do not create alias pages without distinct functionality.
 
 ### 4.5 Build Now / Test: Platform Presets
 
@@ -288,7 +288,7 @@ Verification:
 
 Build:
 
-- `/batch-image-resizer`
+- `/batch-resize-images`
 - `/image-resizer-for-instagram`
 - `/resize-instagram-post`
 - `/resize-instagram-story`

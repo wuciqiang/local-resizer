@@ -72,7 +72,7 @@ const breadcrumbSchema = generateBreadcrumbSchema(breadcrumbItems);
     <section class="bg-white rounded-2xl p-7 shadow-soft border border-stone-100 mb-10 space-y-4">
       <h2 class="font-[var(--font-heading)] text-xl font-semibold text-stone-900">How this maps to the current LocalResizer pages</h2>
       <p class="text-stone-500 leading-relaxed">
-        The live release currently includes JPEG compression pages for strict target budgets, one PNG compression page for people who must keep PNG output, and resize-by-size pages that work across JPEG, PNG, and WebP when the main goal is to move toward a size budget rather than preserve one exact format workflow. This structure is intentional: it matches the real tradeoffs users face instead of flattening every case into a single tool page.
+        The live release currently includes JPEG compression pages for strict target budgets, three fixed-target PNG compression pages for people who must keep PNG output, and resize-by-size pages that work across JPEG, PNG, and WebP when the main goal is to move toward a size budget rather than preserve one exact format workflow. This structure is intentional: it matches the real tradeoffs users face instead of flattening every case into a single tool page.
       </p>
       <p class="text-stone-500 leading-relaxed">
         If you are comparing formats before choosing a page, use this rule of thumb: <strong>pick the page that matches the destination’s non-negotiable constraint first</strong>. If the destination requires PNG, keep PNG. If it only requires “under 200KB,” a JPEG workflow may be more forgiving. If your problem is really file size rather than format identity, the resize-by-size pages can be the better first stop.

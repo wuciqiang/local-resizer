@@ -37,8 +37,8 @@ const HUBS: Record<HubSlug, HubInfo> = {
     slug: 'resize-image',
     href: formatPagePath('resize-image'),
     label: 'Resize Image Guide',
-    title: 'Resize image guides for target-size workflows',
-    description: 'See how the current resize-by-size pages work, what affects best-effort results, and which live target-size page to choose for your file.',
+    title: 'Resize image guides for dimensions, batches, and target sizes',
+    description: 'Compare one-file dimensions, batch resizing, PNG-specific controls, and the current target-size pages before you process an image.',
   },
   'youtube-image-sizes': {
     slug: 'youtube-image-sizes',

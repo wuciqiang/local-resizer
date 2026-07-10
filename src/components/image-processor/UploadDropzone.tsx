@@ -28,24 +28,14 @@ export function UploadDropzone({
   onFilesSelected,
 }: UploadDropzoneProps) {
   const resolvedFileCountLabel = fileCountLabel ?? (multiple ? 'Up to 20 files' : '1 file only');
-  const uploadLabel = multiple ? 'Upload static images' : 'Upload a static image';
   const dropLabel = multiple
     ? 'Drop static images here or click to browse'
     : 'Drop a static image here or click to browse';
 
   return (
-    <div
-      role="button"
-      tabIndex={0}
-      aria-label={uploadLabel}
-      className="relative group"
-      onClick={() => inputRef.current?.click()}
-      onKeyDown={(event) => {
-        if (event.key === 'Enter' || event.key === ' ') {
-          event.preventDefault();
-          inputRef.current?.click();
-        }
-      }}
+    <label
+      htmlFor="image-upload-input"
+      className="relative group block"
       onDragOver={(event) => {
         event.preventDefault();
         onDragStateChange(true);
@@ -69,9 +59,6 @@ export function UploadDropzone({
           : 'border-stone-200 hover:border-transparent'
         }`}
       >
-        <label htmlFor="image-upload-input" className="sr-only">
-          {uploadLabel}
-        </label>
         <input
           ref={inputRef}
           id="image-upload-input"
@@ -79,7 +66,6 @@ export function UploadDropzone({
           type="file"
           accept={accept}
           multiple={multiple}
-          aria-label={`${uploadLabel} (${acceptLabels.join(', ')})`}
           className="sr-only"
           onChange={(event) => {
             if (event.target.files) {
@@ -124,6 +110,6 @@ export function UploadDropzone({
           <p className="mt-4 text-xs text-stone-500">{processorHint}</p>
         )}
       </div>
-    </div>
+    </label>
   );
 }

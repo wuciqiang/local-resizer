@@ -5,13 +5,13 @@ import { formatPagePath } from '../lib/urls';
 <BaseLayout title="Privacy Policy - LocalResizer" description="LocalResizer privacy policy. Static images are processed locally in your browser.">
   <article class="max-w-3xl mx-auto px-4 py-16 prose prose-slate">
     <h1>Privacy Policy</h1>
-    <p><em>Last updated: March 2026</em></p>
+    <p><em>Last updated: July 2026</em></p>
     <h2>The Short Version</h2>
     <p><strong>Your static images are processed locally in your browser.</strong> We do not upload, store, or transmit the images you use in the current tool workflow.</p>
     <h2>Scope of This Policy</h2>
     <p>This policy describes the current public release of LocalResizer, which is limited to static JPEG, PNG, and WebP image workflows that run locally in the browser.</p>
     <h2>What We Collect</h2>
-    <p>We use privacy-friendly analytics to understand overall site usage, such as page views and broad traffic patterns. Those analytics describe visits to the site, not the image content you process inside the tool.</p>
+    <p>On the production domain, we use Google Analytics 4, Microsoft Clarity, and Umami to understand page views, broad traffic patterns, tool completion, and site interactions. These services may process technical visit data such as device and browser information, approximate location, referral source, and cookies or similar identifiers. They do not receive the image files processed by the tool.</p>
     <ul>
       <li>No image files are collected</li>
       <li>No image content is sent to our servers</li>
@@ -25,8 +25,9 @@ import { formatPagePath } from '../lib/urls';
       <li>The processed image result</li>
       <li>Personal profile data tied to an account, because there is no account system</li>
     </ul>
-    <h2>Third-Party Services</h2>
-    <p>We may use third-party services such as privacy-focused analytics or advertising products in the future. If those services materially change the data flow, this policy will be updated.</p>
+    <h2>Third-Party Analytics</h2>
+    <p>Google Analytics 4 provides aggregate traffic and tool-event reporting. Microsoft Clarity provides heatmaps and session-interaction recordings; visible file names, processing errors, and local image previews are explicitly masked in the page markup. Umami provides an additional aggregate page-usage view. These scripts load only on the LocalResizer production hostnames.</p>
+    <p>Analytics data is separate from local image processing. The source image bytes and generated result bytes remain in your browser and are not sent to these analytics services by LocalResizer.</p>
     <h2>Contact</h2>
     <p>Questions about privacy? Visit the <a href={formatPagePath('contact')}>contact page</a>.</p>
   </article>

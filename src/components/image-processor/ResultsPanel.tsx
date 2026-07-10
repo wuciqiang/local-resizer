@@ -106,7 +106,7 @@ function ResultListItem({
             </svg>
           </div>
           <div className="min-w-0 flex-1">
-            <p className="text-sm font-medium text-stone-800 truncate">{result.name}</p>
+            <p data-clarity-mask="true" className="text-sm font-medium text-stone-800 truncate">{result.name}</p>
             <p className="text-xs text-stone-600 mt-0.5">
               {fmtBytes(result.originalSize)}
               <span className="mx-1.5 text-stone-300">-&gt;</span>
@@ -133,7 +133,7 @@ function ResultListItem({
         </div>
         <button
           onClick={() => onDownload(result)}
-          aria-label={`Download ${result.name}`}
+          aria-label="Download processed file"
           className="w-full sm:w-auto px-4 py-2.5 sm:py-2 bg-stone-900 text-white text-sm font-medium rounded-lg hover:bg-stone-800 active:scale-[0.97] transition-all shrink-0 text-center"
         >
           Download

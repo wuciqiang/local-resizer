@@ -17,6 +17,7 @@ import {
   platformLabel,
 } from './route-formatters';
 import type { Format, RouteConfig } from './route-types';
+import { MAX_BATCH_BYTES, MAX_BATCH_FILES } from '../lib/image/limits';
 
 function buildPhotoResizer20kbRoute(): RouteConfig {
   return {
@@ -179,8 +180,8 @@ function buildResizePngRoute(): RouteConfig {
     defaultDimensions: { width: 1280, height: 720 },
     tier: 4,
     seo: {
-      title: 'Resize PNG Online - Private PNG Resizer | LocalResizer',
-      description: 'Resize a PNG image in your browser with no upload. Adjust pixel dimensions locally and download a new PNG.',
+      title: 'Resize PNG Online Free - PNG Resizer | LocalResizer',
+      description: 'Resize PNG images online free by width and height. Keep PNG output and transparency with private in-browser processing, no upload or signup.',
       h1: 'Resize PNG Online',
       subtitle: 'Resize a PNG by pixel dimensions locally and download a new PNG without server upload.',
     },
@@ -217,6 +218,58 @@ function buildResizePngRoute(): RouteConfig {
     lockedAction: 'resize',
     hideActionTabs: true,
     resizeMode: 'contain',
+    forceCanvasSize: false,
+  };
+}
+
+function buildBatchResizeRoute(): RouteConfig {
+  return {
+    slug: 'batch-resize-images',
+    action: 'resize',
+    intent: 'batch-resize',
+    defaultDimensions: { width: 1280, height: 720 },
+    tier: 4,
+    seo: {
+      title: 'Batch Resize Images Online - Resize Multiple Images | LocalResizer',
+      description: 'Batch resize up to 20 JPEG, PNG, or WebP images in your browser. Apply one size, keep aspect ratios, and download the results as a ZIP.',
+      h1: 'Batch Resize Images Online',
+      subtitle: 'Resize multiple static images to one shared size locally, then download every result in one ZIP.',
+    },
+    faq: [
+      {
+        question: 'How do I batch resize images on this page?',
+        answer: 'Select up to 20 static images, enter one width and height, process the files sequentially in your browser, and download the results individually or in one ZIP.',
+      },
+      {
+        question: 'How many images can I resize at once?',
+        answer: 'The current page accepts up to 20 files with a 100MB total input limit. Individual files can be up to 50MB. Source images, each output canvas, and the combined output pixels and retained result bytes also have browser-safety limits.',
+      },
+      {
+        question: 'Will every image keep its original aspect ratio?',
+        answer: 'Yes. The batch page fits each source image within the width and height you enter without stretching it. Outputs can have different final dimensions when source aspect ratios differ.',
+      },
+      {
+        question: 'Does batch resize change JPG, PNG, or WebP formats?',
+        answer: 'No. The current batch resize workflow keeps each file in its original supported format. Format conversion is not part of this page.',
+      },
+      {
+        question: 'Are batch images uploaded to a server?',
+        answer: 'No. The current workflow processes static JPEG, PNG, and WebP files locally in your browser with no image-content upload to our server.',
+      },
+    ],
+    howToSteps: [
+      'Select up to 20 static JPEG, PNG, or WebP images',
+      'Enter one output width and height for the batch',
+      'Resize the files and download the results as a ZIP',
+    ],
+    relatedLinks: [],
+    acceptFormats: STATIC_IMAGE_ACCEPT_FORMATS,
+    maxFileSize: 50 * 1024 * 1024,
+    maxFiles: MAX_BATCH_FILES,
+    maxBatchSize: MAX_BATCH_BYTES,
+    lockedAction: 'resize',
+    hideActionTabs: true,
+    resizeMode: 'fit',
     forceCanvasSize: false,
   };
 }
@@ -321,6 +374,7 @@ function buildExplicitRoutes(): RouteConfig[] {
     buildPhotoResizer20kbRoute(),
     buildCompressJpgFileRoute(),
     buildResizePngRoute(),
+    buildBatchResizeRoute(),
     signatureRoute,
     splitterRoute,
   ].filter((route) => ACTIVE_SLUGS.has(route.slug));
@@ -363,6 +417,24 @@ export function buildRelatedLinks(routes: RouteConfig[]): void {
   const bySize = new Map<string, RouteConfig[]>();
   const byPlatform = new Map<string, RouteConfig[]>();
   const byIntent = new Map<string, RouteConfig[]>();
+  const sizeNeighborLinks = new Map<string, string[]>();
+  for (const prefix of [
+    'resize-image-to-',
+    'compress-image-to-',
+    'compress-jpeg-to-',
+    'compress-png-to-',
+  ]) {
+    const familyRoutes = routes
+      .filter((route) => route.slug.startsWith(prefix) && route.targetSizeBytes)
+      .sort((first, second) => first.targetSizeBytes! - second.targetSizeBytes!);
+
+    familyRoutes.forEach((route, index) => {
+      sizeNeighborLinks.set(route.slug, [
+        familyRoutes[index - 1]?.slug,
+        familyRoutes[index + 1]?.slug,
+      ].filter((slug): slug is string => Boolean(slug)));
+    });
+  }
 
   for (const route of routes) {
     if (route.format) {
@@ -441,6 +513,31 @@ export function buildRelatedLinks(routes: RouteConfig[]): void {
       links.add('compress-jpeg-to-50kb');
       links.add('compress-jpeg-to-200kb');
       links.add('photo-resizer-20kb');
+    }
+
+    for (const neighbor of sizeNeighborLinks.get(route.slug) ?? []) {
+      links.add(neighbor);
+    }
+
+    if (route.slug === 'resize-png') {
+      links.add('image-splitter');
+      links.add('batch-resize-images');
+    }
+
+    if (route.slug === 'image-splitter') {
+      links.add('resize-png');
+      links.add('batch-resize-images');
+    }
+
+    if (route.slug === 'batch-resize-images') {
+      links.add('resize-png');
+      links.add('resize-image-to-100kb');
+      links.add('compress-image-to-100kb');
+      links.add('image-splitter');
+    }
+
+    if (route.slug === 'resize-image-to-100kb') {
+      links.add('batch-resize-images');
     }
 
     route.relatedLinks = Array.from(links).slice(0, 12);

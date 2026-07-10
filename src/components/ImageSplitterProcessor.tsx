@@ -6,11 +6,17 @@ import {
   createZipBlob,
   downloadBlob,
   fmtBytes,
+  getSplitDownloadName,
   readImageDimensions,
   revokeUrls,
   uniqueZipEntries,
 } from './image-processor/utils';
-import { getSplitRects, splitImage } from '../lib/split';
+import {
+  MAX_SPLIT_AXIS,
+  getSplitGridError,
+  getSplitRects,
+  splitImage,
+} from '../lib/split';
 import { fileCountBucket, gridCountBucket, mimeFormat, resultFormatSummary, sizeBucket, trackToolEvent } from '../lib/analytics';
 
 interface ImageSplitterProcessorProps {
@@ -35,6 +41,7 @@ export default function ImageSplitterProcessor({
   const [previewHeight, setPreviewHeight] = useState(0);
   const [isDownloadingAll, setIsDownloadingAll] = useState(false);
   const previewRequestRef = useRef(0);
+  const processingRef = useRef(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -47,10 +54,30 @@ export default function ImageSplitterProcessor({
   }, [previewUrl, results]);
 
   const processorHint = useMemo(() => {
-    return `Split one static image into a ${rows} x ${columns} grid locally and download each tile separately.`;
+    return `Split one static image into a ${rows} x ${columns} grid locally and download tiles individually or as a ZIP.`;
   }, [columns, rows]);
 
+  const parsedRows = Number(rows);
+  const parsedColumns = Number(columns);
+  const previewGridError = getSplitGridError(
+    previewWidth || Number.MAX_SAFE_INTEGER,
+    previewHeight || Number.MAX_SAFE_INTEGER,
+    parsedRows,
+    parsedColumns,
+  );
+  const previewRects = useMemo(() => {
+    if (previewWidth <= 0 || previewHeight <= 0 || previewGridError) {
+      return [];
+    }
+
+    return getSplitRects(previewWidth, previewHeight, parsedRows, parsedColumns);
+  }, [parsedColumns, parsedRows, previewGridError, previewHeight, previewWidth]);
+
   const handleFiles = useCallback((incoming: FileList | File[]) => {
+    if (processingRef.current) {
+      return;
+    }
+
     const nextFile = Array.from(incoming)[0];
     if (!nextFile) {
       return;
@@ -72,29 +99,45 @@ export default function ImageSplitterProcessor({
     }
     const requestId = previewRequestRef.current + 1;
     previewRequestRef.current = requestId;
+    const nextPreviewUrl = URL.createObjectURL(nextFile);
     setFile(nextFile);
     setResults([]);
     setStatus('idle');
     setError('');
-    trackToolEvent('upload_completed', {
-      tool_action: 'select_files',
-      tool_mode: 'image_splitter',
-      file_count: 1,
-      file_count_bucket: fileCountBucket(1),
-      input_format: mimeFormat(nextFile.type),
-      input_size_bucket: sizeBucket(nextFile.size),
-    });
+    setPreviewWidth(0);
+    setPreviewHeight(0);
+    setPreviewUrl(nextPreviewUrl);
     void readImageDimensions(nextFile).then((dimensions) => {
       if (requestId !== previewRequestRef.current) {
+        URL.revokeObjectURL(nextPreviewUrl);
         return;
       }
       setPreviewWidth(dimensions.width);
       setPreviewHeight(dimensions.height);
+      trackToolEvent('upload_completed', {
+        tool_action: 'select_files',
+        tool_mode: 'image_splitter',
+        file_count: 1,
+        file_count_bucket: fileCountBucket(1),
+        input_format: mimeFormat(nextFile.type),
+        input_size_bucket: sizeBucket(nextFile.size),
+      });
+    }).catch((dimensionError) => {
+      if (requestId !== previewRequestRef.current) {
+        URL.revokeObjectURL(nextPreviewUrl);
+        return;
+      }
+      URL.revokeObjectURL(nextPreviewUrl);
+      setFile(null);
+      setPreviewUrl('');
+      setPreviewWidth(0);
+      setPreviewHeight(0);
+      setError(dimensionError instanceof Error ? dimensionError.message : 'Failed to read the image dimensions.');
     });
-    setPreviewUrl(URL.createObjectURL(nextFile));
   }, [acceptFormats, maxFileSize, previewUrl, results]);
 
   const handleReset = useCallback(() => {
+    previewRequestRef.current += 1;
     revokeUrls(results);
     if (previewUrl) {
       URL.revokeObjectURL(previewUrl);
@@ -110,18 +153,22 @@ export default function ImageSplitterProcessor({
   }, [previewUrl, results]);
 
   const handleProcess = useCallback(async () => {
-    if (!file) {
+    if (!file || processingRef.current) {
       return;
     }
 
-    const parsedRows = Number.parseInt(rows, 10);
-    const parsedColumns = Number.parseInt(columns, 10);
-
-    if (!Number.isFinite(parsedRows) || parsedRows <= 0 || !Number.isFinite(parsedColumns) || parsedColumns <= 0) {
-      setError('Enter valid row and column counts before splitting the image.');
+    const gridError = getSplitGridError(
+      previewWidth || Number.MAX_SAFE_INTEGER,
+      previewHeight || Number.MAX_SAFE_INTEGER,
+      parsedRows,
+      parsedColumns,
+    );
+    if (gridError) {
+      setError(gridError);
       return;
     }
 
+    processingRef.current = true;
     setStatus('processing');
     setProgress(10);
     setError('');
@@ -140,7 +187,7 @@ export default function ImageSplitterProcessor({
       const pieces = await splitImage({ file, rows: parsedRows, columns: parsedColumns });
 
       const processed = pieces.map((piece) => ({
-        name: file.name.replace(/\.[^.]+$/, '') + `-r${piece.row}-c${piece.column}` + file.name.slice(file.name.lastIndexOf('.')),
+        name: getSplitDownloadName(file.name, piece.row, piece.column, piece.outputFormat),
         originalSize: file.size,
         processedSize: piece.blob.size,
         url: URL.createObjectURL(piece.blob),
@@ -187,8 +234,10 @@ export default function ImageSplitterProcessor({
         result_type: 'error',
         error_type: 'image_splitting_failed',
       });
+    } finally {
+      processingRef.current = false;
     }
-  }, [columns, file, rows]);
+  }, [file, parsedColumns, parsedRows, previewHeight, previewWidth]);
 
   const handleDownload = useCallback((result: ProcessedFile) => {
     trackToolEvent('download_result', {
@@ -224,9 +273,11 @@ export default function ImageSplitterProcessor({
     }
   }, [isDownloadingAll, results]);
 
+  const canEdit = status !== 'processing' && status !== 'done';
+
   return (
     <section className="max-w-3xl mx-auto px-5 py-6">
-      {status !== 'done' && (
+      {canEdit && (
         <UploadDropzone
           accept={acceptFormats.join(',')}
           acceptLabels={['JPEG', 'PNG', 'WebP']}
@@ -242,7 +293,7 @@ export default function ImageSplitterProcessor({
         />
       )}
 
-      {status !== 'done' && (
+      {canEdit && (
         <div className="mt-5 bg-white rounded-2xl border border-stone-200 shadow-soft p-5 animate-fade-up space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <label className="text-sm text-stone-700">
@@ -250,6 +301,7 @@ export default function ImageSplitterProcessor({
               <input
                 type="number"
                 min="1"
+                max={MAX_SPLIT_AXIS}
                 value={rows}
                 onChange={(event) => {
                   trackToolEvent('tool_option_select', {
@@ -268,6 +320,7 @@ export default function ImageSplitterProcessor({
               <input
                 type="number"
                 min="1"
+                max={MAX_SPLIT_AXIS}
                 value={columns}
                 onChange={(event) => {
                   trackToolEvent('tool_option_select', {
@@ -282,11 +335,13 @@ export default function ImageSplitterProcessor({
               />
             </label>
           </div>
-          <p className="text-xs text-stone-500">{processorHint}</p>
+          <p className={`text-xs ${previewGridError ? 'text-red-600' : 'text-stone-500'}`}>
+            {previewGridError ?? processorHint}
+          </p>
         </div>
       )}
 
-      {file && status !== 'done' && previewUrl && (
+      {file && canEdit && previewUrl && (
         <div className="mt-4 bg-white rounded-2xl border border-stone-200 shadow-soft p-5 animate-fade-up space-y-4">
           <div>
             <p className="text-sm font-semibold text-stone-800">Split preview</p>
@@ -303,13 +358,8 @@ export default function ImageSplitterProcessor({
                 aspectRatio: previewWidth > 0 && previewHeight > 0 ? `${previewWidth} / ${previewHeight}` : '1 / 1',
               }}
             >
-              <img src={previewUrl} alt="Image split preview" className="absolute inset-0 h-full w-full object-contain" />
-              {previewWidth > 0 && previewHeight > 0 && getSplitRects(
-                previewWidth,
-                previewHeight,
-                Math.max(1, Number.parseInt(rows, 10) || 1),
-                Math.max(1, Number.parseInt(columns, 10) || 1),
-              ).map((rect) => (
+              <img data-clarity-mask="true" src={previewUrl} alt="Image split preview" className="absolute inset-0 h-full w-full object-contain" />
+              {previewRects.map((rect) => (
                 <div
                   key={`${rect.row}-${rect.column}`}
                   className="absolute border border-white/90 shadow-[0_0_0_1px_rgba(15,23,42,0.12)] bg-teal-500/10"
@@ -333,11 +383,11 @@ export default function ImageSplitterProcessor({
         </div>
       )}
 
-      {file && status !== 'done' && (
+      {file && canEdit && (
         <div className="mt-4 bg-white rounded-xl border border-stone-200 shadow-soft p-4">
           <div className="flex items-center justify-between gap-4">
             <div>
-              <p className="text-sm font-medium text-stone-800">{file.name}</p>
+              <p data-clarity-mask="true" className="text-sm font-medium text-stone-800">{file.name}</p>
               <p className="text-xs text-stone-500 mt-1">{fmtBytes(file.size)}</p>
             </div>
             <div className="flex gap-2">
@@ -363,7 +413,7 @@ export default function ImageSplitterProcessor({
       {status === 'processing' && <ProgressPanel progress={progress} />}
 
       {error && (
-        <div className="mt-4 flex items-start gap-3 p-4 bg-red-50 border border-red-100 rounded-xl text-sm text-red-700">
+        <div data-clarity-mask="true" className="mt-4 flex items-start gap-3 p-4 bg-red-50 border border-red-100 rounded-xl text-sm text-red-700">
           <span>{error}</span>
         </div>
       )}
@@ -390,7 +440,7 @@ export default function ImageSplitterProcessor({
             <div key={`${result.name}-${index}`} className="bg-white rounded-xl border border-stone-200 shadow-soft p-4">
               <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 justify-between">
                 <div>
-                  <p className="text-sm font-medium text-stone-800">{result.name}</p>
+                  <p data-clarity-mask="true" className="text-sm font-medium text-stone-800">{result.name}</p>
                   <p className="text-xs text-stone-500 mt-1">
                     {result.width} x {result.height}px
                     <span className="mx-1.5 text-stone-300">-</span>

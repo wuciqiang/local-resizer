@@ -9,6 +9,8 @@ export interface ImageProcessorProps {
   defaultDimensions?: { width: number; height: number };
   acceptFormats: string[];
   maxFileSize: number;
+  maxFiles?: number;
+  maxBatchSize?: number;
   lockedAction?: 'compress' | 'resize';
   hideActionTabs?: boolean;
   resizeMode?: ResizeMode;

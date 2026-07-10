@@ -30,7 +30,35 @@ describe('SEO structure for specialized workflows', () => {
 
     expect(homepage.includes("'resize-image-to-20kb'")).toBe(true);
     expect(homepage.includes("'compress-image-to-500kb'")).toBe(true);
+    expect(homepage.includes("'resize-png'")).toBe(true);
+    expect(homepage.includes("'batch-resize-images'")).toBe(true);
+    expect(resizeHub.includes("'resize-png'")).toBe(true);
+    expect(resizeHub.includes("'batch-resize-images'")).toBe(true);
     expect(resizeHub.includes("'resize-image-to-20kb'")).toBe(true);
     expect(compressHub.includes("'compress-image-to-500kb'")).toBe(true);
+  });
+
+  it('keeps the core resize and compress hubs in the primary navigation', () => {
+    const layout = read('src/layouts/BaseLayout.astro');
+
+    expect(layout).toContain("formatPagePath('resize-image')");
+    expect(layout).toContain("formatPagePath('compress-image')");
+  });
+
+  it('uses the compact SVG favicon instead of loading large raster favicons', () => {
+    const layout = read('src/layouts/BaseLayout.astro');
+
+    expect(layout).toContain('href="/favicon.svg"');
+    expect(layout).not.toContain('href="/favicon.ico"');
+    expect(layout).not.toContain('href="/favicon.png"');
+  });
+
+  it('ships a dedicated batch resize page with one canonical intent', () => {
+    const batchPage = read('src/pages/batch-resize-images.astro');
+
+    expect(batchPage).toContain("getRouteBySlug('batch-resize-images')");
+    expect(batchPage).toContain('maxBatchSize={route.maxBatchSize}');
+    expect(batchPage).toContain('resizeMode="fit"');
+    expect(batchPage).toContain('One ZIP download');
   });
 });

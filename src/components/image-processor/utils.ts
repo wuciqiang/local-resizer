@@ -1,4 +1,5 @@
 import type { ProcessedFile } from './types';
+import { loadImage } from '../../lib/image/canvas';
 
 interface ZipEntry {
   name: string;
@@ -41,23 +42,42 @@ export function parseDimensions(
   widthValue: string,
   heightValue: string,
 ): { width: number; height: number } | undefined {
-  const width = Number.parseInt(widthValue, 10);
-  const height = Number.parseInt(heightValue, 10);
-  if (!Number.isFinite(width) || width <= 0 || !Number.isFinite(height) || height <= 0) {
+  const width = Number(widthValue);
+  const height = Number(heightValue);
+  if (!Number.isInteger(width) || width <= 0 || !Number.isInteger(height) || height <= 0) {
     return undefined;
   }
 
   return { width, height };
 }
 
+export function shouldUseResizePipeline(
+  action: 'compress' | 'resize',
+  targetDimensions?: { width: number; height: number },
+  targetSizeBytes?: number,
+): boolean {
+  return action === 'resize' && Boolean(targetDimensions || targetSizeBytes);
+}
+
+export function targetSizeResultType(
+  results: Array<{ processedSize: number }>,
+  targetSizeBytes?: number,
+): 'processed' | 'target_met' | 'target_missed' {
+  if (!targetSizeBytes) {
+    return 'processed';
+  }
+
+  return results.every((result) => result.processedSize <= targetSizeBytes)
+    ? 'target_met'
+    : 'target_missed';
+}
+
 export async function readImageDimensions(
   file: File,
 ): Promise<{ width: number; height: number }> {
-  const image = new Image();
-  image.src = URL.createObjectURL(file);
+  const image = await loadImage(file);
 
   try {
-    await image.decode();
     return { width: image.naturalWidth, height: image.naturalHeight };
   } finally {
     URL.revokeObjectURL(image.src);
@@ -98,7 +118,7 @@ export function sizeChange(originalSize: number, processedSize: number): {
 
 export function outputFormatLabel(outputFormat?: string): string | undefined {
   if (outputFormat === 'image/webp') {
-    return 'Converted to WebP';
+    return 'WebP output';
   }
 
   if (outputFormat === 'image/jpeg') {
@@ -116,7 +136,7 @@ export function tabClass(active: boolean): string {
   return [
     'px-3.5 py-2 rounded-xl text-sm font-medium transition-all border',
     active
-      ? 'bg-teal-600 border-teal-600 text-white shadow-soft'
+      ? 'bg-teal-700 border-teal-700 text-white shadow-soft'
       : 'bg-stone-50 border-stone-200 text-stone-600 hover:border-teal-300 hover:text-teal-700',
   ].join(' ');
 }
@@ -132,11 +152,29 @@ export function getBatchProgress(
 }
 
 export function getDownloadName(result: Pick<ProcessedFile, 'name' | 'outputFormat'>): string {
-  if (result.outputFormat !== 'image/webp' || result.name.endsWith('.webp')) {
+  const extension = outputExtension(result.outputFormat);
+  if (!extension) {
     return result.name;
   }
 
-  return result.name.replace(/\.[^.]+$/, '.webp');
+  const extensionIndex = result.name.lastIndexOf('.');
+  const baseName = extensionIndex > 0 ? result.name.slice(0, extensionIndex) : result.name;
+  return `${baseName}${extension}`;
+}
+
+export function getSplitDownloadName(
+  name: string,
+  row: number,
+  column: number,
+  outputFormat: string,
+): string {
+  const extensionIndex = name.lastIndexOf('.');
+  const baseName = extensionIndex > 0 ? name.slice(0, extensionIndex) : name;
+  const extension = extensionIndex > 0
+    ? name.slice(extensionIndex)
+    : outputExtension(outputFormat) ?? '.png';
+
+  return `${baseName}-r${row}-c${column}${extension}`;
 }
 
 export function downloadBlob(blob: Blob, filename: string): void {
@@ -149,25 +187,15 @@ export function downloadBlob(blob: Blob, filename: string): void {
 }
 
 export async function createZipBlob(entries: ZipEntry[]): Promise<Blob> {
-  const preparedEntries = await Promise.all(
-    entries.map(async (entry) => {
-      const bytes = new Uint8Array(await entry.blob.arrayBuffer());
-      return {
-        name: entry.name,
-        blob: entry.blob,
-        nameBytes: new TextEncoder().encode(entry.name),
-        bytes,
-        crc: crc32(bytes),
-      };
-    }),
-  );
-
   const parts: BlobPart[] = [];
   const centralDirectoryParts: Uint8Array[] = [];
   let offset = 0;
   const { date, time } = getZipDateTime();
 
-  for (const entry of preparedEntries) {
+  for (const entry of entries) {
+    const bytes = new Uint8Array(await entry.blob.arrayBuffer());
+    const nameBytes = new TextEncoder().encode(entry.name);
+    const crc = crc32(bytes);
     const localHeader = new Uint8Array(30);
     writeUint32(localHeader, 0, 0x04034b50);
     writeUint16(localHeader, 4, 20);
@@ -175,13 +203,13 @@ export async function createZipBlob(entries: ZipEntry[]): Promise<Blob> {
     writeUint16(localHeader, 8, 0);
     writeUint16(localHeader, 10, time);
     writeUint16(localHeader, 12, date);
-    writeUint32(localHeader, 14, entry.crc);
-    writeUint32(localHeader, 18, entry.bytes.length);
-    writeUint32(localHeader, 22, entry.bytes.length);
-    writeUint16(localHeader, 26, entry.nameBytes.length);
+    writeUint32(localHeader, 14, crc);
+    writeUint32(localHeader, 18, bytes.length);
+    writeUint32(localHeader, 22, bytes.length);
+    writeUint16(localHeader, 26, nameBytes.length);
     writeUint16(localHeader, 28, 0);
 
-    parts.push(toArrayBuffer(localHeader), toArrayBuffer(entry.nameBytes), entry.blob);
+    parts.push(toArrayBuffer(localHeader), toArrayBuffer(nameBytes), entry.blob);
 
     const centralHeader = new Uint8Array(46);
     writeUint32(centralHeader, 0, 0x02014b50);
@@ -191,19 +219,19 @@ export async function createZipBlob(entries: ZipEntry[]): Promise<Blob> {
     writeUint16(centralHeader, 10, 0);
     writeUint16(centralHeader, 12, time);
     writeUint16(centralHeader, 14, date);
-    writeUint32(centralHeader, 16, entry.crc);
-    writeUint32(centralHeader, 20, entry.bytes.length);
-    writeUint32(centralHeader, 24, entry.bytes.length);
-    writeUint16(centralHeader, 28, entry.nameBytes.length);
+    writeUint32(centralHeader, 16, crc);
+    writeUint32(centralHeader, 20, bytes.length);
+    writeUint32(centralHeader, 24, bytes.length);
+    writeUint16(centralHeader, 28, nameBytes.length);
     writeUint16(centralHeader, 30, 0);
     writeUint16(centralHeader, 32, 0);
     writeUint16(centralHeader, 34, 0);
     writeUint16(centralHeader, 36, 0);
     writeUint32(centralHeader, 38, 0);
     writeUint32(centralHeader, 42, offset);
-    centralDirectoryParts.push(centralHeader, entry.nameBytes);
+    centralDirectoryParts.push(centralHeader, nameBytes);
 
-    offset += localHeader.length + entry.nameBytes.length + entry.bytes.length;
+    offset += localHeader.length + nameBytes.length + bytes.length;
   }
 
   const centralDirectoryOffset = offset;
@@ -217,8 +245,8 @@ export async function createZipBlob(entries: ZipEntry[]): Promise<Blob> {
   writeUint32(endRecord, 0, 0x06054b50);
   writeUint16(endRecord, 4, 0);
   writeUint16(endRecord, 6, 0);
-  writeUint16(endRecord, 8, preparedEntries.length);
-  writeUint16(endRecord, 10, preparedEntries.length);
+  writeUint16(endRecord, 8, entries.length);
+  writeUint16(endRecord, 10, entries.length);
   writeUint32(endRecord, 12, centralDirectorySize);
   writeUint32(endRecord, 16, centralDirectoryOffset);
   writeUint16(endRecord, 20, 0);
@@ -244,6 +272,13 @@ export function uniqueZipEntries(results: ProcessedFile[]): ZipEntry[] {
 
 function formatDecimal(value: number): string {
   return Number(value.toFixed(1)).toString();
+}
+
+function outputExtension(outputFormat?: string): string | undefined {
+  if (outputFormat === 'image/jpeg') return '.jpg';
+  if (outputFormat === 'image/webp') return '.webp';
+  if (outputFormat === 'image/png') return '.png';
+  return undefined;
 }
 
 let crcTable: Uint32Array | undefined;

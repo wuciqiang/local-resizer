@@ -73,6 +73,7 @@ describe('activeRoutes', () => {
       'resize-facebook-profile',
       'resize-linkedin-banner',
       'resize-linkedin-profile-photo',
+      'batch-resize-images',
     ];
 
     for (const slug of phase1Slugs) {
@@ -90,6 +91,14 @@ describe('activeRoutes', () => {
     expect(compress500kb?.seo.description).toContain('Compress or convert an image to 500KB');
   });
 
+  it('aligns the PNG resizer snippet with its active query family', () => {
+    const resizePng = getRouteBySlug('resize-png');
+
+    expect(resizePng?.seo.title).toContain('Resize PNG Online Free');
+    expect(resizePng?.seo.title).toContain('PNG Resizer');
+    expect(resizePng?.seo.description).toContain('Resize PNG images online free');
+  });
+
   it('includes explicit semantic routes for active slugs', () => {
     expect(getRouteBySlug('compress-image-to-50kb')?.intent).toBe('generic-compress');
     expect(getRouteBySlug('compress-image-to-100kb')?.intent).toBe('generic-compress');
@@ -97,6 +106,7 @@ describe('activeRoutes', () => {
     expect(getRouteBySlug('photo-resizer-20kb')?.intent).toBe('document-photo');
     expect(getRouteBySlug('compress-jpg-file')?.intent).toBe('generic-compress');
     expect(getRouteBySlug('resize-png')?.intent).toBe('format-resize');
+    expect(getRouteBySlug('batch-resize-images')?.intent).toBe('batch-resize');
     expect(getRouteBySlug('signature-resizer')?.intent).toBe('signature');
     expect(getRouteBySlug('image-splitter')?.intent).toBe('image-splitter');
   });
@@ -151,6 +161,9 @@ describe('getRouteBySlug', () => {
     expect(getRouteBySlug('compress-jpg-file')?.defaultTargetSizeBytes).toBe(200 * 1024);
     expect(getRouteBySlug('resize-png')?.lockedAction).toBe('resize');
     expect(getRouteBySlug('resize-png')?.defaultDimensions).toEqual({ width: 1280, height: 720 });
+    expect(getRouteBySlug('batch-resize-images')?.defaultDimensions).toEqual({ width: 1280, height: 720 });
+    expect(getRouteBySlug('batch-resize-images')?.maxFiles).toBe(20);
+    expect(getRouteBySlug('batch-resize-images')?.maxBatchSize).toBe(100 * 1024 * 1024);
   });
 
   it('returns undefined for non-existent slugs', () => {
@@ -183,5 +196,43 @@ describe('phase0Routes', () => {
         'photo-resizer-20kb',
       ]),
     );
+  });
+
+  it('links resize-by-size pages to their nearest size neighbors', () => {
+    expect(getRouteBySlug('resize-image-to-30kb')?.relatedLinks).toEqual(
+      expect.arrayContaining(['resize-image-to-20kb', 'resize-image-to-50kb']),
+    );
+    expect(getRouteBySlug('resize-image-to-150kb')?.relatedLinks).toEqual(
+      expect.arrayContaining(['resize-image-to-100kb', 'resize-image-to-200kb']),
+    );
+  });
+
+  it('links compression pages to their nearest size neighbors', () => {
+    expect(getRouteBySlug('compress-image-to-100kb')?.relatedLinks).toEqual(
+      expect.arrayContaining(['compress-image-to-50kb', 'compress-image-to-200kb']),
+    );
+    expect(getRouteBySlug('compress-jpeg-to-100kb')?.relatedLinks).toEqual(
+      expect.arrayContaining(['compress-jpeg-to-50kb', 'compress-jpeg-to-200kb']),
+    );
+    expect(getRouteBySlug('compress-png-to-100kb')?.relatedLinks).toEqual(
+      expect.arrayContaining(['compress-png-to-50kb', 'compress-png-to-200kb']),
+    );
+  });
+
+  it('connects the batch page to the resize family and adjacent workflows', () => {
+    expect(getRouteBySlug('batch-resize-images')?.relatedLinks).toEqual(
+      expect.arrayContaining([
+        'resize-png',
+        'resize-image-to-100kb',
+        'compress-image-to-100kb',
+        'image-splitter',
+      ]),
+    );
+    expect(getRouteBySlug('resize-png')?.relatedLinks).toContain('batch-resize-images');
+    expect(getRouteBySlug('resize-image-to-100kb')?.relatedLinks).toContain('batch-resize-images');
+  });
+
+  it('gives the image splitter a contextual inbound link from the PNG workflow', () => {
+    expect(getRouteBySlug('resize-png')?.relatedLinks).toContain('image-splitter');
   });
 });

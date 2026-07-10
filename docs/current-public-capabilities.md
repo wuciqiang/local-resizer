@@ -1,6 +1,6 @@
 # Current Public Capabilities
 
-Last updated: June 9, 2026
+Last updated: July 11, 2026
 
 This document defines what the live public site can claim today.
 
@@ -12,6 +12,7 @@ This document defines what the live public site can claim today.
 - The homepage tool supports:
   - compress by file size
   - resize by dimensions
+  - up to 20 selected files and 100MB total per batch
 
 ## Current supporting guide and hub pages
 
@@ -30,7 +31,7 @@ These guide pages help users navigate the current release. They do not expand th
 
 ## Live tool-page claim set
 
-The current public release includes 36 focused tool pages:
+The current public release includes 37 focused tool pages:
 
 - `compress-image-to-20kb`
 - `compress-jpeg-to-50kb`
@@ -63,6 +64,7 @@ The current public release includes 36 focused tool pages:
 - `resize-facebook-profile`
 - `resize-linkedin-banner`
 - `resize-linkedin-profile-photo`
+- `batch-resize-images`
 - `photo-resizer-20kb`
 - `compress-jpg-file`
 - `resize-png`
@@ -133,6 +135,7 @@ Allowed claims:
 - `resize-png` keeps PNG output and resizes static PNG files by pixel dimensions locally
 - `signature-resizer` can trim extra whitespace around a signature image and export a resized PNG or JPG locally
 - `image-splitter` splits a static image into a rows-by-columns grid locally
+- `batch-resize-images` applies one width and height bounding box to up to 20 static images, preserves each source aspect ratio and format, and can download the results as a ZIP
 
 Do not claim:
 
@@ -165,6 +168,16 @@ These points must stay out of public promises for now:
 - account features
 - cloud storage
 - AI editing
+
+## Resource limits
+
+- Up to 20 selected files and 100MB total per batch
+- Up to 50MB per individual file on the current general tools
+- Source images are limited to 10,000 pixels per edge and 50 megapixels
+- Output canvases are limited to 8,192 pixels per edge and 36 megapixels
+- A processing run is limited to 120 megapixels of combined outputs and 100MB of retained result files
+- JPEG, PNG, and WebP dimensions are checked from encoded headers before browser pixel decoding when the standard header exposes them, then checked again after decoding
+- Large image work still runs on the main thread and does not currently provide cancellation
 
 ## Safe summary sentence
 

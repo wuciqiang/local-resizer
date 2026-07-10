@@ -88,6 +88,7 @@ export const PHASE0_SLUGS = [
   'resize-facebook-profile',
   'resize-linkedin-banner',
   'resize-linkedin-profile-photo',
+  'batch-resize-images',
   'photo-resizer-20kb',
   'compress-jpg-file',
   'resize-png',

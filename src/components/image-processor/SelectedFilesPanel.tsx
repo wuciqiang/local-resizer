@@ -6,6 +6,7 @@ interface SelectedFilesPanelProps {
   effectiveTargetSizeBytes?: number;
   files: File[];
   pngChoice: PngChoice;
+  pngOutputLocked?: boolean;
   onPngChoiceChange: (value: PngChoice) => void;
   onProcess: () => void;
   onReset: () => void;
@@ -16,6 +17,7 @@ export function SelectedFilesPanel({
   effectiveTargetSizeBytes,
   files,
   pngChoice,
+  pngOutputLocked = false,
   onPngChoiceChange,
   onProcess,
   onReset,
@@ -40,13 +42,13 @@ export function SelectedFilesPanel({
                 <polyline points="21 15 16 10 5 21" />
               </svg>
             </div>
-            <span className="truncate text-stone-700 flex-1">{file.name}</span>
+            <span data-clarity-mask="true" className="truncate text-stone-700 flex-1">{file.name}</span>
             <span className="text-stone-600 text-xs shrink-0">{fmtBytes(file.size)}</span>
           </div>
         ))}
       </div>
       <div className="p-3 border-t border-stone-100">
-        {pngChoice === 'pending' && effectiveTargetSizeBytes && (
+        {effectiveAction === 'compress' && pngChoice === 'pending' && effectiveTargetSizeBytes && (
           <div className="mb-3 p-3 bg-amber-50 border border-amber-200 rounded-xl">
             <p className="text-sm font-medium text-amber-800 mb-2">
               PNG files detected - choose compression method:
@@ -69,18 +71,20 @@ export function SelectedFilesPanel({
             </div>
           </div>
         )}
-        {pngChoice !== 'none' && pngChoice !== 'pending' && effectiveTargetSizeBytes && (
+        {effectiveAction === 'compress' && pngChoice !== 'none' && pngChoice !== 'pending' && effectiveTargetSizeBytes && (
           <div className="mb-3 flex items-center gap-2 px-3 py-2 bg-teal-50 border border-teal-200 rounded-lg">
             <span className="text-xs text-teal-700">
-              PNG strategy: <strong>{pngChoice === 'webp' ? 'Convert to WebP' : 'Keep PNG (scale)'}</strong>
+              PNG strategy: <strong>{pngOutputLocked ? 'Keep PNG (locked for this page)' : pngChoice === 'webp' ? 'Convert to WebP' : 'Keep PNG (scale)'}</strong>
             </span>
-            <button
-              type="button"
-              onClick={() => onPngChoiceChange('pending')}
-              className="text-xs text-teal-500 hover:text-teal-700 underline ml-auto"
-            >
-              Change
-            </button>
+            {!pngOutputLocked && (
+              <button
+                type="button"
+                onClick={() => onPngChoiceChange('pending')}
+                className="text-xs text-teal-500 hover:text-teal-700 underline ml-auto"
+              >
+                Change
+              </button>
+            )}
           </div>
         )}
         <button
