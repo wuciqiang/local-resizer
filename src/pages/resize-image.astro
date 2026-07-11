@@ -18,23 +18,9 @@ const priorityResizeRoutes = ['batch-resize-images', 'resize-png', 'resize-image
   .filter(Boolean);
 ---
 <BaseLayout title={title} description={description} schemas={[breadcrumbSchema]}>
-  <div class="pt-4 sm:pt-6">
-    <ImageProcessor
-      client:visible
-      action="resize"
-      acceptFormats={STATIC_IMAGE_ACCEPT_FORMATS}
-      maxFileSize={50 * 1024 * 1024}
-      lockedAction="resize"
-      hideActionTabs={true}
-      defaultDimensions={{ width: 1280, height: 720 }}
-      resizeMode="contain"
-      forceCanvasSize={true}
-    />
-  </div>
-
   <Breadcrumbs items={breadcrumbItems} />
 
-  <article class="max-w-4xl mx-auto px-4 sm:px-5 pt-6 sm:pt-8 pb-10 sm:pb-14">
+  <article class="max-w-4xl mx-auto px-4 sm:px-5 py-10 sm:py-14">
     <div class="text-center mb-8">
       <span class="inline-block px-3 py-1 rounded-full bg-sky-50 text-sky-700 text-xs font-semibold tracking-wide uppercase mb-3">Tool Hub</span>
       <h1 class="font-[var(--font-heading)] text-3xl md:text-4xl font-bold text-stone-900 tracking-tight mb-4">Resize image online</h1>
@@ -44,6 +30,20 @@ const priorityResizeRoutes = ['batch-resize-images', 'resize-png', 'resize-image
       <p class="text-stone-500 max-w-2xl mx-auto leading-relaxed">
         Resize image files by pixel dimensions directly in your browser. Static JPEG, PNG, and WebP files stay local, and if the destination cares about file size instead, use one of the focused target-size pages below.
       </p>
+    </div>
+
+    <div class="mb-10">
+      <ImageProcessor
+        client:visible
+        action="resize"
+        acceptFormats={STATIC_IMAGE_ACCEPT_FORMATS}
+        maxFileSize={50 * 1024 * 1024}
+        lockedAction="resize"
+        hideActionTabs={true}
+        defaultDimensions={{ width: 1280, height: 720 }}
+        resizeMode="contain"
+        forceCanvasSize={true}
+      />
     </div>
 
     <section class="bg-white rounded-2xl p-7 shadow-soft border border-stone-100 mb-8 space-y-4">

@@ -84,6 +84,14 @@ function getFirstH1(html) {
   return decodeHtml(stripTags(match[1])).trim();
 }
 
+function assertToolFollowsHeading(slug, html) {
+  const headingIndex = html.search(/<h1\b/i);
+  const uploadIndex = html.search(/<input\b[^>]*\btype="file"/i);
+
+  assert(uploadIndex >= 0, `Built tool page is missing a file upload input: ${slug}`);
+  assert(headingIndex < uploadIndex, `Built tool page renders its upload UI before the H1: ${slug}`);
+}
+
 function stripTags(value) {
   return value.replace(/<[^>]+>/g, '');
 }
@@ -122,6 +130,7 @@ function assertRouteHtml(slug, htmlFile) {
   assert(title.includes('LocalResizer'), `Built route page is missing LocalResizer in <title>: ${slug}`);
   assert(canonical === `https://localresizer.com/${slug}/`, `Built route page canonical URL is not normalized: ${slug}`);
   assert(h1.length > 0, `Built route page is missing a visible <h1>: ${slug}`);
+  assertToolFollowsHeading(slug, html);
   assert(
     html.includes('Static images only - Processed locally'),
     `Built route page lost the static-image scope badge: ${slug}`,
@@ -218,6 +227,11 @@ function main() {
   assert(homeHtml.includes('Static images only'), 'Homepage no longer states the static-image-only scope.');
   assert(homeHtml.includes('What the current public release actually does'), 'Homepage live-scope section is missing.');
   assert(homeHtml.includes('Start with the right guide'), 'Homepage guide section is missing.');
+
+  for (const slug of ['compress-image', 'resize-image']) {
+    const html = readUtf8(path.join(DIST_DIR, slug, 'index.html'));
+    assertToolFollowsHeading(slug, html);
+  }
 
   const supportedHtml = readUtf8(path.join(DIST_DIR, 'supported-formats', 'index.html'));
   assert(

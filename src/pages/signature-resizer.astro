@@ -17,21 +17,11 @@ const howToSchema = generateHowToSchema(route);
 const guideLinks = getGuideLinksForRoute(route);
 ---
 <BaseLayout title={route.seo.title} description={route.seo.description} schemas={[howToSchema, faqSchema, breadcrumbSchema]}>
-  <div class="pt-4 sm:pt-6">
-    <SignatureProcessor
-      client:visible
-      acceptFormats={STATIC_IMAGE_ACCEPT_FORMATS}
-      defaultDimensions={{ width: 800, height: 300 }}
-      defaultTargetSizeBytes={50 * 1024}
-      maxFileSize={50 * 1024 * 1024}
-    />
-  </div>
-
   <Breadcrumbs items={breadcrumbItems} />
 
   <section class="relative overflow-hidden">
     <div class="absolute inset-0 bg-[radial-gradient(circle_at_20%_0%,rgba(13,148,136,0.06),transparent_40%),radial-gradient(circle_at_80%_100%,rgba(245,158,11,0.05),transparent_35%)]" />
-    <div class="relative max-w-3xl mx-auto px-4 sm:px-5 pt-8 sm:pt-10 pb-6 text-center">
+    <div class="relative max-w-3xl mx-auto px-4 sm:px-5 pt-10 sm:pt-14 pb-6 text-center">
       <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white border border-stone-200 shadow-soft text-xs font-medium text-stone-500 mb-6 animate-fade-up">
         <span class="w-1.5 h-1.5 rounded-full bg-emerald-500" />
         Static images only - Processed locally
@@ -40,6 +30,14 @@ const guideLinks = getGuideLinksForRoute(route);
       <p class="text-lg text-stone-500 max-w-2xl mx-auto animate-fade-up">{route.seo.subtitle}</p>
     </div>
   </section>
+
+  <SignatureProcessor
+    client:visible
+    acceptFormats={STATIC_IMAGE_ACCEPT_FORMATS}
+    defaultDimensions={{ width: 800, height: 300 }}
+    defaultTargetSizeBytes={50 * 1024}
+    maxFileSize={50 * 1024 * 1024}
+  />
 
   <section class="max-w-3xl mx-auto px-4 sm:px-5 pb-6">
     <div class="text-center mb-8">

@@ -46,7 +46,23 @@ if (
 }
 ---
 <BaseLayout title={route.seo.title} description={route.seo.description} schemas={[howToSchema, faqSchema, breadcrumbSchema]}>
-  <div class="pt-4 sm:pt-6 animate-fade-up">
+  <Breadcrumbs items={breadcrumbItems} />
+
+  <section class="relative overflow-hidden">
+    <div class="absolute inset-0 bg-[radial-gradient(circle_at_30%_-10%,rgba(13,148,136,0.05),transparent_50%)]" />
+    <div class="relative max-w-3xl mx-auto px-4 sm:px-5 pt-10 sm:pt-14 pb-6 text-center">
+      <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white border border-stone-200 shadow-soft text-xs font-medium text-stone-500 mb-6 animate-fade-up">
+        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+        Static images only - Processed locally
+      </div>
+      <h1 class="font-[var(--font-heading)] text-3xl md:text-4xl font-bold text-stone-900 tracking-tight mb-3 animate-fade-up" style="animation-delay: 0.05s">
+        {route.seo.h1}
+      </h1>
+      <p class="text-lg text-stone-500 max-w-lg mx-auto animate-fade-up" style="animation-delay: 0.1s">{route.seo.subtitle}</p>
+    </div>
+  </section>
+
+  <div class="animate-fade-up" style="animation-delay: 0.15s">
     <ImageProcessor
       client:visible
       action={route.action}
@@ -65,22 +81,6 @@ if (
       forceCanvasSize={route.forceCanvasSize}
     />
   </div>
-
-  <Breadcrumbs items={breadcrumbItems} />
-
-  <section class="relative overflow-hidden">
-    <div class="absolute inset-0 bg-[radial-gradient(circle_at_30%_-10%,rgba(13,148,136,0.05),transparent_50%)]" />
-    <div class="relative max-w-3xl mx-auto px-4 sm:px-5 pt-8 sm:pt-10 pb-6 text-center">
-      <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white border border-stone-200 shadow-soft text-xs font-medium text-stone-500 mb-6 animate-fade-up">
-        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-        Static images only - Processed locally
-      </div>
-      <h1 class="font-[var(--font-heading)] text-3xl md:text-4xl font-bold text-stone-900 tracking-tight mb-3 animate-fade-up" style="animation-delay: 0.05s">
-        {route.seo.h1}
-      </h1>
-      <p class="text-lg text-stone-500 max-w-lg mx-auto animate-fade-up" style="animation-delay: 0.1s">{route.seo.subtitle}</p>
-    </div>
-  </section>
 
   <section class="max-w-2xl mx-auto px-4 sm:px-5 py-10">
     <div class="bg-white rounded-2xl border border-stone-100 shadow-soft p-6 md:p-8 space-y-4">
