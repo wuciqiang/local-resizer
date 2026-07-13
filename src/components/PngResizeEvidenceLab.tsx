@@ -37,9 +37,9 @@ const SCALES: Scale[] = [75, 50, 25];
 const PATTERNS: Pattern[] = [
   {
     id: 'logo-edges',
-    name: 'Transparent logo edges',
+    name: 'Binary-alpha logo edges',
     description:
-      'Crisp geometric shapes on a transparent background, similar to a simple logo or icon.',
+      'Pixel-aligned opaque shapes on a transparent background, so the source alpha channel contains only 0 and 255 values.',
     sourceWidth: 480,
     sourceHeight: 320,
   },
@@ -117,21 +117,11 @@ function drawPattern(
   switch (patternId) {
     case 'logo-edges': {
       ctx.fillStyle = '#0d9488';
-      ctx.beginPath();
-      ctx.arc(width * 0.3, height * 0.4, 64, 0, Math.PI * 2);
-      ctx.fill();
-
+      ctx.fillRect(67, 59, 137, 91);
       ctx.fillStyle = '#f59e0b';
-      ctx.beginPath();
-      ctx.moveTo(width * 0.55, height * 0.25);
-      ctx.lineTo(width * 0.85, height * 0.45);
-      ctx.lineTo(width * 0.55, height * 0.65);
-      ctx.closePath();
-      ctx.fill();
-
-      ctx.strokeStyle = '#1c1917';
-      ctx.lineWidth = 4;
-      ctx.strokeRect(width * 0.15, height * 0.55, width * 0.7, height * 0.25);
+      ctx.fillRect(253, 83, 121, 73);
+      ctx.fillStyle = '#1c1917';
+      ctx.fillRect(109, 211, 241, 5);
       break;
     }
 
