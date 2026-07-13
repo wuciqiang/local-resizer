@@ -1,6 +1,6 @@
 # Current Public Capabilities
 
-Last updated: July 11, 2026
+Last updated: July 14, 2026
 
 This document defines what the live public site can claim today.
 
@@ -24,8 +24,13 @@ The live public site also includes a small set of guide pages that explain the c
 - `/why-image-size-is-best-effort`
 - `/jpeg-vs-png-vs-webp-for-upload-limits`
 - `/supported-formats`
+- `/png-resize-transparency-test`
+- `/png-transparency-after-resizing`
+- `/resize-vs-compress-png`
 
 These guide pages help users navigate the current release. They do not expand the live processing scope beyond the homepage tool and the current published tool pages.
+
+`/png-resize-transparency-test` is a browser-generated evidence resource that uses four defined synthetic patterns and reports real current-browser PNG output metrics; the page demonstrates browser behavior and does not add new upload formats or processing behavior. `/png-transparency-after-resizing` and `/resize-vs-compress-png` are supporting educational guides that explain current behavior and route users to the existing live pages. None of these three pages expands the supported upload formats or the current processing behavior.
 
 `/compress-image` and `/resize-image` now include working tool controls in the page body. They remain within the same static JPEG/PNG/WebP, browser-local scope.
 
