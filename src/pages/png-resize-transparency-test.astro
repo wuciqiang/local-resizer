@@ -60,7 +60,7 @@ const breadcrumbSchema = generateBreadcrumbSchema(breadcrumbItems);
         The four patterns cover the cases most likely to change during resize:
       </p>
       <ul class="space-y-2 text-stone-500 leading-relaxed list-disc pl-5">
-        <li><strong>Transparent logo edges:</strong> opaque shapes on a transparent background, where resampling creates new semi-transparent pixels along edges.</li>
+        <li><strong>Binary-alpha logo edges:</strong> pixel-aligned opaque shapes on a transparent background. The source alpha channel is binary (0 or 255), and resampling is expected to create new semi-transparent pixels in the output.</li>
         <li><strong>Text and UI lines:</strong> small text and card-style rectangles that test crispness at small sizes.</li>
         <li><strong>Semi-transparent gradient:</strong> alpha gradients and soft shadows that remain partially transparent through resize.</li>
         <li><strong>Fine line art:</strong> thin diagonal strokes and grids that are sensitive to pixel mixing.</li>
@@ -71,7 +71,7 @@ const breadcrumbSchema = generateBreadcrumbSchema(breadcrumbItems);
       <h2 class="font-[var(--font-heading)] text-xl font-semibold text-stone-900 mb-4">Limitations</h2>
       <ul class="space-y-3 text-sm text-stone-500 leading-relaxed list-disc pl-5">
         <li>The test uses synthetic patterns, not your own files. It demonstrates browser behavior, not a prediction for every real image.</li>
-        <li>Byte counts and resampling details vary by browser, OS, and device pixel ratio. Do not treat one run as a universal benchmark.</li>
+        <li>Byte counts and resampling details vary by browser/OS encoder implementation, Canvas resampling implementation, color handling, and installed font rasterization for the text pattern. Do not treat one run as a universal benchmark.</li>
         <li>The lab does not test enlargement, cropping, format conversion, or compression beyond the resize step.</li>
         <li>Patterns are generated at a fixed source size. Very large or very small source images may behave differently.</li>
       </ul>
