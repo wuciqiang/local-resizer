@@ -1,0 +1,112 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Breadcrumbs from '../components/Breadcrumbs.astro';
+import { generateBreadcrumbSchema } from '../lib/seo';
+import { formatPagePath } from '../lib/urls';
+
+const title = 'PNG Transparency After Resizing - What Stays and What Changes | LocalResizer';
+const description =
+  'Learn what happens to PNG transparency when an image is resized in a browser. Alpha can survive while edge pixels change.';
+const breadcrumbItems = [
+  { href: '/', label: 'Home' },
+  { href: formatPagePath('resize-image'), label: 'Resize Image Guide' },
+  { href: formatPagePath('png-transparency-after-resizing'), label: 'PNG transparency after resizing' },
+];
+const breadcrumbSchema = generateBreadcrumbSchema(breadcrumbItems);
+---
+
+<BaseLayout title={title} description={description} schemas={[breadcrumbSchema]}>
+  <Breadcrumbs items={breadcrumbItems} />
+
+  <article class="max-w-4xl mx-auto px-4 sm:px-5 py-10 sm:py-14">
+    <div class="text-center mb-10">
+      <span class="inline-block px-3 py-1 rounded-full bg-sky-50 text-sky-700 text-xs font-semibold tracking-wide uppercase mb-3">Support guide</span>
+      <h1 class="font-[var(--font-heading)] text-3xl md:text-4xl font-bold text-stone-900 tracking-tight mb-4">PNG transparency after resizing</h1>
+      <p class="text-xs text-stone-400 uppercase tracking-wide mb-4">
+        Updated <time datetime="2026-07-14">Jul 14, 2026</time>
+      </p>
+      <p class="text-stone-500 max-w-2xl mx-auto leading-relaxed">
+        PNG files are popular because they can carry an alpha channel. Resizing a PNG in the browser keeps that alpha channel present, but the actual pixels along transparent edges are resampled. This guide explains what stays transparent, what softens, and when it matters for your project.
+      </p>
+    </div>
+
+    <section class="bg-white rounded-2xl p-7 shadow-soft border border-stone-100 mb-8 space-y-4">
+      <h2 class="font-[var(--font-heading)] text-xl font-semibold text-stone-900">The short answer</h2>
+      <p class="text-stone-500 leading-relaxed">
+        Browser-based PNG resizing preserves transparency in the sense that regions away from transparent-opaque boundaries usually keep their state: transparent areas away from edges remain transparent and opaque areas away from edges remain opaque. Pixels right at a boundary can be resampled into new semi-transparent values when the canvas shrinks an image, so it does not preserve every edge pixel exactly.
+      </p>
+      <p class="text-stone-500 leading-relaxed">
+        That means a resized PNG can still be placed over any background, but logos, text, and hairline details may look slightly softer than the original. Whether that is acceptable depends on the destination.
+      </p>
+    </section>
+
+    <section class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-8">
+      <div class="bg-white rounded-2xl p-6 shadow-soft border border-stone-100">
+        <h2 class="font-[var(--font-heading)] text-lg font-semibold text-stone-900 mb-3">What usually survives</h2>
+        <ul class="space-y-3 text-sm text-stone-500 leading-relaxed list-disc pl-5">
+          <li>Fully transparent background regions.</li>
+          <li>Opaque areas away from edges.</li>
+          <li>Gradients and shadows that already contain partial transparency.</li>
+          <li>The PNG output format itself.</li>
+        </ul>
+      </div>
+      <div class="bg-white rounded-2xl p-6 shadow-soft border border-stone-100">
+        <h2 class="font-[var(--font-heading)] text-lg font-semibold text-stone-900 mb-3">What usually changes</h2>
+        <ul class="space-y-3 text-sm text-stone-500 leading-relaxed list-disc pl-5">
+          <li>Hard edges between opaque and transparent pixels.</li>
+          <li>Small text and thin UI lines.</li>
+          <li>Fine diagonal or curved lines.</li>
+          <li>Exact byte counts, which vary by browser encoder.</li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="bg-white rounded-2xl p-7 shadow-soft border border-stone-100 mb-8 space-y-4">
+      <h2 class="font-[var(--font-heading)] text-xl font-semibold text-stone-900">Why resampling creates semi-transparent pixels</h2>
+      <p class="text-stone-500 leading-relaxed">
+        A browser resizes an image by mapping many source pixels onto fewer output pixels. When a target pixel covers both an opaque logo pixel and a transparent background pixel, the result is a partially transparent pixel. This anti-aliasing is the same reason text looks smooth on modern displays, but it also means the resized image no longer has the same crisp 1-bit edge that a source icon might have had.
+      </p>
+      <p class="text-stone-500 leading-relaxed">
+        The effect is stronger at aggressive scales. A 25% resize blends more source pixels together than a 75% resize, so edges become softer and fine detail can disappear.
+      </p>
+    </section>
+
+    <section class="bg-white rounded-2xl p-7 shadow-soft border border-stone-100 mb-8 space-y-4">
+      <h2 class="font-[var(--font-heading)] text-xl font-semibold text-stone-900">When the change matters</h2>
+      <p class="text-stone-500 leading-relaxed">
+        For most web and social use cases, slightly softer transparent edges are acceptable. The resized PNG still overlays cleanly on colored or patterned backgrounds. The change becomes important when:
+      </p>
+      <ul class="space-y-2 text-stone-500 leading-relaxed list-disc pl-5">
+        <li>The image will be printed or displayed at a high physical size.</li>
+        <li>The design relies on razor-sharp icon edges, such as tiny toolbar icons.</li>
+        <li>The PNG will be processed again later, where repeated resampling compounds the softness.</li>
+        <li>A platform requires exact dimensions and rejects any visible halos.</li>
+      </ul>
+    </section>
+
+    <section class="bg-white rounded-2xl p-7 shadow-soft border border-stone-100 mb-10 space-y-4">
+      <h2 class="font-[var(--font-heading)] text-xl font-semibold text-stone-900">Practical recommendations</h2>
+      <ul class="space-y-3 text-sm text-stone-500 leading-relaxed list-disc pl-5">
+        <li><strong>Keep the source large:</strong> if you know the image will be resized, start with a higher-resolution PNG than the final target.</li>
+        <li><strong>Avoid repeated resize rounds:</strong> resize once from the best source rather than resizing an already-resized file.</li>
+        <li><strong>Preview on the real background:</strong> a soft edge that looks bad on a checkerboard may be invisible on the actual background color.</li>
+        <li><strong>Use the right tool for the job:</strong> if the destination cares about file size more than format, a resize-by-size or compression workflow may be more appropriate than shrinking dimensions.</li>
+      </ul>
+    </section>
+
+    <section class="grid grid-cols-1 md:grid-cols-3 gap-5">
+      <a href={formatPagePath('png-resize-transparency-test')} class="no-underline bg-white rounded-2xl p-6 shadow-soft border border-stone-100 hover:border-teal-200 hover:bg-teal-50/40 transition-all">
+        <h2 class="font-[var(--font-heading)] text-lg font-semibold text-stone-900 mb-2">See live evidence</h2>
+        <p class="text-sm text-stone-500 leading-relaxed">Run the browser-based transparency test and compare source and resized PNGs side by side.</p>
+      </a>
+      <a href={formatPagePath('resize-png')} class="no-underline bg-white rounded-2xl p-6 shadow-soft border border-stone-100 hover:border-teal-200 hover:bg-teal-50/40 transition-all">
+        <h2 class="font-[var(--font-heading)] text-lg font-semibold text-stone-900 mb-2">Resize PNG</h2>
+        <p class="text-sm text-stone-500 leading-relaxed">Open the live PNG resizer and process your own transparent PNG files locally.</p>
+      </a>
+      <a href={formatPagePath('resize-image')} class="no-underline bg-white rounded-2xl p-6 shadow-soft border border-stone-100 hover:border-teal-200 hover:bg-teal-50/40 transition-all">
+        <h2 class="font-[var(--font-heading)] text-lg font-semibold text-stone-900 mb-2">Compare resize workflows</h2>
+        <p class="text-sm text-stone-500 leading-relaxed">Browse the resize guide to choose between PNG-specific, batch, and target-size pages.</p>
+      </a>
+    </section>
+  </article>
+</BaseLayout>

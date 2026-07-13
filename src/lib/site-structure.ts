@@ -162,5 +162,13 @@ export function getGuideLinksForRoute(route: RouteConfig): GuideLink[] {
     });
   }
 
+  if (route.format === 'png') {
+    links.unshift({
+      href: formatPagePath('png-resize-transparency-test'),
+      label: 'PNG resize transparency test',
+      description: 'See live browser evidence of what PNG resizing does to transparency, edges, text, and file size.',
+    });
+  }
+
   return links;
 }

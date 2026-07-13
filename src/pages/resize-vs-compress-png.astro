@@ -1,0 +1,137 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Breadcrumbs from '../components/Breadcrumbs.astro';
+import { phase0Routes } from '../data/routes';
+import { generateBreadcrumbSchema } from '../lib/seo';
+import { formatPagePath } from '../lib/urls';
+
+const title = 'Resize vs Compress PNG - Choose the Right LocalResizer Page | LocalResizer';
+const description =
+  'Should you resize or compress a PNG? Compare the two approaches on LocalResizer and pick the page that matches your real constraint.';
+const breadcrumbItems = [
+  { href: '/', label: 'Home' },
+  { href: formatPagePath('resize-image'), label: 'Resize Image Guide' },
+  { href: formatPagePath('resize-vs-compress-png'), label: 'Resize vs compress PNG' },
+];
+const breadcrumbSchema = generateBreadcrumbSchema(breadcrumbItems);
+
+const pngCompressRoutes = phase0Routes.filter(
+  (route) => route.slug.startsWith('compress-png-to-'),
+);
+---
+
+<BaseLayout title={title} description={description} schemas={[breadcrumbSchema]}>
+  <Breadcrumbs items={breadcrumbItems} />
+
+  <article class="max-w-4xl mx-auto px-4 sm:px-5 py-10 sm:py-14">
+    <div class="text-center mb-10">
+      <span class="inline-block px-3 py-1 rounded-full bg-sky-50 text-sky-700 text-xs font-semibold tracking-wide uppercase mb-3">Support guide</span>
+      <h1 class="font-[var(--font-heading)] text-3xl md:text-4xl font-bold text-stone-900 tracking-tight mb-4">Resize vs compress PNG</h1>
+      <p class="text-xs text-stone-400 uppercase tracking-wide mb-4">
+        Updated <time datetime="2026-07-14">Jul 14, 2026</time>
+      </p>
+      <p class="text-stone-500 max-w-2xl mx-auto leading-relaxed">
+        PNG files do not use a JPEG-style quality slider, so getting a smaller PNG means choosing between two different strategies: removing pixels by resizing, or trying original dimensions through a same-size canvas redraw. This guide explains which LocalResizer page fits each strategy.
+      </p>
+    </div>
+
+    <section class="bg-white rounded-2xl p-7 shadow-soft border border-stone-100 mb-8 space-y-4">
+      <h2 class="font-[var(--font-heading)] text-xl font-semibold text-stone-900">The core difference</h2>
+      <p class="text-stone-500 leading-relaxed">
+        <strong>Resizing</strong> reduces the pixel dimensions of the image. Fewer pixels usually means a smaller file, but the change is structural: text becomes smaller, lines become thinner, and detail can be lost. <strong>Compression</strong>, in LocalResizer's PNG-specific flow, keeps the original pixel dimensions when possible. If the uploaded PNG is already within the target size, the original is returned. Otherwise the image is redrawn onto a same-size canvas and exported as PNG; if that redraw is still over the target, the page falls back to reducing dimensions.
+      </p>
+      <p class="text-stone-500 leading-relaxed">
+        PNG encoding does not add a JPEG-style lossy quality stage to the canvas pixels it receives, but same-size browser Canvas redraw is not a byte/pixel/metadata/profile identity guarantee. Resizing and dimension fallback are lossy-in-practice because resampling changes pixels. The right choice depends on which constraint is harder: the pixel count or the byte count. Metadata, color profiles, and encoder-specific chunks are not promised to survive.
+      </p>
+    </section>
+
+    <section class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-8">
+      <div class="bg-white rounded-2xl p-6 shadow-soft border border-stone-100">
+        <h2 class="font-[var(--font-heading)] text-lg font-semibold text-stone-900 mb-3">Choose resize when</h2>
+        <ul class="space-y-3 text-sm text-stone-500 leading-relaxed list-disc pl-5">
+          <li>The destination specifies exact pixel dimensions.</li>
+          <li>You want the file to load faster because of fewer pixels, not just fewer bytes.</li>
+          <li>The image will be displayed at a smaller physical size anyway.</li>
+          <li>You accept that edges and fine detail may soften.</li>
+        </ul>
+      </div>
+      <div class="bg-white rounded-2xl p-6 shadow-soft border border-stone-100">
+        <h2 class="font-[var(--font-heading)] text-lg font-semibold text-stone-900 mb-3">Choose compress when</h2>
+        <ul class="space-y-3 text-sm text-stone-500 leading-relaxed list-disc pl-5">
+          <li>The destination requires the original pixel dimensions.</li>
+          <li>You must keep PNG output and cannot convert to JPEG or WebP.</li>
+          <li>The current file is only slightly over the target size.</li>
+          <li>You understand that PNG compression is best-effort and may still miss aggressive targets.</li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="bg-white rounded-2xl p-7 shadow-soft border border-stone-100 mb-8">
+      <h2 class="font-[var(--font-heading)] text-xl font-semibold text-stone-900 mb-4">How the LocalResizer pages map to each strategy</h2>
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm text-left">
+          <thead class="text-xs text-stone-500 uppercase bg-stone-50">
+            <tr>
+              <th class="px-3 py-2 rounded-tl-lg">Page</th>
+              <th class="px-3 py-2">Primary lever</th>
+              <th class="px-3 py-2 rounded-tr-lg">Best for</th>
+            </tr>
+          </thead>
+          <tbody class="text-stone-600">
+            <tr class="border-t border-stone-100">
+              <td class="px-3 py-2 font-medium">
+                <a href={formatPagePath('resize-png')} class="text-teal-700 hover:text-teal-800 underline underline-offset-2">Resize PNG</a>
+              </td>
+              <td class="px-3 py-2">Pixel dimensions</td>
+              <td class="px-3 py-2">Exact width/height targets, thumbnails, previews</td>
+            </tr>
+            {pngCompressRoutes.map((route) => (
+              <tr class="border-t border-stone-100">
+                <td class="px-3 py-2 font-medium">
+                  <a href={formatPagePath(route.slug)} class="text-teal-700 hover:text-teal-800 underline underline-offset-2">{route.seo.h1}</a>
+                </td>
+                <td class="px-3 py-2">PNG encoding / dimension fallback</td>
+                <td class="px-3 py-2">Trying original dimensions first, then scaling if needed</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="bg-white rounded-2xl p-7 shadow-soft border border-stone-100 mb-8 space-y-4">
+      <h2 class="font-[var(--font-heading)] text-xl font-semibold text-stone-900">What "best-effort" means for PNG</h2>
+      <p class="text-stone-500 leading-relaxed">
+        Unlike JPEG, PNG does not expose a quality parameter that neatly trades visual fidelity for file size. LocalResizer's PNG compression pages first check whether the original file is already within the target budget and keep it if so. If not, the same-dimension PNG redraw path re-encodes the existing pixels. When that redraw cannot meet the target, the page falls back to reducing dimensions while still returning PNG output.
+      </p>
+      <p class="text-stone-500 leading-relaxed">
+        PNG encoding does not add a JPEG-style lossy quality stage to the canvas pixels it receives, but same-size browser Canvas redraw is not a byte/pixel/metadata/profile identity guarantee. Dimension fallback resamples those pixels and therefore changes the image. Encoder byte output, metadata, and color-profile handling can also vary by browser and OS, so the result is best-effort rather than a guaranteed byte count.
+      </p>
+    </section>
+
+    <section class="bg-white rounded-2xl p-7 shadow-soft border border-stone-100 mb-10 space-y-4">
+      <h2 class="font-[var(--font-heading)] text-xl font-semibold text-stone-900">Quick decision checklist</h2>
+      <ul class="space-y-3 text-sm text-stone-500 leading-relaxed list-disc pl-5">
+        <li>Does the upload form ask for exact pixel width and height? Use <a href={formatPagePath('resize-png')} class="text-teal-700 hover:text-teal-800 underline underline-offset-2">Resize PNG</a>.</li>
+        <li>Does the form ask for a file-size limit while keeping PNG output? Use one of the <a href={formatPagePath('compress-image')} class="text-teal-700 hover:text-teal-800 underline underline-offset-2">PNG compression pages</a>.</li>
+        <li>Can you accept a different format? The JPEG or WebP compression pages may give a smaller result.</li>
+        <li>Do you need both dimensions and size control? Start with resize, then check the resulting file size.</li>
+      </ul>
+    </section>
+
+    <section class="grid grid-cols-1 md:grid-cols-3 gap-5">
+      <a href={formatPagePath('png-resize-transparency-test')} class="no-underline bg-white rounded-2xl p-6 shadow-soft border border-stone-100 hover:border-teal-200 hover:bg-teal-50/40 transition-all">
+        <h2 class="font-[var(--font-heading)] text-lg font-semibold text-stone-900 mb-2">See resize evidence</h2>
+        <p class="text-sm text-stone-500 leading-relaxed">Run the browser-based transparency test to see what resizing does to edges, text, and alpha pixels.</p>
+      </a>
+      <a href={formatPagePath('resize-png')} class="no-underline bg-white rounded-2xl p-6 shadow-soft border border-stone-100 hover:border-teal-200 hover:bg-teal-50/40 transition-all">
+        <h2 class="font-[var(--font-heading)] text-lg font-semibold text-stone-900 mb-2">Resize PNG</h2>
+        <p class="text-sm text-stone-500 leading-relaxed">Resize a static PNG by width and height locally, keeping PNG output.</p>
+      </a>
+      <a href={formatPagePath('compress-image')} class="no-underline bg-white rounded-2xl p-6 shadow-soft border border-stone-100 hover:border-teal-200 hover:bg-teal-50/40 transition-all">
+        <h2 class="font-[var(--font-heading)] text-lg font-semibold text-stone-900 mb-2">Compare compression pages</h2>
+        <p class="text-sm text-stone-500 leading-relaxed">Browse the compression guide and pick the right PNG target-size page.</p>
+      </a>
+    </section>
+  </article>
+</BaseLayout>

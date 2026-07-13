@@ -56,6 +56,30 @@ const priorityResizeRoutes = ['batch-resize-images', 'resize-png', 'resize-image
       </p>
     </section>
 
+    <section class="bg-white rounded-2xl p-7 shadow-soft border border-stone-100 mb-8 space-y-4">
+      <h2 class="font-[var(--font-heading)] text-xl font-semibold text-stone-900">PNG transparency and resize evidence</h2>
+      <p class="text-stone-500 leading-relaxed">
+        Resizing a PNG keeps the alpha channel present, but it does not preserve every edge pixel. Browser resampling can turn a hard transparent edge into a softer, partially transparent boundary, and fine details such as text or hairlines may change.
+      </p>
+      <p class="text-stone-500 leading-relaxed">
+        Use the evidence page to see those effects on deterministic browser-generated samples, or read the support guides to decide whether to resize or compress your PNG.
+      </p>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2">
+        <a href={formatPagePath('png-resize-transparency-test')} class="no-underline rounded-xl border border-stone-100 p-5 hover:border-teal-200 hover:bg-teal-50/40 transition-all">
+          <h3 class="font-[var(--font-heading)] font-semibold text-stone-900 mb-2">PNG resize transparency test</h3>
+          <p class="text-sm text-stone-500 leading-relaxed">Run a browser-based lab that measures dimensions, bytes, and transparency before and after resize.</p>
+        </a>
+        <a href={formatPagePath('png-transparency-after-resizing')} class="no-underline rounded-xl border border-stone-100 p-5 hover:border-teal-200 hover:bg-teal-50/40 transition-all">
+          <h3 class="font-[var(--font-heading)] font-semibold text-stone-900 mb-2">PNG transparency after resizing</h3>
+          <p class="text-sm text-stone-500 leading-relaxed">Learn what survives resizing, what softens, and when the change matters.</p>
+        </a>
+        <a href={formatPagePath('resize-vs-compress-png')} class="no-underline rounded-xl border border-stone-100 p-5 hover:border-teal-200 hover:bg-teal-50/40 transition-all">
+          <h3 class="font-[var(--font-heading)] font-semibold text-stone-900 mb-2">Resize vs compress PNG</h3>
+          <p class="text-sm text-stone-500 leading-relaxed">Choose the right PNG workflow when the destination cares about dimensions, file size, or both.</p>
+        </a>
+      </div>
+    </section>
+
     <section class="bg-white rounded-2xl p-7 shadow-soft border border-stone-100 mb-8">
       <h2 class="font-[var(--font-heading)] text-xl font-semibold text-stone-900 mb-3">Popular resize shortcuts</h2>
       <p class="text-stone-500 leading-relaxed mb-5">
