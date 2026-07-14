@@ -16,7 +16,13 @@ const breadcrumbItems = [
 const breadcrumbSchema = generateBreadcrumbSchema(breadcrumbItems);
 ---
 
-<BaseLayout title={title} description={description} schemas={[breadcrumbSchema]}>
+<BaseLayout
+  title={title}
+  description={description}
+  schemas={[breadcrumbSchema]}
+  socialImage="/og/png-resize-transparency-test.png"
+  socialImageAlt="LocalResizer PNG resize transparency evidence view showing alpha-channel measurements from a browser-based resize test."
+>
   <Breadcrumbs items={breadcrumbItems} />
 
   <article class="max-w-4xl mx-auto px-4 sm:px-5 py-10 sm:py-14">
