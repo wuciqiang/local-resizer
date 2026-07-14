@@ -1,4 +1,13 @@
-import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { trackToolEvent } from '../lib/analytics';
+import {
+  analyzeTransparency,
+  buildEvidenceExport,
+  PNG_EVIDENCE_METHOD_VERSION,
+  PNG_EVIDENCE_SCHEMA_VERSION,
+  signedPercentChange,
+} from '../lib/png-evidence';
+import type { AlphaStats, EvidencePatternRun } from '../lib/png-evidence';
 
 type Scale = 75 | 50 | 25;
 
@@ -22,10 +31,8 @@ interface PatternRun {
   sourceHeight: number;
   outputWidth: number;
   outputHeight: number;
-  sourceHasTransparent: boolean;
-  sourceHasSemiTransparent: boolean;
-  outputHasTransparent: boolean;
-  outputHasSemiTransparent: boolean;
+  sourceAlpha: AlphaStats;
+  outputAlpha: AlphaStats;
   percentChange: number;
   scale: Scale;
 }
@@ -227,30 +234,6 @@ function drawPattern(
   }
 }
 
-function analyzeTransparency(imageData: ImageData): {
-  hasTransparent: boolean;
-  hasSemiTransparent: boolean;
-} {
-  const { data } = imageData;
-  let hasTransparent = false;
-  let hasSemiTransparent = false;
-
-  for (let i = 3; i < data.length; i += 4) {
-    const alpha = data[i];
-    if (alpha === 0) {
-      hasTransparent = true;
-    } else if (alpha < 255) {
-      hasSemiTransparent = true;
-    }
-
-    if (hasTransparent && hasSemiTransparent) {
-      break;
-    }
-  }
-
-  return { hasTransparent, hasSemiTransparent };
-}
-
 async function canvasToPngBlob(canvas: HTMLCanvasElement): Promise<Blob> {
   return new Promise((resolve, reject) => {
     canvas.toBlob((blob) => {
@@ -261,11 +244,6 @@ async function canvasToPngBlob(canvas: HTMLCanvasElement): Promise<Blob> {
       resolve(blob);
     }, 'image/png');
   });
-}
-
-function percentChange(original: number, current: number): number {
-  if (original === 0) return 0;
-  return Number((((current - original) / original) * 100).toFixed(2));
 }
 
 function formatBytes(bytes: number): string {
@@ -389,7 +367,7 @@ export default function PngResizeEvidenceLab() {
             pattern.sourceWidth,
             pattern.sourceHeight,
           );
-          const sourceTransparency = analyzeTransparency(sourceImageData);
+          const sourceAlpha = analyzeTransparency(sourceImageData.data);
 
           const outputWidth = Math.round(pattern.sourceWidth * (targetScale / 100));
           const outputHeight = Math.round(pattern.sourceHeight * (targetScale / 100));
@@ -403,7 +381,7 @@ export default function PngResizeEvidenceLab() {
           const outputBlob = await canvasToPngBlob(outputCanvas);
 
           const outputImageData = outputCtx.getImageData(0, 0, outputWidth, outputHeight);
-          const outputTransparency = analyzeTransparency(outputImageData);
+          const outputAlpha = analyzeTransparency(outputImageData.data);
 
           nextRuns.push({
             id: pattern.id,
@@ -417,11 +395,9 @@ export default function PngResizeEvidenceLab() {
             sourceHeight: pattern.sourceHeight,
             outputWidth,
             outputHeight,
-            sourceHasTransparent: sourceTransparency.hasTransparent,
-            sourceHasSemiTransparent: sourceTransparency.hasSemiTransparent,
-            outputHasTransparent: outputTransparency.hasTransparent,
-            outputHasSemiTransparent: outputTransparency.hasSemiTransparent,
-            percentChange: percentChange(sourceBlob.size, outputBlob.size),
+            sourceAlpha,
+            outputAlpha,
+            percentChange: signedPercentChange(sourceBlob.size, outputBlob.size),
             scale: targetScale,
           });
         }
@@ -435,6 +411,13 @@ export default function PngResizeEvidenceLab() {
         setStatusMessage(
           `Test patterns resized to ${targetScale}% scale. Results shown below.`,
         );
+        trackToolEvent('evidence_lab_completed', {
+          tool_name: 'png_evidence_lab',
+          tool_action: 'run_evidence_lab',
+          result_type: 'completed',
+          option_group: 'scale',
+          option_value: String(targetScale),
+        });
       } catch (err) {
         if (generationRef.current !== generation) {
           return;
@@ -447,6 +430,12 @@ export default function PngResizeEvidenceLab() {
             : 'The evidence lab failed to generate PNG samples.',
         );
         setStatusMessage('Error: the evidence lab could not generate PNG samples.');
+        trackToolEvent('process_failed', {
+          tool_name: 'png_evidence_lab',
+          tool_action: 'generate_patterns',
+          result_type: 'error',
+          error_type: 'generation_failed',
+        });
       }
     },
     [],
@@ -456,9 +445,21 @@ export default function PngResizeEvidenceLab() {
     runLab(scale);
   }, [scale, runLab]);
 
-  const handleScaleChange = useCallback((nextScale: Scale) => {
-    setScale(nextScale);
-  }, []);
+  const handleScaleChange = useCallback(
+    (nextScale: Scale) => {
+      if (nextScale !== scale) {
+        trackToolEvent('tool_option_select', {
+          tool_name: 'png_evidence_lab',
+          tool_action: 'scale_select',
+          result_type: 'select',
+          option_group: 'scale',
+          option_value: String(nextScale),
+        });
+      }
+      setScale(nextScale);
+    },
+    [scale],
+  );
 
   const trackAndDownload = useCallback((blob: Blob, filename: string) => {
     const url = URL.createObjectURL(blob);
@@ -477,6 +478,11 @@ export default function PngResizeEvidenceLab() {
 
   const downloadSource = useCallback(
     (run: PatternRun) => {
+      trackToolEvent('download_result', {
+        tool_name: 'png_evidence_lab',
+        tool_action: 'download_source_png',
+        result_type: 'source_png',
+      });
       trackAndDownload(run.sourceBlob, `localresizer-png-source-${run.id}.png`);
     },
     [trackAndDownload],
@@ -484,6 +490,11 @@ export default function PngResizeEvidenceLab() {
 
   const downloadOutput = useCallback(
     (run: PatternRun) => {
+      trackToolEvent('download_result', {
+        tool_name: 'png_evidence_lab',
+        tool_action: 'download_resized_png',
+        result_type: 'resized_png',
+      });
       trackAndDownload(
         run.outputBlob,
         `localresizer-png-resized-${run.id}-${run.scale}pct.png`,
@@ -491,6 +502,40 @@ export default function PngResizeEvidenceLab() {
     },
     [trackAndDownload],
   );
+
+  const evidenceExport = useMemo<EvidencePatternRun[] | null>(() => {
+    if (runs.length === 0) return null;
+    return runs.map((run) => {
+      const pattern = PATTERNS.find((p) => p.id === run.id);
+      return {
+        id: run.id,
+        name: pattern?.name ?? run.id,
+        sourceWidth: run.sourceWidth,
+        sourceHeight: run.sourceHeight,
+        outputWidth: run.outputWidth,
+        outputHeight: run.outputHeight,
+        sourceBytes: run.sourceBytes,
+        outputBytes: run.outputBytes,
+        percentChange: run.percentChange,
+        sourceAlpha: run.sourceAlpha,
+        outputAlpha: run.outputAlpha,
+      };
+    });
+  }, [runs]);
+
+  const downloadJson = useCallback(() => {
+    if (!evidenceExport) return;
+    const exportData = buildEvidenceExport(scale, evidenceExport);
+    const blob = new Blob([JSON.stringify(exportData, null, 2)], {
+      type: 'application/json',
+    });
+    trackToolEvent('download_result', {
+      tool_name: 'png_evidence_lab',
+      tool_action: 'download_json_report',
+      result_type: 'json',
+    });
+    trackAndDownload(blob, `localresizer-png-evidence-${scale}pct.json`);
+  }, [evidenceExport, scale, trackAndDownload]);
 
   return (
     <section className="space-y-6" aria-label="PNG resize transparency evidence lab">
@@ -520,6 +565,17 @@ export default function PngResizeEvidenceLab() {
             </button>
           ))}
         </div>
+        <p className="text-xs text-stone-400 mt-4">
+          Schema {PNG_EVIDENCE_SCHEMA_VERSION} | Method {PNG_EVIDENCE_METHOD_VERSION} |{' '}
+          <a
+            href="https://github.com/wuciqiang/local-resizer/blob/main/src/components/PngResizeEvidenceLab.tsx"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-teal-700 hover:text-teal-800 underline underline-offset-2"
+          >
+            Source code
+          </a>
+        </p>
       </div>
 
       <div className="sr-only" role="status" aria-live="polite" aria-atomic="true">
@@ -547,6 +603,18 @@ export default function PngResizeEvidenceLab() {
 
       {runs.length > 0 && status !== 'error' && (
         <div className="space-y-8" aria-busy={status === 'loading'}>
+          {status === 'ready' && (
+            <div className="flex justify-end">
+              <button
+                type="button"
+                onClick={downloadJson}
+                className="inline-flex items-center px-4 py-2 bg-white border border-stone-200 text-stone-600 text-sm font-medium rounded-xl hover:border-teal-300 hover:text-teal-700 hover:bg-teal-50 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2"
+              >
+                Download JSON report
+              </button>
+            </div>
+          )}
+
           {runs.map((run) => {
             const pattern = PATTERNS.find((p) => p.id === run.id);
             if (!pattern) return null;
@@ -558,9 +626,9 @@ export default function PngResizeEvidenceLab() {
               >
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-4">
                   <div>
-                    <h4 className="font-[var(--font-heading)] font-semibold text-stone-900">
+                    <h3 className="font-[var(--font-heading)] font-semibold text-stone-900">
                       {pattern.name}
-                    </h4>
+                    </h3>
                     <p className="text-sm text-stone-500">{pattern.description}</p>
                   </div>
                   <div className="text-sm text-stone-500">
@@ -611,16 +679,19 @@ export default function PngResizeEvidenceLab() {
 
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm text-left">
+                    <caption className="caption-bottom text-left text-xs text-stone-400 mt-2 mb-2">
+                      {pattern.name}: source and resized transparency and byte metrics.
+                    </caption>
                     <thead className="text-xs text-stone-500 uppercase bg-stone-50">
                       <tr>
-                        <th className="px-3 py-2 rounded-tl-lg">Property</th>
-                        <th className="px-3 py-2">Source</th>
-                        <th className="px-3 py-2 rounded-tr-lg">Resized ({run.scale}%)</th>
+                        <th scope="col" className="px-3 py-2 rounded-tl-lg">Property</th>
+                        <th scope="col" className="px-3 py-2">Source</th>
+                        <th scope="col" className="px-3 py-2 rounded-tr-lg">Resized ({run.scale}%)</th>
                       </tr>
                     </thead>
                     <tbody className="text-stone-600">
                       <tr className="border-t border-stone-100">
-                        <td className="px-3 py-2">Dimensions</td>
+                        <th scope="row" className="px-3 py-2 font-normal">Dimensions</th>
                         <td className="px-3 py-2">
                           {run.sourceWidth} x {run.sourceHeight}px
                         </td>
@@ -629,7 +700,7 @@ export default function PngResizeEvidenceLab() {
                         </td>
                       </tr>
                       <tr className="border-t border-stone-100">
-                        <td className="px-3 py-2">PNG bytes</td>
+                        <th scope="row" className="px-3 py-2 font-normal">PNG bytes</th>
                         <td className="px-3 py-2">{formatBytes(run.sourceBytes)}</td>
                         <td className="px-3 py-2">
                           {formatBytes(run.outputBytes)} ({run.percentChange > 0 ? '+' : ''}
@@ -637,22 +708,36 @@ export default function PngResizeEvidenceLab() {
                         </td>
                       </tr>
                       <tr className="border-t border-stone-100">
-                        <td className="px-3 py-2">Fully transparent pixels</td>
+                        <th scope="row" className="px-3 py-2 font-normal">Fully transparent pixels</th>
                         <td className="px-3 py-2">
-                          {run.sourceHasTransparent ? 'Yes' : 'No'}
+                          {run.sourceAlpha.transparent} ({run.sourceAlpha.transparentPct}%)
                         </td>
                         <td className="px-3 py-2">
-                          {run.outputHasTransparent ? 'Yes' : 'No'}
+                          {run.outputAlpha.transparent} ({run.outputAlpha.transparentPct}%)
                         </td>
                       </tr>
                       <tr className="border-t border-stone-100">
-                        <td className="px-3 py-2">Semi-transparent pixels</td>
+                        <th scope="row" className="px-3 py-2 font-normal">Semi-transparent pixels</th>
                         <td className="px-3 py-2">
-                          {run.sourceHasSemiTransparent ? 'Yes' : 'No'}
+                          {run.sourceAlpha.semiTransparent} ({run.sourceAlpha.semiTransparentPct}%)
                         </td>
                         <td className="px-3 py-2">
-                          {run.outputHasSemiTransparent ? 'Yes' : 'No'}
+                          {run.outputAlpha.semiTransparent} ({run.outputAlpha.semiTransparentPct}%)
                         </td>
+                      </tr>
+                      <tr className="border-t border-stone-100">
+                        <th scope="row" className="px-3 py-2 font-normal">Fully opaque pixels</th>
+                        <td className="px-3 py-2">
+                          {run.sourceAlpha.opaque} ({run.sourceAlpha.opaquePct}%)
+                        </td>
+                        <td className="px-3 py-2">
+                          {run.outputAlpha.opaque} ({run.outputAlpha.opaquePct}%)
+                        </td>
+                      </tr>
+                      <tr className="border-t border-stone-100">
+                        <th scope="row" className="px-3 py-2 font-normal">Total pixels</th>
+                        <td className="px-3 py-2">{run.sourceAlpha.total.toLocaleString()}</td>
+                        <td className="px-3 py-2">{run.outputAlpha.total.toLocaleString()}</td>
                       </tr>
                     </tbody>
                   </table>
