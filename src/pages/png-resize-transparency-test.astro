@@ -5,9 +5,9 @@ import PngResizeEvidenceLab from '../components/PngResizeEvidenceLab.tsx';
 import { generateBreadcrumbSchema } from '../lib/seo';
 import { formatPagePath } from '../lib/urls';
 
-const title = 'PNG Resize Transparency Test - Browser Evidence | LocalResizer';
+const title = 'PNG Resize Transparency Test | LocalResizer';
 const description =
-  'See what browser-based PNG resizing actually does to transparency, edges, text, and file size. Live, repeatable browser evidence generated in your browser; values vary by browser, OS, and device.';
+  'Run a live PNG resize test in your browser and see dimensions, file size, and alpha pixel counts before and after resizing.';
 const breadcrumbItems = [
   { href: '/', label: 'Home' },
   { href: formatPagePath('resize-image'), label: 'Resize Image Guide' },
@@ -27,7 +27,7 @@ const breadcrumbSchema = generateBreadcrumbSchema(breadcrumbItems);
         Published and updated <time datetime="2026-07-14">Jul 14, 2026</time>
       </p>
       <p class="text-stone-500 max-w-2xl mx-auto leading-relaxed">
-        This page runs a small browser experiment with defined, repeatable test patterns. It draws four PNG patterns, resizes each one with the same browser Canvas primitives -- <code class="text-sm bg-stone-100 px-1.5 py-0.5 rounded">drawImage</code> and PNG <code class="text-sm bg-stone-100 px-1.5 py-0.5 rounded">toBlob</code> -- used by our <a href={formatPagePath('resize-png')} class="text-teal-700 hover:text-teal-800 underline underline-offset-2">Resize PNG</a> page, and reports the real dimensions, byte sizes, and transparency state that the current browser produces. The lab is a self-contained implementation; it is not the same code path as <a href={formatPagePath('resize-png')} class="text-teal-700 hover:text-teal-800 underline underline-offset-2">Resize PNG</a>.
+        This page runs a small browser experiment. It draws four PNG patterns and resizes them with the same Canvas primitives used by our <a href={formatPagePath('resize-png')} class="text-teal-700 hover:text-teal-800 underline underline-offset-2">Resize PNG</a> page. The lab is self-contained, so it shares browser APIs but not the same code path as the production page.
       </p>
     </div>
 
@@ -39,7 +39,7 @@ const breadcrumbSchema = generateBreadcrumbSchema(breadcrumbItems);
     <section class="bg-white rounded-2xl p-7 shadow-soft border border-stone-100 mb-8 space-y-4">
       <h2 class="font-[var(--font-heading)] text-xl font-semibold text-stone-900">What the test measures</h2>
       <p class="text-stone-500 leading-relaxed">
-        Browser-based PNG resizing is often described as "keeping transparency," but that statement is incomplete. The alpha channel can remain present while the actual pixel resampling changes edges, text, and fine detail. This lab makes those changes visible and measurable.
+        Browser-based PNG resizing can keep the alpha channel, and resampling can create new semi-transparent edge pixels. This lab makes those changes visible and measurable.
       </p>
       <p class="text-stone-500 leading-relaxed">
         For each pattern the lab reports:
@@ -51,20 +51,29 @@ const breadcrumbSchema = generateBreadcrumbSchema(breadcrumbItems);
         <li>Exact counts and percentages of fully transparent, semi-transparent, and fully opaque pixels in the source and output.</li>
       </ul>
       <p class="text-stone-500 leading-relaxed">
-        The numbers are not hard-coded. They come from the browser you are using right now, so they can differ across Chrome, Firefox, Safari, and operating-system versions.
+        The numbers come from your current browser. They can differ across browsers and operating systems.
       </p>
     </section>
 
     <section class="bg-white rounded-2xl p-7 shadow-soft border border-stone-100 mb-8 space-y-4">
       <h2 class="font-[var(--font-heading)] text-xl font-semibold text-stone-900">Methodology and scope</h2>
       <p class="text-stone-500 leading-relaxed">
-        Every pattern is generated from scratch on an in-memory canvas. Test inputs are drawn in memory rather than read from an uploaded user image, image content is not uploaded for processing, and metrics are not pre-filled. The source canvas is cleared to transparent, the pattern is drawn, and the canvas is exported as PNG. The output canvas is created at the selected percentage with image smoothing enabled and <code class="text-sm bg-stone-100 px-1.5 py-0.5 rounded">imageSmoothingQuality</code> set to <code class="text-sm bg-stone-100 px-1.5 py-0.5 rounded">high</code>; the browser decides how to apply that request, so results can vary.
+        Every pattern is generated from scratch on an in-memory canvas. Test inputs are drawn in memory rather than read from an uploaded user image.
+      </p>
+      <p class="text-stone-500 leading-relaxed">
+        Image content is not uploaded for processing. Metrics are not pre-filled.
+      </p>
+      <p class="text-stone-500 leading-relaxed">
+        The source canvas is cleared to transparent. The pattern is drawn, and the canvas is exported as PNG. The output canvas is created at the selected percentage with image smoothing enabled and <code class="text-sm bg-stone-100 px-1.5 py-0.5 rounded">imageSmoothingQuality</code> set to <code class="text-sm bg-stone-100 px-1.5 py-0.5 rounded">high</code>.
+      </p>
+      <p class="text-stone-500 leading-relaxed">
+        The browser decides how to apply that request, so results can vary.
       </p>
       <p class="text-stone-500 leading-relaxed">
         The four patterns cover the cases most likely to change during resize:
       </p>
       <ul class="space-y-2 text-stone-500 leading-relaxed list-disc pl-5">
-        <li><strong>Binary-alpha logo edges:</strong> pixel-aligned opaque shapes on a transparent background. The source alpha channel is binary (0 or 255), and resampling is expected to create new semi-transparent pixels in the output.</li>
+        <li><strong>Binary-alpha logo edges:</strong> pixel-aligned opaque shapes on a transparent background. The source alpha channel is binary (0 or 255). Resampling can create new semi-transparent pixels in the output.</li>
         <li><strong>Text and UI lines:</strong> small text and card-style rectangles that test crispness at small sizes.</li>
         <li><strong>Semi-transparent gradient:</strong> alpha gradients and soft shadows that remain partially transparent through resize.</li>
         <li><strong>Fine line art:</strong> thin diagonal strokes and grids that are sensitive to pixel mixing.</li>
@@ -75,7 +84,7 @@ const breadcrumbSchema = generateBreadcrumbSchema(breadcrumbItems);
       <h2 class="font-[var(--font-heading)] text-xl font-semibold text-stone-900 mb-4">Limitations</h2>
       <ul class="space-y-3 text-sm text-stone-500 leading-relaxed list-disc pl-5">
         <li>The test uses synthetic patterns, not your own files. It demonstrates browser behavior, not a prediction for every real image.</li>
-        <li>Byte counts and resampling details vary by browser/OS encoder implementation, Canvas resampling implementation, color handling, and installed font rasterization for the text pattern. Do not treat one run as a universal benchmark.</li>
+        <li>Byte counts and resampling details vary by browser/OS encoder implementation, Canvas resampling implementation, color handling, and installed font rasterization. Do not treat one run as a universal benchmark.</li>
         <li>The lab does not test enlargement, cropping, format conversion, or compression beyond the resize step.</li>
         <li>Patterns are generated at a fixed source size. Very large or very small source images may behave differently.</li>
       </ul>
@@ -84,14 +93,14 @@ const breadcrumbSchema = generateBreadcrumbSchema(breadcrumbItems);
     <section class="bg-white rounded-2xl p-7 shadow-soft border border-stone-100 mb-8 space-y-4">
       <h2 class="font-[var(--font-heading)] text-xl font-semibold text-stone-900">How to read the results</h2>
       <p class="text-stone-500 leading-relaxed">
-        A smaller PNG is expected after downscaling, but the exact byte reduction depends on pattern complexity and the browser encoder. Watch for two specific signals:
+        A smaller PNG is expected after downscaling. The exact byte reduction depends on pattern complexity and the browser encoder. Watch for two specific signals:
       </p>
       <ul class="space-y-2 text-stone-500 leading-relaxed list-disc pl-5">
-        <li><strong>Semi-transparent pixels appear in the output when they were absent in the source.</strong> This is normal resampling along edges. It does not mean transparency is broken, but it does mean the edge is now softer.</li>
+        <li><strong>Semi-transparent pixels appear in the output when they were absent in the source.</strong> This is normal resampling along edges. That does not mean transparency is broken. The edge is now softer.</li>
         <li><strong>Fine lines become thicker or thinner.</strong> When a pattern is downscaled, the browser blends neighboring pixels. Hairline details may dim, thicken, or disappear.</li>
       </ul>
       <p class="text-stone-500 leading-relaxed">
-        Use this evidence to decide whether a smaller dimension is acceptable for your use case. If the destination requires pixel-perfect edges, keep the source larger. If the destination only needs a compact preview, the resized output is usually fine.
+        Use this evidence to decide whether a smaller dimension is acceptable. When the destination requires pixel-perfect edges, keep the source larger. When the destination only needs a compact preview, the resized output is usually fine.
       </p>
     </section>
 
