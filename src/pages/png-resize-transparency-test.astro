@@ -31,6 +31,11 @@ const breadcrumbSchema = generateBreadcrumbSchema(breadcrumbItems);
       </p>
     </div>
 
+    <h2 class="font-[var(--font-heading)] text-2xl font-semibold text-stone-900 mb-6">Run the live test</h2>
+    <div class="mb-10">
+      <PngResizeEvidenceLab client:visible />
+    </div>
+
     <section class="bg-white rounded-2xl p-7 shadow-soft border border-stone-100 mb-8 space-y-4">
       <h2 class="font-[var(--font-heading)] text-xl font-semibold text-stone-900">What the test measures</h2>
       <p class="text-stone-500 leading-relaxed">
@@ -43,8 +48,7 @@ const breadcrumbSchema = generateBreadcrumbSchema(breadcrumbItems);
         <li>Source and output pixel dimensions.</li>
         <li>Source and output PNG byte sizes from <code class="text-sm bg-stone-100 px-1.5 py-0.5 rounded">canvas.toBlob('image/png')</code>.</li>
         <li>Signed byte-size percentage change.</li>
-        <li>Whether fully transparent pixels exist in the source and output.</li>
-        <li>Whether semi-transparent pixels exist in the source and output.</li>
+        <li>Exact counts and percentages of fully transparent, semi-transparent, and fully opaque pixels in the source and output.</li>
       </ul>
       <p class="text-stone-500 leading-relaxed">
         The numbers are not hard-coded. They come from the browser you are using right now, so they can differ across Chrome, Firefox, Safari, and operating-system versions.
@@ -76,10 +80,6 @@ const breadcrumbSchema = generateBreadcrumbSchema(breadcrumbItems);
         <li>Patterns are generated at a fixed source size. Very large or very small source images may behave differently.</li>
       </ul>
     </section>
-
-    <div class="mb-10">
-      <PngResizeEvidenceLab client:visible />
-    </div>
 
     <section class="bg-white rounded-2xl p-7 shadow-soft border border-stone-100 mb-8 space-y-4">
       <h2 class="font-[var(--font-heading)] text-xl font-semibold text-stone-900">How to read the results</h2>
