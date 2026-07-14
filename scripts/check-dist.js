@@ -241,8 +241,29 @@ function main() {
       h1: 'PNG resize transparency test',
       extra(html) {
         assert(
-          getTitle(html) === 'PNG Resize Transparency Test - Browser Evidence | LocalResizer',
+          getTitle(html) === 'PNG Resize Transparency Test | LocalResizer',
           'Evidence page title does not match the accepted value',
+        );
+        assert(existsSync(path.join(DIST_DIR, 'og', 'png-resize-transparency-test.png')), 'Evidence page OG image asset not copied to dist');
+        assert(
+          html.includes('<meta property="og:image" content="https://localresizer.com/og/png-resize-transparency-test.png">'),
+          'Evidence page og:image does not name the dedicated absolute URL',
+        );
+        assert(
+          html.includes('<meta name="twitter:image" content="https://localresizer.com/og/png-resize-transparency-test.png">'),
+          'Evidence page twitter:image does not match og:image',
+        );
+        assert(
+          html.includes('<meta property="og:image:alt" content="LocalResizer PNG resize transparency evidence view showing alpha-channel measurements from a browser-based resize test.">'),
+          'Evidence page og:image:alt does not match the accepted value',
+        );
+        assert(
+          html.includes('<meta property="og:image:width" content="1200">'),
+          'Evidence page og:image:width dimension missing',
+        );
+        assert(
+          html.includes('<meta property="og:image:height" content="630">'),
+          'Evidence page og:image:height dimension missing',
         );
         assert(html.includes('2026-07-14'), 'Evidence page missing 2026-07-14 date');
         assert(html.includes('Methodology and scope'), 'Evidence page missing methodology section');
