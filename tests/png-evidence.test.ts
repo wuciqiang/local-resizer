@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import {
   analyzeTransparency,
@@ -7,6 +9,15 @@ import {
   signedPercentChange,
 } from '../src/lib/png-evidence';
 import type { EvidencePatternRun } from '../src/lib/png-evidence';
+
+const layoutSource = readFileSync(
+  fileURLToPath(new URL('../src/layouts/BaseLayout.astro', import.meta.url)),
+  'utf-8',
+);
+const evidencePageSource = readFileSync(
+  fileURLToPath(new URL('../src/pages/png-resize-transparency-test.astro', import.meta.url)),
+  'utf-8',
+);
 
 function rgbaBuffer(pixels: Array<[number, number, number, number]>): Uint8ClampedArray {
   const data = new Uint8ClampedArray(pixels.length * 4);
@@ -200,5 +211,30 @@ describe('PNG evidence JSON export', () => {
     const runs = [makeRun({ id: 'a' }), makeRun({ id: 'b' }), makeRun({ id: 'c' })];
     const exportData = buildEvidenceExport(75, runs);
     expect(exportData.patterns.map((p) => p.id)).toEqual(['a', 'b', 'c']);
+  });
+});
+
+describe('PNG evidence social image source contract', () => {
+  it('BaseLayout declares optional social image props with the existing defaults', () => {
+    expect(layoutSource).toContain('socialImage?: string;');
+    expect(layoutSource).toContain('socialImageAlt?: string;');
+    expect(layoutSource).toContain("socialImage = '/og-default.png'");
+    expect(layoutSource).toContain(
+      "socialImageAlt = 'LocalResizer browser-based image resizing and compression tool'",
+    );
+  });
+
+  it('BaseLayout resolves the chosen image against Astro.site and passes it to both Open Graph and Twitter tags', () => {
+    expect(layoutSource).toContain('new URL(socialImage, Astro.site).href');
+    expect(layoutSource).toContain('property="og:image" content={ogImageUrl}');
+    expect(layoutSource).toContain('name="twitter:image" content={ogImageUrl}');
+    expect(layoutSource).toContain('property="og:image:alt" content={socialImageAlt}');
+  });
+
+  it('evidence page supplies the dedicated PNG transparency image and alt', () => {
+    expect(evidencePageSource).toContain('socialImage="/og/png-resize-transparency-test.png"');
+    expect(evidencePageSource).toContain(
+      'socialImageAlt="LocalResizer PNG resize transparency evidence view showing alpha-channel measurements from a browser-based resize test."',
+    );
   });
 });
