@@ -91,7 +91,7 @@ local-resizer/
 │       └── global.css       # 全局样式（Tailwind 4）
 ├── public/                  # 静态资源
 ├── scripts/
-│   └── submit-indexnow.js   # IndexNow 自动提交脚本
+│   └── submit-indexnow.js   # IndexNow 显式手动提交脚本
 ├── tests/                   # 测试文件
 └── docs/                    # 文档
 ```
@@ -171,14 +171,21 @@ const PHASE0_SLUGS = new Set([
 https://localresizer.com/sitemap-index.xml
 ```
 
-### IndexNow 自动提交
-每次部署后自动提交所有 URL 到 Bing：
+### IndexNow 安全提交
+IndexNow 仅作为 Cloudflare Crawler Hints 之外的显式手动 fallback，只应在真正新增、变更、删除或重定向 URL 时使用。
+
 ```bash
-npm run submit-indexnow
+# 先 dry-run 验证（不发送请求）
+node scripts/submit-indexnow.js --url https://localresizer.com/some-page
+
+# 显式确认后正式提交
+node scripts/submit-indexnow.js --url https://localresizer.com/page-a --url https://localresizer.com/page-b --confirm-submit
 ```
 
-需要在 Cloudflare Pages 设置环境变量：
-- `INDEXNOW_KEY`: `4ca258e2-7679-4bfb-85fd-97c5855d7a1a`
+`npm run build` 和 `npm run build:deploy` 只负责构建，不会自动调用 IndexNow。
+
+本地或 CI 手动提交时可选择设置环境变量覆盖默认 key 文件：
+- `INDEXNOW_KEY`: `4ca258e2-7679-4bfb-85fd-97c5855d7a1a`（可选；默认从 `public/<key>.txt` 读取）
 
 ### 结构化数据
 所有页面包含 JSON-LD 结构化数据：
