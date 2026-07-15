@@ -176,13 +176,11 @@ IndexNow 仅作为 Cloudflare Crawler Hints 之外的显式手动 fallback，只
 
 ```bash
 # 先 dry-run 验证（不发送请求）
-npm run submit-indexnow -- -- --url https://localresizer.com/some-page
+node scripts/submit-indexnow.js --url https://localresizer.com/some-page
 
 # 显式确认后正式提交
-npm run submit-indexnow -- -- --url https://localresizer.com/page-a --url https://localresizer.com/page-b --confirm-submit
+node scripts/submit-indexnow.js --url https://localresizer.com/page-a --url https://localresizer.com/page-b --confirm-submit
 ```
-
-> 当前 npm 运行时需要第二个 `--` 才能将 `--url` 等参数原样转发给 Node 脚本。
 
 `npm run build` 和 `npm run build:deploy` 只负责构建，不会自动调用 IndexNow。
 

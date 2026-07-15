@@ -10,15 +10,13 @@ LocalResizer 的主要索引渠道是 **Cloudflare Crawler Hints**。IndexNow �
 
 2. **本地验证（dry-run，不发送请求）**：
    ```bash
-   npm run submit-indexnow -- -- --url https://localresizer.com/some-page
+   node scripts/submit-indexnow.js --url https://localresizer.com/some-page
    ```
 
 3. **正式提交（必须显式确认）**：
    ```bash
-   npm run submit-indexnow -- -- --url https://localresizer.com/page-a --url https://localresizer.com/page-b --confirm-submit
+   node scripts/submit-indexnow.js --url https://localresizer.com/page-a --url https://localresizer.com/page-b --confirm-submit
    ```
-
-   > 当前 npm 运行时需要第二个 `--` 才能将 `--url` 等参数原样转发给 Node 脚本。
 
    提交前脚本会：
    - 校验所有 URL 必须属于 `localresizer.com`，且为 HTTPS、无凭据、无 fragment、非默认端口；`https://localresizer.com/` 首页也允许提交

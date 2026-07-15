@@ -100,4 +100,4 @@ npm run typecheck
 - No GIF, no video, no animated formats in the live public release
 - `acceptFormats` on every live route excludes `image/gif`
 - Tests enforce required SEO / FAQ / HowTo fields on live routes
-- `build` must stay side-effect free; `build:deploy` also only builds. External IndexNow submission is manual via `npm run submit-indexnow -- -- --url <url> --confirm-submit`.
+- `build` must stay side-effect free; `build:deploy` also only builds. External IndexNow submission is manual via `node scripts/submit-indexnow.js --url <url> --confirm-submit`.
