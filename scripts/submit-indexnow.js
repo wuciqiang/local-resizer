@@ -138,6 +138,10 @@ export function dedupeUrls(urls) {
 }
 
 /**
+ * @typedef {(url: string, init?: RequestInit) => Promise<Response>} FetchImpl
+ */
+
+/**
  * Submit (or dry-run) URLs to IndexNow.
  *
  * @param {Object} options
@@ -146,8 +150,8 @@ export function dedupeUrls(urls) {
  * @param {string} [options.host]
  * @param {string} [options.origin]
  * @param {boolean} [options.confirm]
- * @param {typeof fetch} [options.fetch]
- * @returns {Promise<{ submitted: boolean; count: number; batches?: Array<{ status: number; count: number }> | string[][] }>}
+ * @param {FetchImpl} [options.fetch]
+ * @returns {Promise<{ submitted: false; count: number; batches: string[][] } | { submitted: true; count: number; batches: Array<{ status: number; count: number }> }>}
  */
 export async function submitIndexNow({
   urls,
@@ -225,7 +229,7 @@ export async function submitIndexNow({
  * @param {string[]} argv
  * @param {NodeJS.ProcessEnv} [env]
  * @param {Object} [deps]
- * @param {typeof fetch} [deps.fetch]
+ * @param {FetchImpl} [deps.fetch]
  * @param {string} [deps.publicDir]
  */
 export async function main(argv, env = process.env, deps = { fetch, publicDir: path.join(process.cwd(), 'public') }) {
