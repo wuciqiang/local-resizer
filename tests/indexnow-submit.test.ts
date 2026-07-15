@@ -223,7 +223,10 @@ describe('submitIndexNow live submission', () => {
       fetch: fetchMock,
     });
 
-    expect(result.batches?.map((b) => b.status)).toEqual([200]);
+    if (!result.submitted) {
+      throw new Error('Expected a confirmed submission');
+    }
+    expect(result.batches.map((b) => b.status)).toEqual([200]);
   });
 
   it('accepts a 202 response', async () => {
@@ -235,7 +238,10 @@ describe('submitIndexNow live submission', () => {
       fetch: fetchMock,
     });
 
-    expect(result.batches?.map((b) => b.status)).toEqual([202]);
+    if (!result.submitted) {
+      throw new Error('Expected a confirmed submission');
+    }
+    expect(result.batches.map((b) => b.status)).toEqual([202]);
   });
 
   it('does not POST when the key file content does not match', async () => {
