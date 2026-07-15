@@ -23,7 +23,7 @@ If planning docs conflict with shipped code, prefer `src/data/routes.ts` and `do
 ```bash
 npm run dev           # Start dev server (run manually in terminal)
 npm run build         # Build static site only
-npm run build:deploy  # Build + submit IndexNow (requires env)
+npm run build:deploy  # Build only (IndexNow submission is manual and explicit)
 npm run preview       # Preview production build
 npm run typecheck     # astro check + tsc --noEmit
 npm run test          # Run all tests
@@ -100,4 +100,4 @@ npm run typecheck
 - No GIF, no video, no animated formats in the live public release
 - `acceptFormats` on every live route excludes `image/gif`
 - Tests enforce required SEO / FAQ / HowTo fields on live routes
-- `build` must stay side-effect free; external submission belongs in `build:deploy`
+- `build` must stay side-effect free; `build:deploy` also only builds. External IndexNow submission is manual via `npm run submit-indexnow -- -- --url <url> --confirm-submit`.

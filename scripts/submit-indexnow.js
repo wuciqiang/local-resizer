@@ -1,29 +1,40 @@
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import path from 'node:path';
-import { XMLParser } from 'fast-xml-parser';
+import { fileURLToPath } from 'node:url';
 
-const ROOT = process.cwd();
-const PUBLIC_DIR = path.join(ROOT, 'public');
-const SITE_URL = process.env.SITE_URL?.trim() || 'https://localresizer.com';
-const SITEMAP_PATH = process.env.SITEMAP_PATH?.trim() || './dist/sitemap-0.xml';
+export const DEFAULT_HOST = 'localresizer.com';
+export const DEFAULT_ORIGIN = 'https://localresizer.com';
+export const INDEXNOW_API = 'https://api.indexnow.org/indexnow';
+export const BATCH_SIZE = 10_000;
 
-function resolveIndexNowKey() {
-  const envKey = process.env.INDEXNOW_KEY?.trim();
-  if (envKey) {
-    return envKey;
+const KEY_FILE_RE = /^[0-9a-f-]{36}\.txt$/i;
+
+/**
+ * Resolve the IndexNow key from an explicit env value or from a public key file
+ * whose content matches its file name.
+ *
+ * @param {Object} options
+ * @param {string} [options.envKey]
+ * @param {string} [options.publicDir]
+ * @returns {string}
+ */
+export function resolveIndexNowKey({ envKey, publicDir } = {}) {
+  const key = envKey?.trim();
+  if (key) {
+    return key;
   }
 
-  if (!existsSync(PUBLIC_DIR)) {
+  if (!publicDir || !existsSync(publicDir)) {
     return '';
   }
 
-  const keyFile = readdirSync(PUBLIC_DIR).find((fileName) => {
-    if (!/^[0-9a-f-]{36}\.txt$/i.test(fileName)) {
+  const keyFile = readdirSync(publicDir).find((fileName) => {
+    if (!KEY_FILE_RE.test(fileName)) {
       return false;
     }
 
     const keyFromName = path.basename(fileName, '.txt');
-    const keyFilePath = path.join(PUBLIC_DIR, fileName);
+    const keyFilePath = path.join(publicDir, fileName);
     const keyFromFile = readFileSync(keyFilePath, 'utf-8').trim();
     return keyFromFile === keyFromName;
   });
@@ -31,78 +42,208 @@ function resolveIndexNowKey() {
   return keyFile ? path.basename(keyFile, '.txt') : '';
 }
 
-const INDEXNOW_KEY = resolveIndexNowKey();
-
 /**
- * @param {string[]} urls
+ * Parse CLI arguments. --url is repeatable. --confirm-submit enables live POSTs.
+ * Everything else is rejected.
+ *
+ * @param {string[]} argv
+ * @returns {{ urls: string[]; confirm: boolean }}
  */
-async function submitToIndexNow(urls) {
-  const response = await fetch('https://api.indexnow.org/indexnow', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      host: new URL(SITE_URL).host,
-      key: INDEXNOW_KEY,
-      keyLocation: `${SITE_URL}/${INDEXNOW_KEY}.txt`,
-      urlList: urls,
-    }),
-  });
+export function parseArgs(argv) {
+  const urls = [];
+  let confirm = false;
 
-  if (response.ok) {
-    console.log(`Submitted ${urls.length} URLs to IndexNow.`);
-    return;
+  for (let i = 0; i < argv.length; i += 1) {
+    const arg = argv[i];
+
+    if (arg === '--url') {
+      const next = argv[i + 1];
+      if (next === undefined || next.startsWith('--')) {
+        throw new Error('Missing value for --url');
+      }
+      urls.push(next);
+      i += 1;
+    } else if (arg === '--confirm-submit') {
+      confirm = true;
+    } else if (arg.startsWith('--')) {
+      throw new Error(`Unknown flag: ${arg}`);
+    } else {
+      throw new Error(`Unexpected positional argument: ${arg}`);
+    }
   }
-
-  const body = await response.text();
-  throw new Error(`IndexNow submission failed: ${response.status} ${body}`.trim());
-}
-
-/**
- * @param {unknown} value
- * @returns {string[]}
- */
-function normalizeUrls(value) {
-  if (!value) {
-    return [];
-  }
-
-  const entries = Array.isArray(value) ? value : [value];
-  return entries
-    .map((entry) => (entry && typeof entry === 'object' ? entry.loc : undefined))
-    .filter((loc) => typeof loc === 'string' && loc.length > 0);
-}
-
-async function main() {
-  if (!INDEXNOW_KEY) {
-    console.log('Skipping IndexNow submission because no IndexNow key was found in env or public/*.txt.');
-    return;
-  }
-
-  const sitemapFile = path.resolve(SITEMAP_PATH);
-  if (!existsSync(sitemapFile)) {
-    throw new Error(`Sitemap file not found: ${sitemapFile}`);
-  }
-
-  const sitemapXml = readFileSync(sitemapFile, 'utf-8');
-  const parser = new XMLParser();
-  const sitemap = parser.parse(sitemapXml);
-  const urls = normalizeUrls(sitemap.urlset?.url);
 
   if (urls.length === 0) {
-    console.log(`Skipping IndexNow submission because no URLs were found in ${sitemapFile}.`);
-    return;
+    throw new Error('At least one --url is required.');
   }
 
-  console.log(`Found ${urls.length} URLs in ${path.basename(sitemapFile)}.`);
-
-  const batchSize = 10_000;
-  for (let i = 0; i < urls.length; i += batchSize) {
-    const batch = urls.slice(i, i + batchSize);
-    await submitToIndexNow(batch);
-  }
+  return { urls, confirm };
 }
 
-main().catch((error) => {
-  console.error(error instanceof Error ? error.message : error);
-  process.exitCode = 1;
-});
+/**
+ * Validate and normalize a single URL for the configured host.
+ *
+ * @param {string} raw
+ * @param {string} [expectedHost]
+ * @returns {string}
+ */
+export function normalizeAndValidateUrl(raw, expectedHost = DEFAULT_HOST) {
+  let url;
+  try {
+    url = new URL(raw);
+  } catch {
+    throw new Error(`Invalid URL: ${raw}`);
+  }
+
+  if (url.protocol !== 'https:') {
+    throw new Error(`URL must use HTTPS: ${raw}`);
+  }
+
+  if (url.hostname.toLowerCase() !== expectedHost.toLowerCase()) {
+    throw new Error(`URL host must be ${expectedHost}: ${raw}`);
+  }
+
+  if (url.username || url.password) {
+    throw new Error(`URL must not contain credentials: ${raw}`);
+  }
+
+  if (url.hash) {
+    throw new Error(`URL must not contain a fragment: ${raw}`);
+  }
+
+  if (url.port && url.port !== '443') {
+    throw new Error(`URL must not specify a non-default port: ${raw}`);
+  }
+
+  return url.href;
+}
+
+/**
+ * Remove duplicate URLs while preserving first-seen order.
+ *
+ * @param {string[]} urls
+ * @returns {string[]}
+ */
+export function dedupeUrls(urls) {
+  const seen = new Set();
+  const result = [];
+
+  for (const url of urls) {
+    if (!seen.has(url)) {
+      seen.add(url);
+      result.push(url);
+    }
+  }
+
+  return result;
+}
+
+/**
+ * Submit (or dry-run) URLs to IndexNow.
+ *
+ * @param {Object} options
+ * @param {string[]} options.urls
+ * @param {string} options.key
+ * @param {string} [options.host]
+ * @param {string} [options.origin]
+ * @param {boolean} [options.confirm]
+ * @param {typeof fetch} [options.fetch]
+ * @returns {Promise<{ submitted: boolean; count: number; batches?: Array<{ status: number; count: number }> | string[][] }>}
+ */
+export async function submitIndexNow({
+  urls,
+  key,
+  host = DEFAULT_HOST,
+  origin = DEFAULT_ORIGIN,
+  confirm = false,
+  fetch: fetchImpl = fetch,
+}) {
+  if (!key) {
+    throw new Error('No IndexNow key provided.');
+  }
+
+  const validated = urls.map((url) => normalizeAndValidateUrl(url, host));
+  const unique = dedupeUrls(validated);
+
+  if (unique.length === 0) {
+    throw new Error('No valid URLs to submit.');
+  }
+
+  const keyLocation = `${origin}/${key}.txt`;
+
+  if (!confirm) {
+    const batches = [];
+    for (let i = 0; i < unique.length; i += BATCH_SIZE) {
+      batches.push(unique.slice(i, i + BATCH_SIZE));
+    }
+
+    console.log('[dry-run] IndexNow submission intent:');
+    console.log(`  endpoint: ${INDEXNOW_API}`);
+    console.log(`  host: ${host}`);
+    console.log(`  urlCount: ${unique.length}`);
+    console.log(`  batchCount: ${batches.length}`);
+    batches.forEach((batch, index) => {
+      console.log(`  batch[${index}]: ${JSON.stringify(batch)}`);
+    });
+
+    return { submitted: false, count: unique.length, batches };
+  }
+
+  const keyResponse = await fetchImpl(keyLocation);
+  if (keyResponse.status !== 200) {
+    throw new Error(`Key file check failed: ${keyResponse.status} ${keyResponse.statusText}`);
+  }
+  const keyText = (await keyResponse.text()).trim();
+  if (keyText !== key) {
+    throw new Error(`Key file content mismatch.`);
+  }
+
+  const batches = [];
+  for (let i = 0; i < unique.length; i += BATCH_SIZE) {
+    const batch = unique.slice(i, i + BATCH_SIZE);
+    const payload = { host, key, keyLocation, urlList: batch };
+    const response = await fetchImpl(INDEXNOW_API, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+
+    if (response.status !== 200 && response.status !== 202) {
+      const text = await response.text();
+      throw new Error(`IndexNow submission failed: ${response.status} ${text}`.trim());
+    }
+
+    batches.push({ status: response.status, count: batch.length });
+  }
+
+  console.log(`Submitted ${unique.length} URL(s) to IndexNow in ${batches.length} batch(es).`);
+  return { submitted: true, count: unique.length, batches };
+}
+
+/**
+ * CLI entry point.
+ *
+ * @param {string[]} argv
+ * @param {NodeJS.ProcessEnv} [env]
+ * @param {Object} [deps]
+ * @param {typeof fetch} [deps.fetch]
+ * @param {string} [deps.publicDir]
+ */
+export async function main(argv, env = process.env, deps = { fetch, publicDir: path.join(process.cwd(), 'public') }) {
+  const { urls, confirm } = parseArgs(argv);
+  const key = resolveIndexNowKey({ envKey: env.INDEXNOW_KEY, publicDir: deps.publicDir });
+
+  if (!key) {
+    throw new Error('No IndexNow key found in env or public/*.txt.');
+  }
+
+  return submitIndexNow({ urls, key, confirm, fetch: deps.fetch, host: DEFAULT_HOST, origin: DEFAULT_ORIGIN });
+}
+
+const isMain = process.argv[1] && fileURLToPath(import.meta.url) === path.resolve(process.argv[1]);
+
+if (isMain) {
+  main(process.argv.slice(2)).catch((error) => {
+    console.error(error instanceof Error ? error.message : error);
+    process.exitCode = 1;
+  });
+}
