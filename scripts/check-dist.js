@@ -117,6 +117,24 @@ function extractCanonical(html) {
   return html.match(/<link[^>]+rel="canonical"[^>]+href="([^"]+)"/i)?.[1] ?? '';
 }
 
+function assertStaticGuidePage(slug, expectedH1, html) {
+  const title = getTitle(html);
+  const canonical = extractCanonical(html);
+  const breadcrumbSchema = extractJsonLd(html).find((item) => item?.['@type'] === 'BreadcrumbList');
+
+  assert(title.includes('LocalResizer'), `Built static guide page is missing LocalResizer in <title>: ${slug}`);
+  assert(canonical === `https://localresizer.com/${slug}/`, `Built static guide page canonical URL is not normalized: ${slug}`);
+  assert(getFirstH1(html) === expectedH1, `Built static guide page H1 mismatch: ${slug}`);
+  assert(breadcrumbSchema, `Built static guide page is missing BreadcrumbList schema: ${slug}`);
+  const robotsNoindex = [...html.matchAll(/<meta\b[^>]*>/gi)].some((tagMatch) => {
+    const tag = tagMatch[0];
+    if (!/\bname\s*=\s*(["']?)robots\1/i.test(tag)) return false;
+    const content = tag.match(/\bcontent\s*=\s*(["'])(.*?)\1/i)?.[2] ?? '';
+    return /\bnoindex\b/i.test(content);
+  });
+  assert(!robotsNoindex, `Built static guide page contains a noindex directive: ${slug}`);
+}
+
 function assertRouteHtml(slug, htmlFile) {
   const html = readUtf8(htmlFile);
   const title = getTitle(html);
@@ -192,8 +210,11 @@ function main() {
     '/contact',
     '/image-tools',
     '/jpeg-vs-png-vs-webp-for-upload-limits',
+    '/png-resize-transparency-test',
+    '/png-transparency-after-resizing',
     '/privacy',
     '/resize-image',
+    '/resize-vs-compress-png',
     '/signature-tools',
     '/supported-formats',
     '/terms',
@@ -212,6 +233,70 @@ function main() {
     const htmlFile = path.join(DIST_DIR, slug, 'index.html');
     assert(existsSync(htmlFile), `Missing built HTML file for documented live route: ${htmlFile}`);
     assertRouteHtml(slug, htmlFile);
+  }
+
+  const staticGuidePageChecks = [
+    {
+      slug: 'png-resize-transparency-test',
+      h1: 'PNG resize transparency test',
+      extra(html) {
+        assert(
+          getTitle(html) === 'PNG Resize Transparency Test | LocalResizer',
+          'Evidence page title does not match the accepted value',
+        );
+        assert(existsSync(path.join(DIST_DIR, 'og', 'png-resize-transparency-test.png')), 'Evidence page OG image asset not copied to dist');
+        assert(
+          html.includes('<meta property="og:image" content="https://localresizer.com/og/png-resize-transparency-test.png">'),
+          'Evidence page og:image does not name the dedicated absolute URL',
+        );
+        assert(
+          html.includes('<meta name="twitter:image" content="https://localresizer.com/og/png-resize-transparency-test.png">'),
+          'Evidence page twitter:image does not match og:image',
+        );
+        assert(
+          html.includes('<meta property="og:image:alt" content="LocalResizer PNG resize transparency evidence view showing alpha-channel measurements from a browser-based resize test.">'),
+          'Evidence page og:image:alt does not match the accepted value',
+        );
+        assert(
+          html.includes('<meta property="og:image:width" content="1200">'),
+          'Evidence page og:image:width dimension missing',
+        );
+        assert(
+          html.includes('<meta property="og:image:height" content="630">'),
+          'Evidence page og:image:height dimension missing',
+        );
+        assert(html.includes('2026-07-14'), 'Evidence page missing 2026-07-14 date');
+        assert(html.includes('Methodology and scope'), 'Evidence page missing methodology section');
+        assert(html.includes('Limitations'), 'Evidence page missing limitations section');
+        assert(html.includes('href="/resize-png/"'), 'Evidence page missing link to /resize-png/');
+        assert(html.includes('astro-island'), 'Evidence page missing astro-island hydration marker');
+        assert(html.includes('PngResizeEvidenceLab'), 'Evidence page missing PngResizeEvidenceLab island marker');
+      },
+    },
+    {
+      slug: 'png-transparency-after-resizing',
+      h1: 'PNG transparency after resizing',
+      extra(html) {
+        assert(html.includes('href="/png-resize-transparency-test/"'), 'Transparency guide missing evidence link');
+        assert(html.includes('href="/resize-png/"'), 'Transparency guide missing resize-png link');
+      },
+    },
+    {
+      slug: 'resize-vs-compress-png',
+      h1: 'Resize vs compress PNG',
+      extra(html) {
+        assert(html.includes('href="/png-resize-transparency-test/"'), 'Resize-vs-compress guide missing evidence link');
+        assert(html.includes('href="/resize-png/"'), 'Resize-vs-compress guide missing resize-png link');
+      },
+    },
+  ];
+
+  for (const { slug, h1, extra } of staticGuidePageChecks) {
+    const htmlFile = path.join(DIST_DIR, slug, 'index.html');
+    assert(existsSync(htmlFile), `Missing built HTML file for static guide page: ${slug}`);
+    const html = readUtf8(htmlFile);
+    assertStaticGuidePage(slug, h1, html);
+    extra(html);
   }
 
   assert(urls.length === staticPages.length + liveSlugs.length, `Unexpected sitemap URL count: ${urls.length}`);

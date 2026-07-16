@@ -79,6 +79,13 @@ const breadcrumbSchema = generateBreadcrumbSchema(breadcrumbItems);
       </p>
     </section>
 
+    <section class="bg-white rounded-2xl p-7 shadow-soft border border-stone-100 mb-10 space-y-4">
+      <h2 class="font-[var(--font-heading)] text-xl font-semibold text-stone-900">PNG transparency note</h2>
+      <p class="text-stone-500 leading-relaxed">
+        PNG is the right choice when transparency or crisp edges matter, but resizing a PNG still changes pixels. The alpha channel stays present while browser resampling softens edges and fine detail. If you are deciding whether to resize a transparent PNG, the <a href={formatPagePath('png-resize-transparency-test')} class="text-teal-700 hover:text-teal-800 underline underline-offset-2">PNG resize transparency test</a> shows exactly what the current browser does to source and output dimensions, bytes, and alpha pixels.
+      </p>
+    </section>
+
     <section class="grid grid-cols-1 md:grid-cols-3 gap-5">
       <a href={formatPagePath('compress-image')} class="no-underline bg-white rounded-2xl p-6 shadow-soft border border-stone-100 hover:border-teal-200 hover:bg-teal-50/40 transition-all">
         <h2 class="font-[var(--font-heading)] text-lg font-semibold text-stone-900 mb-2">Compare compression pages</h2>

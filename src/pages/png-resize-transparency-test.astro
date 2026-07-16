@@ -1,0 +1,124 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Breadcrumbs from '../components/Breadcrumbs.astro';
+import PngResizeEvidenceLab from '../components/PngResizeEvidenceLab.tsx';
+import { generateBreadcrumbSchema } from '../lib/seo';
+import { formatPagePath } from '../lib/urls';
+
+const title = 'PNG Resize Transparency Test | LocalResizer';
+const description =
+  'Run a live PNG resize test in your browser and see dimensions, file size, and alpha pixel counts before and after resizing.';
+const breadcrumbItems = [
+  { href: '/', label: 'Home' },
+  { href: formatPagePath('resize-image'), label: 'Resize Image Guide' },
+  { href: formatPagePath('png-resize-transparency-test'), label: 'PNG resize transparency test' },
+];
+const breadcrumbSchema = generateBreadcrumbSchema(breadcrumbItems);
+---
+
+<BaseLayout
+  title={title}
+  description={description}
+  schemas={[breadcrumbSchema]}
+  socialImage="/og/png-resize-transparency-test.png"
+  socialImageAlt="LocalResizer PNG resize transparency evidence view showing alpha-channel measurements from a browser-based resize test."
+>
+  <Breadcrumbs items={breadcrumbItems} />
+
+  <article class="max-w-4xl mx-auto px-4 sm:px-5 py-10 sm:py-14">
+    <div class="text-center mb-8">
+      <span class="inline-block px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 text-xs font-semibold tracking-wide uppercase mb-3">Evidence</span>
+      <h1 class="font-[var(--font-heading)] text-3xl md:text-4xl font-bold text-stone-900 tracking-tight mb-4">PNG resize transparency test</h1>
+      <p class="text-xs text-stone-400 uppercase tracking-wide mb-4">
+        Published and updated <time datetime="2026-07-14">Jul 14, 2026</time>
+      </p>
+      <p class="text-stone-500 max-w-2xl mx-auto leading-relaxed">
+        This page runs a small browser experiment. It draws four PNG patterns and resizes them with the same Canvas primitives used by our <a href={formatPagePath('resize-png')} class="text-teal-700 hover:text-teal-800 underline underline-offset-2">Resize PNG</a> page. The lab is self-contained, so it shares browser APIs but not the same code path as the production page.
+      </p>
+    </div>
+
+    <h2 class="font-[var(--font-heading)] text-2xl font-semibold text-stone-900 mb-6">Run the live test</h2>
+    <div class="mb-10">
+      <PngResizeEvidenceLab client:visible />
+    </div>
+
+    <section class="bg-white rounded-2xl p-7 shadow-soft border border-stone-100 mb-8 space-y-4">
+      <h2 class="font-[var(--font-heading)] text-xl font-semibold text-stone-900">What the test measures</h2>
+      <p class="text-stone-500 leading-relaxed">
+        Browser-based PNG resizing can keep the alpha channel, and resampling can create new semi-transparent edge pixels. This lab makes those changes visible and measurable.
+      </p>
+      <p class="text-stone-500 leading-relaxed">
+        For each pattern the lab reports:
+      </p>
+      <ul class="space-y-2 text-stone-500 leading-relaxed list-disc pl-5">
+        <li>Source and output pixel dimensions.</li>
+        <li>Source and output PNG byte sizes from <code class="text-sm bg-stone-100 px-1.5 py-0.5 rounded">canvas.toBlob('image/png')</code>.</li>
+        <li>Signed byte-size percentage change.</li>
+        <li>Exact counts and percentages of fully transparent, semi-transparent, and fully opaque pixels in the source and output.</li>
+      </ul>
+      <p class="text-stone-500 leading-relaxed">
+        The numbers come from your current browser. They can differ across browsers and operating systems.
+      </p>
+    </section>
+
+    <section class="bg-white rounded-2xl p-7 shadow-soft border border-stone-100 mb-8 space-y-4">
+      <h2 class="font-[var(--font-heading)] text-xl font-semibold text-stone-900">Methodology and scope</h2>
+      <p class="text-stone-500 leading-relaxed">
+        Every pattern is generated from scratch on an in-memory canvas. Test inputs are drawn in memory rather than read from an uploaded user image.
+      </p>
+      <p class="text-stone-500 leading-relaxed">
+        Image content is not uploaded for processing. Metrics are not pre-filled.
+      </p>
+      <p class="text-stone-500 leading-relaxed">
+        The source canvas is cleared to transparent. The pattern is drawn, and the canvas is exported as PNG. The output canvas is created at the selected percentage with image smoothing enabled and <code class="text-sm bg-stone-100 px-1.5 py-0.5 rounded">imageSmoothingQuality</code> set to <code class="text-sm bg-stone-100 px-1.5 py-0.5 rounded">high</code>.
+      </p>
+      <p class="text-stone-500 leading-relaxed">
+        The browser decides how to apply that request, so results can vary.
+      </p>
+      <p class="text-stone-500 leading-relaxed">
+        The four patterns cover the cases most likely to change during resize:
+      </p>
+      <ul class="space-y-2 text-stone-500 leading-relaxed list-disc pl-5">
+        <li><strong>Binary-alpha logo edges:</strong> pixel-aligned opaque shapes on a transparent background. The source alpha channel is binary (0 or 255). Resampling can create new semi-transparent pixels in the output.</li>
+        <li><strong>Text and UI lines:</strong> small text and card-style rectangles that test crispness at small sizes.</li>
+        <li><strong>Semi-transparent gradient:</strong> alpha gradients and soft shadows that remain partially transparent through resize.</li>
+        <li><strong>Fine line art:</strong> thin diagonal strokes and grids that are sensitive to pixel mixing.</li>
+      </ul>
+    </section>
+
+    <section class="bg-white rounded-2xl p-7 shadow-soft border border-stone-100 mb-10">
+      <h2 class="font-[var(--font-heading)] text-xl font-semibold text-stone-900 mb-4">Limitations</h2>
+      <ul class="space-y-3 text-sm text-stone-500 leading-relaxed list-disc pl-5">
+        <li>The test uses synthetic patterns, not your own files. It demonstrates browser behavior, not a prediction for every real image.</li>
+        <li>Byte counts and resampling details vary by browser/OS encoder implementation, Canvas resampling implementation, color handling, and installed font rasterization. Do not treat one run as a universal benchmark.</li>
+        <li>The lab does not test enlargement, cropping, format conversion, or compression beyond the resize step.</li>
+        <li>Patterns are generated at a fixed source size. Very large or very small source images may behave differently.</li>
+      </ul>
+    </section>
+
+    <section class="bg-white rounded-2xl p-7 shadow-soft border border-stone-100 mb-8 space-y-4">
+      <h2 class="font-[var(--font-heading)] text-xl font-semibold text-stone-900">How to read the results</h2>
+      <p class="text-stone-500 leading-relaxed">
+        A smaller PNG is expected after downscaling. The exact byte reduction depends on pattern complexity and the browser encoder. Watch for two specific signals:
+      </p>
+      <ul class="space-y-2 text-stone-500 leading-relaxed list-disc pl-5">
+        <li><strong>Semi-transparent pixels appear in the output when they were absent in the source.</strong> This is normal resampling along edges. That does not mean transparency is broken. The edge is now softer.</li>
+        <li><strong>Fine lines become thicker or thinner.</strong> When a pattern is downscaled, the browser blends neighboring pixels. Hairline details may dim, thicken, or disappear.</li>
+      </ul>
+      <p class="text-stone-500 leading-relaxed">
+        Use this evidence to decide whether a smaller dimension is acceptable. When the destination requires pixel-perfect edges, keep the source larger. When the destination only needs a compact preview, the resized output is usually fine.
+      </p>
+    </section>
+
+    <section class="grid grid-cols-1 md:grid-cols-2 gap-5">
+      <a href={formatPagePath('resize-png')} class="no-underline bg-white rounded-2xl p-6 shadow-soft border border-stone-100 hover:border-teal-200 hover:bg-teal-50/40 transition-all">
+        <h2 class="font-[var(--font-heading)] text-lg font-semibold text-stone-900 mb-2">Resize PNG</h2>
+        <p class="text-sm text-stone-500 leading-relaxed">Open the live PNG resizer and apply the same browser-local workflow to your own transparent PNG files.</p>
+      </a>
+      <a href={formatPagePath('resize-image')} class="no-underline bg-white rounded-2xl p-6 shadow-soft border border-stone-100 hover:border-teal-200 hover:bg-teal-50/40 transition-all">
+        <h2 class="font-[var(--font-heading)] text-lg font-semibold text-stone-900 mb-2">Resize image guide</h2>
+        <p class="text-sm text-stone-500 leading-relaxed">Compare the PNG resizer with batch resize, target-size pages, and other current resize workflows.</p>
+      </a>
+    </section>
+  </article>
+</BaseLayout>
