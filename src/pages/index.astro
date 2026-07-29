@@ -7,9 +7,9 @@ import { generateOrganizationSchema, generateWebApplicationSchema, generateWebSi
 import { formatPagePath } from '../lib/urls';
 
 const title = 'LocalResizer - Resize, Compress and Batch Process Images';
-const description = 'Resize, compress, split, and batch process static JPEG, PNG, and WebP images locally in your browser with no image-content upload.';
+const description = 'Resize, compress, convert, split, and batch process static JPEG, PNG, and WebP images locally in your browser with no image-content upload.';
 const hubGuides = listHubInfos();
-const popularTaskSlugs = ['batch-resize-images', 'resize-png', 'resize-image-to-20kb', 'compress-image-to-500kb', 'resize-image-to-2mb'];
+const popularTaskSlugs = ['webp-to-jpg', 'photo-to-png', 'batch-resize-images', 'resize-png', 'resize-image-to-20kb', 'compress-image-to-500kb', 'resize-image-to-2mb'];
 const popularTaskRoutes = popularTaskSlugs
   .map((slug) => phase0Routes.find((route) => route.slug === slug))
   .filter(Boolean);
@@ -48,7 +48,7 @@ const schemas = [
       </h1>
 
       <p class="text-lg text-stone-500 max-w-xl mx-auto mb-3 animate-fade-up" style="animation-delay: 0.15s">
-        Start with the quick resize and compress controls, or open a focused workflow for batch resizing, PNG dimensions, target file sizes, signatures, and image grids.
+        Start with the quick resize and compress controls, or open a focused workflow for format conversion, batch resizing, PNG dimensions, target file sizes, signatures, and image grids.
       </p>
 
       <p class="text-sm text-stone-500 animate-fade-up" style="animation-delay: 0.2s">
@@ -154,7 +154,7 @@ const schemas = [
         class="bg-white rounded-2xl p-6 shadow-soft border border-stone-100 no-underline hover:shadow-soft-lg hover:border-teal-200 hover:-translate-y-0.5 transition-all duration-300"
       >
         <h3 class="font-[var(--font-heading)] font-semibold text-stone-900 mb-3">Image Tools Guide</h3>
-        <p class="text-sm text-stone-500 leading-relaxed">Browse the current utility workflows, including image splitting and related non-generic image tasks that sit outside the main resize pages.</p>
+        <p class="text-sm text-stone-500 leading-relaxed">Browse the current format converters, image splitting, and related non-generic image tasks that sit outside the main resize pages.</p>
       </a>
     </div>
   </section>
@@ -171,6 +171,7 @@ const schemas = [
           <li>Compress JPEG pages target a file-size budget locally and keep the original file if it is already under the limit.</li>
           <li>PNG compression pages keep PNG output and may reduce pixel dimensions when needed to move toward the target size.</li>
           <li>Resize image target pages work with static JPEG, PNG, and WebP files while preserving the original aspect ratio.</li>
+          <li><a href={formatPagePath('webp-to-jpg')} class="text-teal-700 underline hover:text-teal-900">WebP to JPG</a> and <a href={formatPagePath('photo-to-png')} class="text-teal-700 underline hover:text-teal-900">photo to PNG</a> pages re-encode one static image while keeping its pixel dimensions.</li>
           <li>Platform pages export an exact output canvas and keep the whole image visible, with padding added when ratios do not match.</li>
           <li><a href={formatPagePath('signature-resizer')} class="text-teal-700 underline hover:text-teal-900">Signature resizer</a> and <a href={formatPagePath('image-splitter')} class="text-teal-700 underline hover:text-teal-900">image splitter</a> pages handle signature cleanup and grid splitting locally in the browser.</li>
         </ul>
@@ -204,7 +205,7 @@ const schemas = [
       <span class="inline-block px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 text-xs font-semibold tracking-wide uppercase mb-3">Popular Image Tasks</span>
       <h2 class="font-[var(--font-heading)] text-2xl md:text-3xl font-bold text-stone-900 tracking-tight">Jump straight to a focused image tool</h2>
       <p class="text-stone-500 max-w-2xl mx-auto leading-relaxed">
-        Resize PNG files by pixel dimensions, or open a target-size page when an upload form already says 20KB, 500KB, or 2MB.
+        Convert WebP or photo formats, resize PNG dimensions, or open a target-size page when an upload form already says 20KB, 500KB, or 2MB.
       </p>
     </div>
     <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">

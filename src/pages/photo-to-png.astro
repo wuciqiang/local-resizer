@@ -1,0 +1,73 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Breadcrumbs from '../components/Breadcrumbs.astro';
+import FaqSection from '../components/FaqSection.astro';
+import FooterLinks from '../components/FooterLinks.astro';
+import HowToSection from '../components/HowToSection.astro';
+import ImageConverterProcessor from '../components/ImageConverterProcessor.tsx';
+import { getRouteBySlug } from '../data/routes';
+import { generateBreadcrumbSchema } from '../lib/seo';
+import { getRouteBreadcrumbs } from '../lib/site-structure';
+import { formatPagePath } from '../lib/urls';
+
+const route = getRouteBySlug('photo-to-png');
+if (!route) {
+  throw new Error('Missing route config for photo-to-png.');
+}
+
+const breadcrumbItems = getRouteBreadcrumbs(route);
+const schemas = [generateBreadcrumbSchema(breadcrumbItems)];
+---
+<BaseLayout title={route.seo.title} description={route.seo.description} schemas={schemas}>
+  <Breadcrumbs items={breadcrumbItems} />
+
+  <section class="max-w-3xl mx-auto px-4 sm:px-5 pt-8 sm:pt-14 pb-5 sm:pb-8 text-center">
+    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white border border-stone-200 shadow-soft text-xs font-medium text-stone-500 mb-4 sm:mb-6">
+      <span class="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+      Static images only - Processed locally
+    </div>
+    <p class="text-xs font-semibold uppercase text-teal-700 mb-3">Format conversion</p>
+    <h1 class="font-[var(--font-heading)] text-3xl md:text-4xl font-bold text-stone-900 mb-4">{route.seo.h1}</h1>
+    <p class="text-base sm:text-lg text-stone-500 max-w-2xl mx-auto leading-relaxed">{route.seo.subtitle}</p>
+  </section>
+
+  <ImageConverterProcessor
+    client:visible
+    acceptedTypes={['image/jpeg', 'image/webp']}
+    outputType="image/png"
+  />
+
+  <section class="max-w-4xl mx-auto px-4 sm:px-5 py-8 sm:py-10">
+    <h2 class="font-[var(--font-heading)] text-2xl font-bold text-stone-900 text-center mb-7">What this page is best for</h2>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+      <div class="bg-white rounded-xl p-6 border border-stone-100 shadow-soft">
+        <h3 class="font-[var(--font-heading)] text-lg font-semibold text-stone-900 mb-3">PNG-only destinations</h3>
+        <p class="text-sm text-stone-500 leading-relaxed">Some editors, design tools, and upload forms ask for PNG specifically. This page re-encodes your photo without changing its dimensions.</p>
+      </div>
+      <div class="bg-white rounded-xl p-6 border border-stone-100 shadow-soft">
+        <h3 class="font-[var(--font-heading)] text-lg font-semibold text-stone-900 mb-3">Lossless PNG re-saves</h3>
+        <p class="text-sm text-stone-500 leading-relaxed">Saving unchanged pixels as PNG does not add another lossy JPEG encode. Resizing, cropping, or filters still change image data, and PNG cannot restore detail the source already lost.</p>
+      </div>
+      <div class="bg-white rounded-xl p-6 border border-stone-100 shadow-soft">
+        <h3 class="font-[var(--font-heading)] text-lg font-semibold text-stone-900 mb-3">Kept WebP transparency</h3>
+        <p class="text-sm text-stone-500 leading-relaxed">If the source WebP has transparent areas, the PNG output keeps them. A JPG source has no transparency to keep.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="max-w-3xl mx-auto px-4 sm:px-5 pb-6">
+    <div class="bg-white rounded-2xl p-7 shadow-soft border border-stone-100 space-y-4">
+      <h2 class="font-[var(--font-heading)] text-xl font-semibold text-stone-900">Honest limits of photo to PNG conversion</h2>
+      <p class="text-stone-500 leading-relaxed">
+        PNG output is lossless but often larger than the JPG or WebP source. Converting does not improve sharpness, restore transparency, or preserve EXIF, GPS, or color-profile metadata, which Canvas export typically removes.
+      </p>
+      <p class="text-stone-500 leading-relaxed">
+        Need the opposite direction? Use the <a href={formatPagePath('webp-to-jpg')} class="text-teal-700 underline hover:text-teal-900">WebP to JPG converter</a>. Need different pixel dimensions? Use the <a href={formatPagePath('resize-png')} class="text-teal-700 underline hover:text-teal-900">resize PNG tool</a>.
+      </p>
+    </div>
+  </section>
+
+  <HowToSection steps={route.howToSteps} />
+  <FaqSection items={route.faq} />
+  <FooterLinks links={route.relatedLinks} />
+</BaseLayout>

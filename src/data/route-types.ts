@@ -1,4 +1,4 @@
-export type Action = 'compress' | 'resize' | 'split';
+export type Action = 'compress' | 'resize' | 'split' | 'convert';
 export type Format = 'jpeg' | 'png' | 'webp';
 export type Tier = 1 | 2 | 3 | 4;
 export type ResizeMode = 'fit' | 'contain' | 'cover' | 'stretch';
@@ -9,7 +9,8 @@ export type RouteIntent =
   | 'format-resize'
   | 'batch-resize'
   | 'signature'
-  | 'image-splitter';
+  | 'image-splitter'
+  | 'format-convert';
 
 export interface Dimensions {
   width: number;
@@ -49,7 +50,7 @@ export interface RouteConfig {
   maxFileSize: number;
   maxFiles?: number;
   maxBatchSize?: number;
-  lockedAction?: Exclude<Action, 'split'>;
+  lockedAction?: Exclude<Action, 'split' | 'convert'>;
   hideActionTabs?: boolean;
   resizeMode?: ResizeMode;
   forceCanvasSize?: boolean;

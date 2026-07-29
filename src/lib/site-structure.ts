@@ -59,7 +59,7 @@ const HUBS: Record<HubSlug, HubInfo> = {
     href: formatPagePath('image-tools'),
     label: 'Image Tools Guide',
     title: 'Utility image tools for current live workflows',
-    description: 'Browse the current utility workflows beyond basic resize and compress pages, including signature cleanup and grid-based image splitting.',
+    description: 'Browse format conversion, signature cleanup, and grid-based image splitting workflows beyond the basic resize and compress pages.',
   },
 };
 
@@ -78,6 +78,10 @@ export function listHubInfos(): HubInfo[] {
 }
 
 export function getHubForRoute(route: RouteConfig): HubInfo {
+  if (route.intent === 'format-convert') {
+    return HUBS['image-tools'];
+  }
+
   if (route.intent === 'signature') {
     return HUBS['signature-tools'];
   }

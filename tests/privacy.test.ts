@@ -20,7 +20,9 @@ describe('analytics privacy disclosures', () => {
     for (const relativePath of [
       'src/components/ImageProcessor.tsx',
       'src/components/ImageSplitterProcessor.tsx',
+      'src/components/ImageConverterProcessor.tsx',
       'src/components/SignatureProcessor.tsx',
+      'src/components/image-converter/ConvertResultPanel.tsx',
       'src/components/image-processor/ResultsPanel.tsx',
       'src/components/image-processor/SelectedFilesPanel.tsx',
     ]) {
@@ -29,5 +31,19 @@ describe('analytics privacy disclosures', () => {
 
     expect(read('src/components/SignatureProcessor.tsx')).toContain('<img data-clarity-mask="true"');
     expect(read('src/components/ImageSplitterProcessor.tsx')).toContain('<img data-clarity-mask="true"');
+  });
+
+  it('masks every converter image preview from Clarity recordings', () => {
+    for (const relativePath of [
+      'src/components/ImageConverterProcessor.tsx',
+      'src/components/image-converter/ConvertResultPanel.tsx',
+    ]) {
+      const imageTags = read(relativePath).match(/<img\b[\s\S]*?\/>/g) ?? [];
+
+      expect(imageTags.length).toBeGreaterThan(0);
+      for (const imageTag of imageTags) {
+        expect(imageTag).toContain('data-clarity-mask="true"');
+      }
+    }
   });
 });

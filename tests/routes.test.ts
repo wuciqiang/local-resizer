@@ -74,6 +74,8 @@ describe('activeRoutes', () => {
       'resize-linkedin-banner',
       'resize-linkedin-profile-photo',
       'batch-resize-images',
+      'webp-to-jpg',
+      'photo-to-png',
     ];
 
     for (const slug of phase1Slugs) {
@@ -109,6 +111,8 @@ describe('activeRoutes', () => {
     expect(getRouteBySlug('batch-resize-images')?.intent).toBe('batch-resize');
     expect(getRouteBySlug('signature-resizer')?.intent).toBe('signature');
     expect(getRouteBySlug('image-splitter')?.intent).toBe('image-splitter');
+    expect(getRouteBySlug('webp-to-jpg')?.intent).toBe('format-convert');
+    expect(getRouteBySlug('photo-to-png')?.intent).toBe('format-convert');
   });
 
   it('uses current exact-canvas dimensions for new social platform pages', () => {
@@ -164,6 +168,10 @@ describe('getRouteBySlug', () => {
     expect(getRouteBySlug('batch-resize-images')?.defaultDimensions).toEqual({ width: 1280, height: 720 });
     expect(getRouteBySlug('batch-resize-images')?.maxFiles).toBe(20);
     expect(getRouteBySlug('batch-resize-images')?.maxBatchSize).toBe(100 * 1024 * 1024);
+    expect(getRouteBySlug('webp-to-jpg')?.action).toBe('convert');
+    expect(getRouteBySlug('webp-to-jpg')?.acceptFormats).toEqual(['image/webp']);
+    expect(getRouteBySlug('photo-to-png')?.action).toBe('convert');
+    expect(getRouteBySlug('photo-to-png')?.acceptFormats).toEqual(['image/jpeg', 'image/webp']);
   });
 
   it('returns undefined for non-existent slugs', () => {
@@ -194,6 +202,7 @@ describe('phase0Routes', () => {
         'compress-jpeg-to-50kb',
         'compress-jpeg-to-200kb',
         'photo-resizer-20kb',
+        'webp-to-jpg',
       ]),
     );
   });
@@ -234,5 +243,27 @@ describe('phase0Routes', () => {
 
   it('gives the image splitter a contextual inbound link from the PNG workflow', () => {
     expect(getRouteBySlug('resize-png')?.relatedLinks).toContain('image-splitter');
+  });
+
+  it('adds reciprocal links from adjacent JPG and PNG workflows to the converters', () => {
+    expect(getRouteBySlug('compress-jpg-file')?.relatedLinks).toContain('webp-to-jpg');
+    expect(getRouteBySlug('resize-png')?.relatedLinks).toContain('photo-to-png');
+  });
+
+  it('connects the two format-conversion pages to relevant live workflows', () => {
+    expect(getRouteBySlug('webp-to-jpg')?.relatedLinks).toEqual(
+      expect.arrayContaining(['photo-to-png', 'compress-jpg-file', 'resize-png']),
+    );
+    expect(getRouteBySlug('photo-to-png')?.relatedLinks).toEqual(
+      expect.arrayContaining(['webp-to-jpg', 'resize-png', 'compress-image-to-500kb']),
+    );
+  });
+
+  it('keeps WebP converter FAQs precise about JPEG naming and file-size outcomes', () => {
+    const answers = getRouteBySlug('webp-to-jpg')?.faq.map((item) => item.answer).join(' ') ?? '';
+
+    expect(answers).toContain('JPG and JPEG are two names for the same image format');
+    expect(answers).toContain('.jpg filename');
+    expect(answers).toContain('not guaranteed to use fewer bytes');
   });
 });

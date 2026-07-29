@@ -19,9 +19,9 @@ import { formatPagePath } from '../lib/urls';
       <section class="bg-white rounded-2xl p-7 shadow-soft border border-stone-100">
         <h2 class="font-[var(--font-heading)] text-xl font-semibold text-stone-900 mb-4">Supported image formats</h2>
         <ul class="space-y-3 text-sm text-stone-500 leading-relaxed list-disc pl-5">
-          <li><strong>JPEG</strong> for photo-heavy compression and target-size workflows</li>
-          <li><strong>PNG</strong> for graphics and transparent images that need to stay in PNG format</li>
-          <li><strong>WebP</strong> for modern static image resizing and compression workflows</li>
+          <li><strong>JPEG</strong> for photo-heavy compression, target-size workflows, and JPG conversion output</li>
+          <li><strong>PNG</strong> for graphics, transparent images, and PNG conversion output</li>
+          <li><strong>WebP</strong> for modern static image resizing, compression, and supported converter input</li>
         </ul>
       </section>
 
@@ -32,10 +32,29 @@ import { formatPagePath } from '../lib/urls';
           <li><strong>Batch resize page</strong> for applying one bounding size to as many as 20 static images</li>
           <li><strong>Target-size pages</strong> such as 50 KB, 100 KB, 200 KB, and 2 MB workflows</li>
           <li><strong>Exact canvas pages</strong> for the currently live social artwork workflows</li>
+          <li><strong>Format converter pages</strong> for WebP to JPG and JPG or WebP photo to PNG</li>
           <li><strong>Specialized utility pages</strong> for signature cleanup and grid-based image splitting</li>
         </ul>
       </section>
     </div>
+
+    <section class="border-y border-stone-200 py-8 mb-12">
+      <h2 class="font-[var(--font-heading)] text-xl font-semibold text-stone-900 mb-5">Convert between the supported formats</h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+          <h3 class="font-[var(--font-heading)] font-semibold text-stone-900 mb-2">WebP input, JPG output</h3>
+          <p class="text-sm text-stone-500 leading-relaxed">
+            When a destination rejects WebP but accepts JPEG, <a href={formatPagePath('webp-to-jpg')} class="text-teal-700 underline underline-offset-2 hover:text-teal-900">convert WebP to JPG</a> with a chosen quality and background for transparent areas.
+          </p>
+        </div>
+        <div>
+          <h3 class="font-[var(--font-heading)] font-semibold text-stone-900 mb-2">JPG or WebP input, PNG output</h3>
+          <p class="text-sm text-stone-500 leading-relaxed">
+            When an editor or upload form requires PNG, <a href={formatPagePath('photo-to-png')} class="text-teal-700 underline underline-offset-2 hover:text-teal-900">convert a JPG or WebP photo to PNG</a> while keeping its pixel dimensions.
+          </p>
+        </div>
+      </div>
+    </section>
 
     <section class="bg-white rounded-2xl p-7 shadow-soft border border-stone-100 mb-12">
       <h2 class="font-[var(--font-heading)] text-xl font-semibold text-stone-900 mb-4">What the current live pages actually guarantee</h2>
@@ -53,6 +72,10 @@ import { formatPagePath } from '../lib/urls';
           <p class="text-sm text-stone-500 leading-relaxed">They export an exact output canvas for the live platform sizes, keep the whole image visible, and may add padding when the image ratio does not match.</p>
         </div>
         <div>
+          <h3 class="font-[var(--font-heading)] font-semibold text-stone-900 mb-2">Format converter pages</h3>
+          <p class="text-sm text-stone-500 leading-relaxed">They re-encode one static image to a locked JPG or PNG output, preserve pixel dimensions, and may change file size or remove source metadata.</p>
+        </div>
+        <div>
           <h3 class="font-[var(--font-heading)] font-semibold text-stone-900 mb-2">Specialized utility pages</h3>
           <p class="text-sm text-stone-500 leading-relaxed">They cover focused workflows such as trimming and resizing signature images or splitting a static image into a simple grid of downloadable tiles.</p>
         </div>
@@ -67,6 +90,7 @@ import { formatPagePath } from '../lib/urls';
       <h2 class="font-[var(--font-heading)] text-xl font-semibold text-stone-900 mb-4">Current limits and unsupported workflows</h2>
       <ul class="space-y-3 text-sm text-stone-500 leading-relaxed list-disc pl-5">
         <li>Animated GIF workflows are not part of the current public release.</li>
+        <li>Animated WebP is not supported by the current format converter pages.</li>
         <li>Video processing is not part of the current public release.</li>
         <li>Target-size workflows are best-effort because exact output depends on the source image.</li>
         <li>Batch selections are limited to 20 files and 100MB total, with additional source-image and output-canvas pixel limits.</li>
@@ -89,6 +113,10 @@ import { formatPagePath } from '../lib/urls';
         <a href={formatPagePath('youtube-image-sizes')} class="no-underline rounded-xl border border-stone-100 bg-stone-50/70 p-5 hover:border-teal-200 hover:bg-teal-50/40 transition-all">
           <h3 class="font-[var(--font-heading)] font-semibold text-stone-900 mb-2">YouTube Image Size Guide</h3>
           <p class="text-sm text-stone-500 leading-relaxed">Review the current YouTube banner and thumbnail pages when you need a YouTube fixed canvas.</p>
+        </a>
+        <a href={formatPagePath('image-tools')} class="no-underline rounded-xl border border-stone-100 bg-stone-50/70 p-5 hover:border-teal-200 hover:bg-teal-50/40 transition-all">
+          <h3 class="font-[var(--font-heading)] font-semibold text-stone-900 mb-2">Image Tools Guide</h3>
+          <p class="text-sm text-stone-500 leading-relaxed">Open the live converter, signature, and image-splitting workflows from one guide.</p>
         </a>
         <a href={formatPagePath('why-image-size-is-best-effort')} class="no-underline rounded-xl border border-stone-100 bg-stone-50/70 p-5 hover:border-teal-200 hover:bg-teal-50/40 transition-all">
           <h3 class="font-[var(--font-heading)] font-semibold text-stone-900 mb-2">Why target size is best-effort</h3>

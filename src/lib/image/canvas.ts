@@ -28,7 +28,7 @@ export async function loadImage(file: Blob): Promise<HTMLImageElement> {
 export function canvasToBlob(
   canvas: HTMLCanvasElement,
   type: string,
-  quality: number,
+  quality?: number,
 ): Promise<Blob> {
   return new Promise((resolve, reject) => {
     canvas.toBlob((blob) => {

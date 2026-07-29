@@ -94,6 +94,8 @@ export const PHASE0_SLUGS = [
   'resize-png',
   'signature-resizer',
   'image-splitter',
+  'webp-to-jpg',
+  'photo-to-png',
 ];
 
 export const ACTIVE_SLUGS = new Set(PHASE0_SLUGS);
