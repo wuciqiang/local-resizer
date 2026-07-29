@@ -1,12 +1,12 @@
 # Current Public Capabilities
 
-Last updated: July 14, 2026
+Last updated: July 29, 2026
 
 This document defines what the live public site can claim today.
 
 ## Homepage claim set
 
-- LocalResizer resizes and compresses static images in the browser.
+- LocalResizer resizes, compresses, and converts supported static images in the browser.
 - Supported public formats are JPEG, PNG, and WebP.
 - Files are processed locally with no image upload to the server for the current tool flow.
 - The homepage tool supports:
@@ -21,6 +21,7 @@ The live public site also includes a small set of guide pages that explain the c
 - `/compress-image`
 - `/resize-image`
 - `/youtube-image-sizes`
+- `/image-tools`
 - `/why-image-size-is-best-effort`
 - `/jpeg-vs-png-vs-webp-for-upload-limits`
 - `/supported-formats`
@@ -36,7 +37,7 @@ These guide pages help users navigate the current release. They do not expand th
 
 ## Live tool-page claim set
 
-The current public release includes 37 focused tool pages:
+The current public release includes 39 focused tool pages:
 
 - `compress-image-to-20kb`
 - `compress-jpeg-to-50kb`
@@ -75,6 +76,8 @@ The current public release includes 37 focused tool pages:
 - `resize-png`
 - `signature-resizer`
 - `image-splitter`
+- `webp-to-jpg`
+- `photo-to-png`
 
 ### Compress JPEG pages
 
@@ -141,12 +144,32 @@ Allowed claims:
 - `signature-resizer` can trim extra whitespace around a signature image and export a resized PNG or JPG locally
 - `image-splitter` splits a static image into a rows-by-columns grid locally
 - `batch-resize-images` applies one width and height bounding box to up to 20 static images, preserves each source aspect ratio and format, and can download the results as a ZIP
+- `webp-to-jpg` converts one static WebP image to JPG, keeps its pixel dimensions, and fills transparent areas with the selected background color
+- `photo-to-png` converts one static JPG or WebP image to PNG and keeps its pixel dimensions
 
 Do not claim:
 
 - official passport, exam, or government compliance guarantees
 - PDF, SVG, GIF, or video support on these pages
 - exact byte-for-byte target-size guarantees
+
+### Format converter pages
+
+Allowed claims:
+
+- Re-encodes one supported static image to the page's locked JPG or PNG output
+- Keeps the original pixel width and height
+- Runs locally in the browser and downloads an extension that matches the output MIME
+- WebP to JPG offers JPEG quality and a background color for transparent source pixels
+- Keeps visible How It Works and FAQ content, while publishing BreadcrumbList as the only JSON-LD type on the two converter pages
+
+Do not claim:
+
+- conversion always creates a smaller file
+- JPG conversion is lossless
+- converting JPG to PNG restores detail or transparency
+- EXIF, GPS, or color-profile metadata is preserved
+- animated WebP, HEIC, SVG, GIF, PDF, or batch conversion support
 
 ### Exact canvas pages
 
@@ -188,7 +211,7 @@ These points must stay out of public promises for now:
 
 Use this when a short description is needed:
 
-"LocalResizer is a browser-based tool for compressing and resizing static JPEG, PNG, and WebP images locally, with live pages for target-size workflows and exact social artwork canvases."
+"LocalResizer is a browser-based tool for compressing, resizing, and converting supported static JPEG, PNG, and WebP images locally, with live pages for target-size, format-conversion, and exact social artwork workflows."
 
 ## Future-scope items to keep private for now
 

@@ -29,6 +29,8 @@ describe('site structure helpers', () => {
     expect(getHubForRoute(getRouteBySlug('resize-png')!).slug).toBe('resize-image');
     expect(getHubForRoute(getRouteBySlug('signature-resizer')!).slug).toBe('signature-tools');
     expect(getHubForRoute(getRouteBySlug('image-splitter')!).slug).toBe('image-tools');
+    expect(getHubForRoute(getRouteBySlug('webp-to-jpg')!).slug).toBe('image-tools');
+    expect(getHubForRoute(getRouteBySlug('photo-to-png')!).slug).toBe('image-tools');
   });
 
   it('maps YouTube routes to the YouTube guide hub', () => {

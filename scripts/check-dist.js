@@ -144,6 +144,7 @@ function assertRouteHtml(slug, htmlFile) {
   const howToSchema = jsonLd.find((item) => item?.['@type'] === 'HowTo');
   const breadcrumbSchema = jsonLd.find((item) => item?.['@type'] === 'BreadcrumbList');
   const canonical = extractCanonical(html);
+  const usesBreadcrumbOnlySchema = ['webp-to-jpg', 'photo-to-png'].includes(slug);
 
   assert(title.includes('LocalResizer'), `Built route page is missing LocalResizer in <title>: ${slug}`);
   assert(canonical === `https://localresizer.com/${slug}/`, `Built route page canonical URL is not normalized: ${slug}`);
@@ -168,11 +169,12 @@ function assertRouteHtml(slug, htmlFile) {
       'How this live page differs from nearby workflows',
       'When to use a signature resizer instead of a generic tool',
       'When to use an image splitter instead of a crop tool',
+      'Honest limits of',
     ],
     `Built route page lost the deeper-context section: ${slug}`,
   );
-  assert(faqSchema, `Built route page is missing FAQ schema: ${slug}`);
-  assert(howToSchema, `Built route page is missing HowTo schema: ${slug}`);
+  assert(html.includes('Frequently Asked Questions'), `Built route page lost its visible FAQ content: ${slug}`);
+  assert(html.includes('How It Works'), `Built route page lost its visible HowTo content: ${slug}`);
   assert(breadcrumbSchema, `Built route page is missing BreadcrumbList schema: ${slug}`);
   assert(
     breadcrumbSchema.itemListElement.every((item) => {
@@ -181,14 +183,21 @@ function assertRouteHtml(slug, htmlFile) {
     }),
     `Built route page breadcrumb schema has non-normalized URLs: ${slug}`,
   );
-  assert(
-    Array.isArray(faqSchema.mainEntity) && faqSchema.mainEntity.length >= 5,
-    `Built route page FAQ schema is incomplete: ${slug}`,
-  );
-  assert(
-    Array.isArray(howToSchema.step) && howToSchema.step.length === 3,
-    `Built route page HowTo schema step count changed: ${slug}`,
-  );
+  if (usesBreadcrumbOnlySchema) {
+    assert(!faqSchema, `Converter route should not publish deprecated FAQ schema: ${slug}`);
+    assert(!howToSchema, `Converter route should not publish deprecated HowTo schema: ${slug}`);
+  } else {
+    assert(faqSchema, `Built route page is missing FAQ schema: ${slug}`);
+    assert(howToSchema, `Built route page is missing HowTo schema: ${slug}`);
+    assert(
+      Array.isArray(faqSchema.mainEntity) && faqSchema.mainEntity.length >= 5,
+      `Built route page FAQ schema is incomplete: ${slug}`,
+    );
+    assert(
+      Array.isArray(howToSchema.step) && howToSchema.step.length === 3,
+      `Built route page HowTo schema step count changed: ${slug}`,
+    );
+  }
 }
 
 function main() {
@@ -312,6 +321,24 @@ function main() {
   assert(homeHtml.includes('Static images only'), 'Homepage no longer states the static-image-only scope.');
   assert(homeHtml.includes('What the current public release actually does'), 'Homepage live-scope section is missing.');
   assert(homeHtml.includes('Start with the right guide'), 'Homepage guide section is missing.');
+  assert(homeHtml.includes('href="/webp-to-jpg/"'), 'Homepage is missing the WebP-to-JPG entry.');
+  assert(homeHtml.includes('href="/photo-to-png/"'), 'Homepage is missing the photo-to-PNG entry.');
+
+  for (const slug of ['webp-to-jpg', 'photo-to-png']) {
+    const html = readUtf8(path.join(DIST_DIR, slug, 'index.html'));
+    assert(html.includes('ImageConverterProcessor'), `Converter page is missing its React processor island: ${slug}`);
+  }
+
+  const imageToolsHtml = readUtf8(path.join(DIST_DIR, 'image-tools', 'index.html'));
+  assert(!imageToolsHtml.includes('search engines'), 'Image tools hub still contains search-engine-facing copy.');
+  assert(!imageToolsHtml.includes('This matters for SEO'), 'Image tools hub still contains SEO-facing copy.');
+  for (const label of ['Transparency', 'Quality control', 'Typical size effect', 'Best when']) {
+    assert(imageToolsHtml.includes(label), `Image tools hub lost the converter comparison field: ${label}`);
+  }
+  for (const slug of ['webp-to-jpg', 'photo-to-png']) {
+    const entryCount = (imageToolsHtml.match(new RegExp(`href="/${slug}/"`, 'g')) ?? []).length;
+    assert(entryCount === 1, `Image tools hub should have one primary linked entry for ${slug}; found ${entryCount}.`);
+  }
 
   for (const slug of ['compress-image', 'resize-image']) {
     const html = readUtf8(path.join(DIST_DIR, slug, 'index.html'));
@@ -331,6 +358,8 @@ function main() {
     supportedHtml.includes('JPEG vs PNG vs WebP guide'),
     'Supported formats page lost the format-comparison explainer link.',
   );
+  assert(supportedHtml.includes('href="/webp-to-jpg/"'), 'Supported formats page is missing the WebP-to-JPG context link.');
+  assert(supportedHtml.includes('href="/photo-to-png/"'), 'Supported formats page is missing the photo-to-PNG context link.');
 
   const contactHtml = readUtf8(path.join(DIST_DIR, 'contact', 'index.html'));
   assert(contactHtml.includes('support@localresizer.com'), 'Contact page lost the support@localresizer.com email.');
@@ -353,6 +382,13 @@ function main() {
     formatGuideHtml.includes('JPEG vs PNG vs WebP for upload limits'),
     'Format-comparison support page lost its core heading.',
   );
+  assert(formatGuideHtml.includes('href="/webp-to-jpg/"'), 'Format guide is missing the WebP-to-JPG context link.');
+  assert(formatGuideHtml.includes('href="/photo-to-png/"'), 'Format guide is missing the photo-to-PNG context link.');
+
+  const resizePngHtml = readUtf8(path.join(DIST_DIR, 'resize-png', 'index.html'));
+  assert(resizePngHtml.includes('convert a JPG or WebP photo to PNG first'), 'Resize PNG page lost its converter context link.');
+  const compressJpgHtml = readUtf8(path.join(DIST_DIR, 'compress-jpg-file', 'index.html'));
+  assert(compressJpgHtml.includes('convert WebP to JPG first'), 'Compress JPG page lost its converter context link.');
 
   console.log(`dist smoke checks passed for ${urls.length} pages and ${liveSlugs.length} documented live tool routes.`);
 }

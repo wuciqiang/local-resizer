@@ -274,6 +274,97 @@ function buildBatchResizeRoute(): RouteConfig {
   };
 }
 
+function buildFormatConversionRoutes(): RouteConfig[] {
+  const maxFileSize = 50 * 1024 * 1024;
+
+  return [
+    {
+      slug: 'webp-to-jpg',
+      action: 'convert',
+      intent: 'format-convert',
+      tier: 4,
+      seo: {
+        title: 'WebP to JPG Converter Online - No Upload | LocalResizer',
+        description: 'Convert a static WebP image to JPG in your browser. Choose quality and a background color for transparent areas, then download locally with no image upload.',
+        h1: 'Convert WebP to JPG',
+        subtitle: 'Re-encode a static WebP image as a JPG in your browser, with control over quality and the background color used for transparent areas.',
+      },
+      faq: [
+        {
+          question: 'Does JPG keep transparency?',
+          answer: 'No. The JPG format has no alpha channel, so transparent pixels in a WebP are filled with the background color you choose before conversion. The default background is white.',
+        },
+        {
+          question: 'What does the quality setting do?',
+          answer: 'It sets the JPEG encoding quality from 1 to 100, with 92 as the default. Higher values keep more detail and produce a larger file. It is a quality tradeoff, not an exact file-size target.',
+        },
+        {
+          question: 'Are my images uploaded to a server?',
+          answer: 'No. Conversion runs locally in your browser with the Canvas API. The image content is never sent over the network, and exporting through Canvas typically removes EXIF and GPS metadata.',
+        },
+        {
+          question: 'Which files does this page accept, and are JPG and JPEG the same?',
+          answer: 'This page accepts one static WebP image at a time. JPG and JPEG are two names for the same image format; the converter creates JPEG image data with a .jpg filename. Animated WebP, HEIC, SVG, GIF, and PDF are not supported.',
+        },
+        {
+          question: 'Will the JPG keep the same dimensions and always be smaller?',
+          answer: 'The output keeps the original pixel width and height, but it is not guaranteed to use fewer bytes. WebP is often more compression-efficient than JPEG, so the result can be larger even though the dimensions stay the same.',
+        },
+      ],
+      howToSteps: [
+        'Drop one static WebP image into the tool or click to browse your files.',
+        'Adjust the JPEG quality and pick a background color for any transparent areas.',
+        'Convert and download the JPG. The image never leaves your browser.',
+      ],
+      relatedLinks: [],
+      acceptFormats: [MIME_MAP.webp],
+      maxFileSize,
+    },
+    {
+      slug: 'photo-to-png',
+      action: 'convert',
+      intent: 'format-convert',
+      tier: 4,
+      seo: {
+        title: 'Photo to PNG Converter Online - No Upload | LocalResizer',
+        description: 'Convert a static JPG or WebP photo to PNG in your browser. Keep the original pixel dimensions and download locally with no image upload or signup.',
+        h1: 'Convert Photo to PNG',
+        subtitle: 'Re-encode a static JPG or WebP photo as a PNG in your browser. The original pixel dimensions are kept and nothing is uploaded.',
+      },
+      faq: [
+        {
+          question: 'Are JPG and JPEG both supported?',
+          answer: 'Yes. JPG and JPEG are the same format, and this page also accepts static WebP. If your file is already a PNG, use the resize PNG page instead. HEIC, SVG, GIF, and PDF are not supported.',
+        },
+        {
+          question: 'Does the PNG keep the original dimensions?',
+          answer: 'Yes. Conversion only re-encodes the format. The output PNG keeps the exact pixel width and height of the source image.',
+        },
+        {
+          question: 'Will the PNG be smaller than the original?',
+          answer: 'Usually not. PNG uses lossless compression, so a photo converted from JPG to PNG is often larger than the source. Use a compress page if file size is the real goal.',
+        },
+        {
+          question: 'Does converting a JPG to PNG restore transparency or quality?',
+          answer: 'No. A JPG has no alpha channel and its compression already discarded detail. Converting to PNG cannot bring back transparency or sharpness the source never had. Transparency already present in a WebP is kept in the PNG.',
+        },
+        {
+          question: 'Are my photos uploaded to a server?',
+          answer: 'No. Conversion runs locally in your browser with the Canvas API. The image content is never sent over the network, and exporting through Canvas typically removes EXIF and GPS metadata.',
+        },
+      ],
+      howToSteps: [
+        'Drop one static JPG or WebP image into the tool or click to browse your files.',
+        'Confirm the locked PNG output. Pixel dimensions stay exactly as they are.',
+        'Convert and download the PNG. The image never leaves your browser.',
+      ],
+      relatedLinks: [],
+      acceptFormats: [MIME_MAP.jpeg, MIME_MAP.webp],
+      maxFileSize,
+    },
+  ];
+}
+
 function buildExplicitRoutes(): RouteConfig[] {
   const signatureRoute: RouteConfig = {
     slug: 'signature-resizer',
@@ -377,6 +468,7 @@ function buildExplicitRoutes(): RouteConfig[] {
     buildBatchResizeRoute(),
     signatureRoute,
     splitterRoute,
+    ...buildFormatConversionRoutes(),
   ].filter((route) => ACTIVE_SLUGS.has(route.slug));
 }
 
@@ -513,6 +605,7 @@ export function buildRelatedLinks(routes: RouteConfig[]): void {
       links.add('compress-jpeg-to-50kb');
       links.add('compress-jpeg-to-200kb');
       links.add('photo-resizer-20kb');
+      links.add('webp-to-jpg');
     }
 
     for (const neighbor of sizeNeighborLinks.get(route.slug) ?? []) {
@@ -522,6 +615,7 @@ export function buildRelatedLinks(routes: RouteConfig[]): void {
     if (route.slug === 'resize-png') {
       links.add('image-splitter');
       links.add('batch-resize-images');
+      links.add('photo-to-png');
     }
 
     if (route.slug === 'image-splitter') {
@@ -534,6 +628,18 @@ export function buildRelatedLinks(routes: RouteConfig[]): void {
       links.add('resize-image-to-100kb');
       links.add('compress-image-to-100kb');
       links.add('image-splitter');
+    }
+
+    if (route.slug === 'webp-to-jpg') {
+      links.add('photo-to-png');
+      links.add('compress-jpg-file');
+      links.add('resize-png');
+    }
+
+    if (route.slug === 'photo-to-png') {
+      links.add('webp-to-jpg');
+      links.add('resize-png');
+      links.add('compress-image-to-500kb');
     }
 
     if (route.slug === 'resize-image-to-100kb') {

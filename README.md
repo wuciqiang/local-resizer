@@ -188,10 +188,10 @@ node scripts/submit-indexnow.js --url https://localresizer.com/page-a --url http
 - `INDEXNOW_KEY`: `4ca258e2-7679-4bfb-85fd-97c5855d7a1a`（可选；默认从 `public/<key>.txt` 读取）
 
 ### 结构化数据
-所有页面包含 JSON-LD 结构化数据：
-- HowTo Schema（操作步骤）
-- FAQ Schema（常见问题）
-- WebSite Schema（网站信息）
+JSON-LD 按页面语义发布：
+- 首页包含 WebSite、WebApplication 和 Organization Schema
+- 工具内页包含 BreadcrumbList；现有通用工具页继续包含 HowTo 与 FAQPage
+- `/webp-to-jpg/` 和 `/photo-to-png/` 保留可见操作步骤与 FAQ，但只发布 BreadcrumbList，不再增加已弃用富媒体结果类型
 
 ## 🧪 测试
 

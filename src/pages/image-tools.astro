@@ -6,85 +6,135 @@ import { generateBreadcrumbSchema } from '../lib/seo';
 import { getHubBreadcrumbs } from '../lib/site-structure';
 import { formatPagePath } from '../lib/urls';
 
-const title = 'Image Tools Guide - Splitter and Utility Workflows | LocalResizer';
-const description = 'Explore the current utility image workflows on LocalResizer, including grid-based image splitting and related tools for static images.';
+const title = 'Image Tools Guide - Converters and Utility Workflows | LocalResizer';
+const description = 'Choose a LocalResizer format converter, signature resizer, image splitter, resize workflow, or compression workflow for a static image.';
 const breadcrumbItems = getHubBreadcrumbs('image-tools');
 const breadcrumbSchema = generateBreadcrumbSchema(breadcrumbItems);
-const utilityRoutes = phase0Routes.filter((route) => route.intent === 'image-splitter' || route.intent === 'signature');
+const converterRoutes = phase0Routes.filter((route) => [
+  'webp-to-jpg',
+  'photo-to-png',
+].includes(route.slug));
+const utilityRoutes = phase0Routes.filter((route) => [
+  'image-splitter',
+  'signature',
+].includes(route.intent ?? ''));
+const converterComparisons = [
+  {
+    title: 'WebP to JPG',
+    rows: [
+      ['Input', 'One static WebP'],
+      ['Output', 'JPG (.jpg)'],
+      ['Transparency', 'Filled with your chosen background'],
+      ['Quality control', 'JPEG quality from 1 to 100'],
+      ['Typical size effect', 'May be larger because WebP is often more efficient'],
+      ['Best when', 'A destination accepts JPG but rejects WebP'],
+    ],
+  },
+  {
+    title: 'Photo to PNG',
+    rows: [
+      ['Input', 'One static JPG or WebP'],
+      ['Output', 'PNG (.png)'],
+      ['Transparency', 'Keeps WebP alpha; JPG has none'],
+      ['Quality control', 'None; PNG output is lossless'],
+      ['Typical size effect', 'Often larger for photographs'],
+      ['Best when', 'A destination specifically requires PNG'],
+    ],
+  },
+];
 ---
 <BaseLayout title={title} description={description} schemas={[breadcrumbSchema]}>
   <Breadcrumbs items={breadcrumbItems} />
 
-  <article class="max-w-4xl mx-auto px-4 sm:px-5 py-10 sm:py-14">
-    <div class="text-center mb-10">
-      <span class="inline-block px-3 py-1 rounded-full bg-sky-50 text-sky-700 text-xs font-semibold tracking-wide uppercase mb-3">Guide</span>
-      <h1 class="font-[var(--font-heading)] text-3xl md:text-4xl font-bold text-stone-900 tracking-tight mb-4">Utility image tools for the current live workflows</h1>
-      <p class="text-xs text-stone-400 uppercase tracking-wide mb-4">
-        Updated <time datetime="2026-04-29">Apr 29, 2026</time>
-      </p>
-      <p class="text-stone-500 max-w-2xl mx-auto leading-relaxed">
-        Not every image task fits into a standard resize or compress page. This guide groups the current utility workflows so users and search engines can understand how these specialized tools relate to the rest of the site.
-      </p>
-    </div>
-
-    <section class="bg-white rounded-2xl p-7 shadow-soft border border-stone-100 mb-8 space-y-4">
-      <h2 class="font-[var(--font-heading)] text-xl font-semibold text-stone-900">What counts as a utility workflow here</h2>
+  <article class="max-w-5xl mx-auto px-4 sm:px-5 py-10 sm:py-14">
+    <header class="max-w-3xl mb-10 sm:mb-12">
+      <p class="text-xs font-semibold uppercase text-teal-700 mb-3">Image tools</p>
+      <h1 class="font-[var(--font-heading)] text-3xl md:text-4xl font-bold text-stone-900 mb-4">Choose the workflow that matches the required result</h1>
       <p class="text-stone-500 leading-relaxed">
-        Utility workflows solve a narrower problem than a general image resizer. The current live examples are signature cleanup and grid-based image splitting. They still run locally in the browser, but the interaction and expected output are different from target-size pages.
+        Convert when the destination requires a different format. Resize when pixel dimensions must change, compress when the byte count must fall, and use a focused utility for signatures or grid tiles.
       </p>
-      <p class="text-stone-500 leading-relaxed">
-        This matters for SEO because these pages deserve their own context instead of being buried under generic image-resizer language. The guide helps route users to the correct specialized page and sets clearer expectations about what each page can and cannot do.
-      </p>
-    </section>
+    </header>
 
-    <section class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-10">
-      {utilityRoutes.map((route) => (
-        <a href={formatPagePath(route.slug)} class="no-underline bg-white rounded-2xl p-6 shadow-soft border border-stone-100 hover:border-teal-200 hover:bg-teal-50/40 transition-all">
-          <h3 class="font-[var(--font-heading)] text-lg font-semibold text-stone-900 mb-2">{route.seo.h1}</h3>
-          <p class="text-sm text-stone-500 leading-relaxed">{route.seo.subtitle}</p>
-        </a>
-      ))}
-    </section>
-
-    <section class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-8">
-      <div class="bg-white rounded-2xl p-6 shadow-soft border border-stone-100">
-        <h3 class="font-[var(--font-heading)] text-lg font-semibold text-stone-900 mb-3">Use image splitter when</h3>
-        <ul class="space-y-3 text-sm text-stone-500 leading-relaxed list-disc pl-5">
-          <li>You need evenly divided tiles from one static image.</li>
-          <li>You want a preview of the grid before export.</li>
-          <li>You do not need freeform cropping, PDF slicing, or GIF frame extraction.</li>
-        </ul>
+    <section class="mb-12">
+      <div class="flex items-end justify-between gap-4 mb-5">
+        <div>
+          <p class="text-xs font-semibold uppercase text-stone-400 mb-2">Format conversion</p>
+          <h2 class="font-[var(--font-heading)] text-2xl font-bold text-stone-900">Choose the required output format</h2>
+        </div>
       </div>
-      <div class="bg-white rounded-2xl p-6 shadow-soft border border-stone-100">
-        <h3 class="font-[var(--font-heading)] text-lg font-semibold text-stone-900 mb-3">Use another page instead when</h3>
-        <ul class="space-y-3 text-sm text-stone-500 leading-relaxed list-disc pl-5">
-          <li>The real goal is just to reduce file size.</li>
-          <li>You need one resized output instead of multiple pieces.</li>
-          <li>You are working with formats outside the current static-image scope.</li>
-        </ul>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+        {converterRoutes.map((route) => (
+          <a href={formatPagePath(route.slug)} class="group no-underline bg-white rounded-xl p-6 shadow-soft border border-stone-100 hover:border-teal-200 hover:shadow-soft-lg transition-all">
+            <div class="flex items-start justify-between gap-4">
+              <div>
+                <h3 class="font-[var(--font-heading)] text-lg font-semibold text-stone-900 mb-2 group-hover:text-teal-800 transition-colors">{route.seo.h1}</h3>
+                <p class="text-sm text-stone-500 leading-relaxed">{route.seo.subtitle}</p>
+              </div>
+              <span aria-hidden="true" class="shrink-0 text-teal-700 text-lg">-&gt;</span>
+            </div>
+          </a>
+        ))}
       </div>
     </section>
 
-    <section class="bg-white rounded-2xl p-7 shadow-soft border border-stone-100 mb-8 space-y-3">
-      <h2 class="font-[var(--font-heading)] text-xl font-semibold text-stone-900">Need one resized output instead?</h2>
-      <p class="text-stone-500 leading-relaxed">
-        If you do not need a split grid or signature cleanup, open the <a href={formatPagePath('resize-image')} class="text-teal-700 underline hover:text-teal-900">resize image tool</a> for the main dimension and target-size workflow.
-      </p>
+    <section class="border-y border-stone-200 py-9 mb-12">
+      <div class="max-w-2xl mb-7">
+        <h2 class="font-[var(--font-heading)] text-2xl font-bold text-stone-900 mb-2">Compare the two converters</h2>
+        <p class="text-sm text-stone-500 leading-relaxed">Both keep the original width and height. The format rules, transparency behavior, and likely file-size result are different.</p>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-9 md:gap-0">
+        {converterComparisons.map((converter, index) => (
+          <section class:list={['min-w-0', index === 1 && 'md:border-l md:border-stone-200 md:pl-8', index === 0 && 'md:pr-8']}>
+            <h3 class="font-[var(--font-heading)] text-lg font-semibold text-stone-900 mb-4">{converter.title}</h3>
+            <dl class="divide-y divide-stone-100">
+              {converter.rows.map(([label, value]) => (
+                <div class="grid grid-cols-[7rem_minmax(0,1fr)] gap-3 py-2.5 first:pt-0 last:pb-0">
+                  <dt class="text-xs font-semibold text-stone-500">{label}</dt>
+                  <dd class="min-w-0 text-sm text-stone-700 leading-snug break-words">{value}</dd>
+                </div>
+              ))}
+            </dl>
+          </section>
+        ))}
+      </div>
     </section>
 
-    <section class="grid grid-cols-1 md:grid-cols-3 gap-5">
-      <a href={formatPagePath('image-splitter')} class="no-underline bg-white rounded-2xl p-6 shadow-soft border border-stone-100 hover:border-teal-200 hover:bg-teal-50/40 transition-all">
-        <h3 class="font-[var(--font-heading)] text-lg font-semibold text-stone-900 mb-2">Image Splitter Online</h3>
-        <p class="text-sm text-stone-500 leading-relaxed">Open the live splitter page when you need a rows-by-columns grid with visual split lines before processing.</p>
-      </a>
-      <a href={formatPagePath('resize-png')} class="no-underline bg-white rounded-2xl p-6 shadow-soft border border-stone-100 hover:border-teal-200 hover:bg-teal-50/40 transition-all">
-        <h3 class="font-[var(--font-heading)] text-lg font-semibold text-stone-900 mb-2">Resize PNG</h3>
-        <p class="text-sm text-stone-500 leading-relaxed">Use the PNG resize page when you need one adjusted image instead of multiple split pieces.</p>
-      </a>
-      <a href={formatPagePath('supported-formats')} class="no-underline bg-white rounded-2xl p-6 shadow-soft border border-stone-100 hover:border-teal-200 hover:bg-teal-50/40 transition-all">
-        <h3 class="font-[var(--font-heading)] text-lg font-semibold text-stone-900 mb-2">Supported Formats</h3>
-        <p class="text-sm text-stone-500 leading-relaxed">Review the live scope before you expect PDF, video, or animated GIF workflows from these utility pages.</p>
-      </a>
+    <section class="mb-12">
+      <h2 class="font-[var(--font-heading)] text-2xl font-bold text-stone-900 mb-5">When conversion is not the task</h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-7">
+        <div class="border-l-2 border-sky-200 pl-5">
+          <h3 class="font-[var(--font-heading)] text-lg font-semibold text-stone-900 mb-2">Change pixel dimensions</h3>
+          <p class="text-sm text-stone-500 leading-relaxed mb-3">Use resize when the destination specifies a width, height, or canvas size. Resizing changes pixels and can also reduce bytes.</p>
+          <a href={formatPagePath('resize-image')} class="text-sm font-semibold text-teal-700 underline underline-offset-2 hover:text-teal-900">Compare resize workflows</a>
+        </div>
+        <div class="border-l-2 border-amber-200 pl-5">
+          <h3 class="font-[var(--font-heading)] text-lg font-semibold text-stone-900 mb-2">Reduce file size</h3>
+          <p class="text-sm text-stone-500 leading-relaxed mb-3">Use compress when the format is already accepted but the file exceeds a KB or MB limit. Compression targets bytes, not a new format.</p>
+          <a href={formatPagePath('compress-image')} class="text-sm font-semibold text-teal-700 underline underline-offset-2 hover:text-teal-900">Compare compression workflows</a>
+        </div>
+      </div>
     </section>
+
+    <section class="mb-10">
+      <p class="text-xs font-semibold uppercase text-stone-400 mb-2">Focused utilities</p>
+      <h2 class="font-[var(--font-heading)] text-2xl font-bold text-stone-900 mb-5">Prepare a signature or split one image into tiles</h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+        {utilityRoutes.map((route) => (
+          <a href={formatPagePath(route.slug)} class="group no-underline bg-white rounded-xl p-6 shadow-soft border border-stone-100 hover:border-teal-200 hover:shadow-soft-lg transition-all">
+            <div class="flex items-start justify-between gap-4">
+              <div>
+                <h3 class="font-[var(--font-heading)] text-lg font-semibold text-stone-900 mb-2 group-hover:text-teal-800 transition-colors">{route.seo.h1}</h3>
+                <p class="text-sm text-stone-500 leading-relaxed">{route.seo.subtitle}</p>
+              </div>
+              <span aria-hidden="true" class="shrink-0 text-teal-700 text-lg">-&gt;</span>
+            </div>
+          </a>
+        ))}
+      </div>
+    </section>
+
+    <p class="border-t border-stone-200 pt-6 text-sm text-stone-500 leading-relaxed">
+      Check <a href={formatPagePath('supported-formats')} class="text-teal-700 underline underline-offset-2 hover:text-teal-900">supported formats and current limits</a> before working with animated images, video, PDF, HEIC, or SVG.
+    </p>
   </article>
 </BaseLayout>

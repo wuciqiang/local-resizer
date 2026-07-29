@@ -10,10 +10,17 @@ import Breadcrumbs from '../components/Breadcrumbs.astro';
 import { generateHowToSchema, generateFAQSchema, generateBreadcrumbSchema } from '../lib/seo';
 import { generateContextSections, generateDetailText, generateFormatInfo, generateIntroText, generatePageHighlights } from '../lib/content';
 import { getGuideLinksForRoute, getRouteBreadcrumbs } from '../lib/site-structure';
+import { formatPagePath } from '../lib/urls';
 
 export function getStaticPaths() {
   return phase0Routes
-    .filter((route) => !['signature-resizer', 'image-splitter', 'batch-resize-images'].includes(route.slug))
+    .filter((route) => ![
+      'signature-resizer',
+      'image-splitter',
+      'batch-resize-images',
+      'webp-to-jpg',
+      'photo-to-png',
+    ].includes(route.slug))
     .map((route) => ({
     params: { slug: route.slug },
     props: { route },
@@ -38,9 +45,11 @@ const guideLinks = getGuideLinksForRoute(route);
 
 if (
   route.action === 'split' ||
+  route.action === 'convert' ||
   route.intent === 'signature' ||
   route.intent === 'image-splitter' ||
-  route.intent === 'batch-resize'
+  route.intent === 'batch-resize' ||
+  route.intent === 'format-convert'
 ) {
   throw new Error(`Route ${route.slug} must use its dedicated page implementation.`);
 }
@@ -89,6 +98,28 @@ if (
       {formatInfo && <p class="text-stone-500 text-[15px] leading-relaxed pt-4 border-t border-stone-100">{formatInfo}</p>}
     </div>
   </section>
+
+  {route.slug === 'resize-png' && (
+    <section class="max-w-2xl mx-auto px-4 sm:px-5 pb-6">
+      <div class="border-l-2 border-teal-200 pl-5 py-1">
+        <h2 class="font-[var(--font-heading)] text-lg font-semibold text-stone-900 mb-2">Starting with a JPG or WebP?</h2>
+        <p class="text-sm text-stone-500 leading-relaxed">
+          This resizer expects PNG input. If the destination requires PNG, <a href={formatPagePath('photo-to-png')} class="text-teal-700 underline underline-offset-2 hover:text-teal-900">convert a JPG or WebP photo to PNG first</a>, then return here only if you also need different pixel dimensions.
+        </p>
+      </div>
+    </section>
+  )}
+
+  {route.slug === 'compress-jpg-file' && (
+    <section class="max-w-2xl mx-auto px-4 sm:px-5 pb-6">
+      <div class="border-l-2 border-teal-200 pl-5 py-1">
+        <h2 class="font-[var(--font-heading)] text-lg font-semibold text-stone-900 mb-2">Starting with WebP?</h2>
+        <p class="text-sm text-stone-500 leading-relaxed">
+          This compressor expects JPG input. If an older upload form rejects WebP, <a href={formatPagePath('webp-to-jpg')} class="text-teal-700 underline underline-offset-2 hover:text-teal-900">convert WebP to JPG first</a>, then use this page if the converted file must meet a byte limit.
+        </p>
+      </div>
+    </section>
+  )}
 
   <section class="max-w-3xl mx-auto px-4 sm:px-5 pb-6">
     <div class="text-center mb-8">
