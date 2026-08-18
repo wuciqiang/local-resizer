@@ -38,6 +38,16 @@ describe('SEO structure for specialized workflows', () => {
     expect(compressHub.includes("'compress-image-to-500kb'")).toBe(true);
   });
 
+  it('links the resize hub introduction to the focused PNG workflow without changing its primary intent', () => {
+    const resizeHub = read('src/pages/resize-image.astro');
+
+    expect(resizeHub).toContain("const title = 'Resize Image Online - Private Browser Resizer | LocalResizer';");
+    expect(resizeHub).toContain('>Resize image online</h1>');
+    expect(resizeHub).toContain("<a href={formatPagePath('resize-png')}>Resize PNG tool</a>");
+    expect(resizeHub).toContain('For PNG files that need transparent backgrounds, use the <a');
+    expect(resizeHub).toContain('to change width and height while keeping PNG output.');
+  });
+
   it('keeps the core resize and compress hubs in the primary navigation', () => {
     const layout = read('src/layouts/BaseLayout.astro');
 
