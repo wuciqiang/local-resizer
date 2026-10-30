@@ -21,39 +21,6 @@ const {
 } = Astro.props;
 const canonicalUrl = canonical || formatPageUrl(Astro.url.pathname);
 
-const badgeMarquee = [
-  { label: 'Product Hunt', href: 'https://www.producthunt.com' },
-  { label: 'StartupBase', href: 'https://startupbase.io' },
-  { label: 'webgora', href: 'https://webgora.com' },
-  { label: 'FutureTools', href: 'https://futuretools.io' },
-  { label: 'AI Agents Live', href: 'https://aiagentslive.com' },
-  { label: 'ListedAI', href: 'https://www.listedai.co' },
-  { label: 'ScriptByAI', href: 'https://www.scriptbyai.com' },
-  { label: 'Insidr.ai', href: 'https://www.insidr.ai' },
-  { label: 'EverList', href: 'https://everlist.dev' },
-  { label: 's5-style', href: 'https://www.s5-style.com' },
-  { label: 'AI Boom', href: 'https://aiboom.tools' },
-  { label: 'AI Findr', href: 'https://ai-findr.com' },
-  { label: 'AI138', href: 'https://ai138.com' },
-  { label: 'AI Index', href: 'https://aiindex.tools' },
-  { label: 'AI Tooli', href: 'https://aitooli.com' },
-  { label: 'AI Toolz Dir', href: 'https://www.aitoolzdir.com' },
-  { label: 'DeepLaunch', href: 'https://deeplaunch.io' },
-  { label: 'Fazier', href: 'https://fazier.com' },
-  { label: 'Free Web Submission', href: 'https://freewebsubmission.com' },
-  { label: 'Gets.tools', href: 'https://gets.tools' },
-  { label: 'Indie.deals', href: 'https://indie.deals' },
-  { label: 'Next Launch', href: 'https://nextlaunch.io' },
-  { label: 'Right AI', href: 'https://right-ai.com' },
-  { label: 'SeeWhatNewAI', href: 'https://seewhatnewai.com' },
-  { label: 'TinyLaunch', href: 'https://tinylaunch.com' },
-  { label: 'ToolDirs', href: 'https://tooldirs.com' },
-  { label: 'ToolPilot', href: 'https://toolpilot.ai' },
-  { label: 'ToolsApp', href: 'https://toolsapp.cc' },
-  { label: 'Turbo0', href: 'https://turbo0.com' },
-  { label: 'Twelve Tools', href: 'https://twelve.tools' },
-  { label: 'What Is AI Tools', href: 'https://whatisaitools.com' },
-];
 const currentPath = formatPagePath(Astro.url.pathname);
 const ogImageUrl = new URL(socialImage, Astro.site).href;
 ---
@@ -128,16 +95,6 @@ const ogImageUrl = new URL(socialImage, Astro.site).href;
 
   <!-- Footer -->
   <footer class="border-t border-[var(--color-border)] bg-white">
-    <div class="badge-marquee" aria-label="Listed on these directories">
-      <div class="badge-marquee__track">
-        {[...badgeMarquee, ...badgeMarquee].map((badge) => (
-          <a class="badge-marquee__item" href={badge.href} target="_blank" rel="noopener noreferrer">
-            <span class="badge-marquee__dot" aria-hidden="true"></span>
-            <span>{badge.label}</span>
-          </a>
-        ))}
-      </div>
-    </div>
     <div class="max-w-5xl mx-auto px-4 sm:px-5 py-8 sm:py-10">
       <div class="flex flex-col md:flex-row items-center justify-between gap-4">
         <img src="/logo-header.webp" alt="LocalResizer" width="380" height="101" loading="lazy" decoding="async" class="block w-[150px] sm:w-[170px] h-auto" />
